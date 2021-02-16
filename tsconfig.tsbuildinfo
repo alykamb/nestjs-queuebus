@@ -2796,9 +2796,14 @@
         "signature": "48119d049008f2175b7f3b6b198824aa413abfc267df7760632216196ef4c6c1",
         "affectsGlobalScope": false
       },
+      "./src/decorators/event.decorator.ts": {
+        "version": "b300bbe2e9c3d37628e2d743a61400d85bbead236ebad961043dc5cb13635298",
+        "signature": "e4af7af25fd430e5265a3dd78ff7539ec6a38d0c76aa64b4387a739b8d5c591e",
+        "affectsGlobalScope": false
+      },
       "./src/decorators/index.ts": {
-        "version": "5d863e4c4952979a07307f023c90f028e4be894f1d652d58c4b3e3b4f3e8a9d4",
-        "signature": "065d3ffa7a223d26ae8aea14e95eb677b3fcbd279713cc46521b822548f95ef7",
+        "version": "fea8bbb34e38c2f4fcf73ef15bd6e203d7ff8bf63e73230069b4242963862ef7",
+        "signature": "f9658c22992ac7955e33dd594c4f773cc430d7fdb0befa873af94a73545863fc",
         "affectsGlobalScope": false
       },
       "./src/exceptions/invalidCommandHandler.exception.ts": {
@@ -2899,11 +2904,6 @@
       "./src/bullmq/bullMq.spec.ts": {
         "version": "4e8f70f36eadd7ef38763568b47a18c94bd05bb4f3bd9715a63f86126f67f15e",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
-        "affectsGlobalScope": false
-      },
-      "./src/decorators/event.decorator.ts": {
-        "version": "b300bbe2e9c3d37628e2d743a61400d85bbead236ebad961043dc5cb13635298",
-        "signature": "e4af7af25fd430e5265a3dd78ff7539ec6a38d0c76aa64b4387a739b8d5c591e",
         "affectsGlobalScope": false
       },
       "./src/operators/ofType.spec.ts": {
@@ -5189,6 +5189,7 @@
       ],
       "./src/decorators/index.ts": [
         "./src/decorators/decorators.factory.ts",
+        "./src/decorators/event.decorator.ts",
         "./src/decorators/eventsHandler.decorator.ts",
         "./src/decorators/nameQueue.decorator.ts",
         "./src/decorators/queueHandler.decorator.ts",
@@ -7523,6 +7524,7 @@
       ],
       "./src/decorators/index.ts": [
         "./src/decorators/decorators.factory.ts",
+        "./src/decorators/event.decorator.ts",
         "./src/decorators/eventsHandler.decorator.ts",
         "./src/decorators/nameQueue.decorator.ts",
         "./src/decorators/queueHandler.decorator.ts",
