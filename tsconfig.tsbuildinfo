@@ -2722,8 +2722,8 @@
         "affectsGlobalScope": false
       },
       "./src/queueBusBase.ts": {
-        "version": "5be34c4179e31650f51b7160adf0c5612ce63d36d81ec6e60d6a5e7fb48c3156",
-        "signature": "fd03650bf30929519d5b4a307aae7dbf79d150371b026878a85daedfe3247d2f",
+        "version": "02566ea2fc7998a8321a29c54a209b58c1df76e604ef347ede6d21ed232c98ee",
+        "signature": "b0da3e23b84eef7bf75f0441e953c3d6b6352d1781904c77d26be7574dbf23d9",
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/queueOptions.interface.ts": {
