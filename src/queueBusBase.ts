@@ -55,7 +55,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
      * @param impl - implementação
      * @param [options] - opções para criação do command
      */
-    public execute<Ret, T extends ImplBase = ImplBase>(
+    public execute<Ret = any, T extends ImplBase = ImplBase>(
         impl: T,
         options: IExecutionOptions = {},
     ): Observable<Ret> {

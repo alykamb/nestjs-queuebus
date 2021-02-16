@@ -1,6 +1,6 @@
 {
     "name": "nestjs-queuebus",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
     "repository": {
@@ -24,6 +24,7 @@
         "@babel/preset-typescript": "^7.12.13",
         "@nestjs/common": "^7.6.11",
         "@nestjs/core": "^7.6.11",
+        "@nestjs/microservices": "^7.6.12",
         "@nestjs/testing": "^7.6.11",
         "babel-jest": "^26.6.3",
         "eslint": "^7.15.0",
@@ -46,14 +47,14 @@
         }
     },
     "dependencies": {
-        "reflect-metadata": "^0.1.13",
-        "rxjs": "^6.6.3",
         "bullmq": "^1.14.0",
-        "redis": "^3.0.2"
+        "redis": "^3.0.2",
+        "reflect-metadata": "^0.1.13",
+        "rxjs": "^6.6.3"
     },
     "peerDependencies": {
-        "@nestjs/microservices": "^7.6.11",
         "@nestjs/common": "^7.6.11",
-        "@nestjs/core": "^7.6.11"
+        "@nestjs/core": "^7.6.11",
+        "@nestjs/microservices": "^7.6.11"
     }
 }
