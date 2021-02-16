@@ -1,0 +1,59 @@
+{
+    "name": "nestjs-queuebus",
+    "version": "0.1.5",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/alykamb/nestjs-queuebus.git"
+    },
+    "bugs": {
+        "url": "https://github.com/alykamb/nestjs-queuebus/issues"
+    },
+    "homepage": "https://github.com/alykamb/nestjs-queuebus#readme",
+    "author": "Alykam Burdzaki - alykam@gmail.com",
+    "license": "MIT",
+    "private": false,
+    "scripts": {
+        "test": "jest",
+        "build": "tsc -p ."
+    },
+    "devDependencies": {
+        "@babel/core": "^7.12.13",
+        "@babel/preset-env": "^7.12.13",
+        "@babel/preset-typescript": "^7.12.13",
+        "@nestjs/common": "^7.6.11",
+        "@nestjs/core": "^7.6.11",
+        "@nestjs/testing": "^7.6.11",
+        "babel-jest": "^26.6.3",
+        "eslint": "^7.15.0",
+        "eslint-config-prettier": "7.2.0",
+        "eslint-plugin-import": "^2.22.0",
+        "eslint-plugin-prettier": "^3.1.4",
+        "eslint-plugin-sort-class-members": "^1.9.0",
+        "eslint-plugin-sort-imports-es6-autofix": "^0.5.0",
+        "prettier": "^2.1.2",
+        "supertest": "^6.0.0",
+        "ts-jest": "26.5.0",
+        "ts-loader": "^8.0.12",
+        "ts-node": "^9.1.1",
+        "tsconfig-paths": "^3.9.0",
+        "typescript": "^4.1.3"
+    },
+    "jest": {
+        "transform": {
+            "^.+\\.[t|j]sx?$": "babel-jest"
+        }
+    },
+    "dependencies": {
+        "reflect-metadata": "^0.1.13",
+        "rxjs": "^6.6.3",
+        "bullmq": "^1.14.0",
+        "redis": "^3.0.2"
+    },
+    "peerDependencies": {
+        "@nestjs/microservices": "^7.6.11",
+        "@nestjs/common": "^7.6.11",
+        "@nestjs/core": "^7.6.11"
+    }
+}
