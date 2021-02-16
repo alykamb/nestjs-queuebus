@@ -118,7 +118,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                 if (!instance) {
                     throw new InvalidSagaException()
                 }
-                return metadata.properties.map((key: string) => ({
+                return metadata.data.map((key: string) => ({
                     call: instance[key],
                     name: key,
                     bus: metadata.bus,

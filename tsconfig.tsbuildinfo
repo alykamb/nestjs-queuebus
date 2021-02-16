@@ -2862,7 +2862,7 @@
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "d4fe0b024243ff48bea63b89b56ef87628a8002655b8cb92cda6e1d12c28c9b8",
+        "version": "656ee1f17f82d88c52004de85250c1d7a52ce4a497fa0b72212940f3d1671b83",
         "signature": "b8aaae1a2eb7a6810ee2068ff85b00d7cbeb2f1e5033aca145bd03aabe777d06",
         "affectsGlobalScope": false
       },
