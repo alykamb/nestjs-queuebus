@@ -126,13 +126,14 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
 
         const hooks = this.getHooks(handler)
 
-        return of(data).pipe(
-            mergeMap(this.runHooks(hooks.before)),
-            mergeMap((data) =>
-                this.runHooks(hooks.interceptor, data)((d: any) =>  asObservable(handler.execute(d))),
-            ),
-            mergeMap(this.runHooks(hooks.after)),
-        )
+        return asObservable(handler.execute(data))
+        // return of(data).pipe(
+        //     mergeMap(this.runHooks(hooks.before)),
+        //     mergeMap((data) =>
+        //         this.runHooks(hooks.interceptor, data)((d: any) =>  asObservable(handler.execute(d))),
+        //     ),
+        //     mergeMap(this.runHooks(hooks.after)),
+        // )
     }
 
     protected runHooks(hooks: Hook[], initialData?: any): (data: any) => Observable<any> {

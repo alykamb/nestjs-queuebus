@@ -2722,7 +2722,7 @@
         "affectsGlobalScope": false
       },
       "./src/queueBusBase.ts": {
-        "version": "02566ea2fc7998a8321a29c54a209b58c1df76e604ef347ede6d21ed232c98ee",
+        "version": "71ce5a511c050cedb7463293dd49d25e3349011088966f1cf3420ecac044e1b4",
         "signature": "b0da3e23b84eef7bf75f0441e953c3d6b6352d1781904c77d26be7574dbf23d9",
         "affectsGlobalScope": false
       },
@@ -2866,51 +2866,6 @@
         "signature": "b8aaae1a2eb7a6810ee2068ff85b00d7cbeb2f1e5033aca145bd03aabe777d06",
         "affectsGlobalScope": false
       },
-      "./node_modules/@nestjs/testing/interfaces/override-by-factory-options.interface.d.ts": {
-        "version": "ca248f650c19abc031e2aaafa41fceb524378b1a2249905b44d1c8e4148fcb52",
-        "signature": "ca248f650c19abc031e2aaafa41fceb524378b1a2249905b44d1c8e4148fcb52",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@nestjs/testing/testing-module.d.ts": {
-        "version": "1cb85d69d6e68b4fcb46c6e121781e417f5784c1c0bd919a9cc4a00c6243c582",
-        "signature": "1cb85d69d6e68b4fcb46c6e121781e417f5784c1c0bd919a9cc4a00c6243c582",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@nestjs/testing/testing-module.builder.d.ts": {
-        "version": "4a64f60e211fb6416bd1cce1635dc4b0d42e680b788edd732ea4cb50fce68c69",
-        "signature": "4a64f60e211fb6416bd1cce1635dc4b0d42e680b788edd732ea4cb50fce68c69",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@nestjs/testing/interfaces/override-by.interface.d.ts": {
-        "version": "9388b0ffb5ab94e23e0165a96985091a133e3632e5f92fd72b14df7d73b3804d",
-        "signature": "9388b0ffb5ab94e23e0165a96985091a133e3632e5f92fd72b14df7d73b3804d",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@nestjs/testing/interfaces/index.d.ts": {
-        "version": "a397d00d0454ddb1cae255c19bde344f78b8b93512cff09b98b7e148d889b6e6",
-        "signature": "a397d00d0454ddb1cae255c19bde344f78b8b93512cff09b98b7e148d889b6e6",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@nestjs/testing/test.d.ts": {
-        "version": "927c6cf84c59b3ca7fdb6d3cbc3aa986193337b6a9758994575106f6073ee737",
-        "signature": "927c6cf84c59b3ca7fdb6d3cbc3aa986193337b6a9758994575106f6073ee737",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@nestjs/testing/index.d.ts": {
-        "version": "0a33b8bff876368beef794f5f08e8221103efa394f9e0e27e19f557a8cdaa0a0",
-        "signature": "0a33b8bff876368beef794f5f08e8221103efa394f9e0e27e19f557a8cdaa0a0",
-        "affectsGlobalScope": false
-      },
-      "./src/bullmq/bullMq.spec.ts": {
-        "version": "4e8f70f36eadd7ef38763568b47a18c94bd05bb4f3bd9715a63f86126f67f15e",
-        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
-        "affectsGlobalScope": false
-      },
-      "./src/operators/ofType.spec.ts": {
-        "version": "28ece9d440ea14b76259972744edfd4dd251661f0a0b5da2b8f429961d9470f1",
-        "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
-        "affectsGlobalScope": false
-      },
       "./src/types/indx.ts": {
         "version": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "signature": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -2919,56 +2874,6 @@
       "./src/types/queueResult.type.ts": {
         "version": "6e4fb814680f8999aa1a5b6db263277a782148e36d6b69ab13a4df494eef0f06",
         "signature": "91cb013412f2cf91eee27b566d22d2ddda184683e210cd42a1a7e54dad208a2a",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@babel/types/lib/index.d.ts": {
-        "version": "7c6b4c3bbc2c3cebe5cc1364e84a4fd0cbda5fda186c0ba15c2f693f403479d2",
-        "signature": "7c6b4c3bbc2c3cebe5cc1364e84a4fd0cbda5fda186c0ba15c2f693f403479d2",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/babel__generator/index.d.ts": {
-        "version": "b25c5f2970d06c729f464c0aeaa64b1a5b5f1355aa93554bb5f9c199b8624b1e",
-        "signature": "b25c5f2970d06c729f464c0aeaa64b1a5b5f1355aa93554bb5f9c199b8624b1e",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/babel__traverse/index.d.ts": {
-        "version": "8a278bfba7b081cd849434c1130655046639ae90617a682436ed6954e2b57403",
-        "signature": "8a278bfba7b081cd849434c1130655046639ae90617a682436ed6954e2b57403",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@babel/parser/typings/babel-parser.d.ts": {
-        "version": "6da9e714516d081abaa435946d77c8d74dba888530412dc71601e83d2c8a512e",
-        "signature": "6da9e714516d081abaa435946d77c8d74dba888530412dc71601e83d2c8a512e",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/babel__template/index.d.ts": {
-        "version": "3051751533eee92572241b3cef28333212401408c4e7aa21718714b793c0f4ed",
-        "signature": "3051751533eee92572241b3cef28333212401408c4e7aa21718714b793c0f4ed",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/babel__core/index.d.ts": {
-        "version": "a66e700ed470a0cb52d14f3376c1605c70fec8e9659e45f7e22ad07fcd06ae04",
-        "signature": "a66e700ed470a0cb52d14f3376c1605c70fec8e9659e45f7e22ad07fcd06ae04",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/graceful-fs/index.d.ts": {
-        "version": "cb6cf0480ee1aa9f706db1f6f5add596a1aa10e8c4beb1817f2318384ba684dc",
-        "signature": "cb6cf0480ee1aa9f706db1f6f5add596a1aa10e8c4beb1817f2318384ba684dc",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/istanbul-lib-coverage/index.d.ts": {
-        "version": "de18acda71730bac52f4b256ce7511bb56cc21f6f114c59c46782eff2f632857",
-        "signature": "de18acda71730bac52f4b256ce7511bb56cc21f6f114c59c46782eff2f632857",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/istanbul-lib-report/index.d.ts": {
-        "version": "7eb06594824ada538b1d8b48c3925a83e7db792f47a081a62cf3e5c4e23cf0ee",
-        "signature": "7eb06594824ada538b1d8b48c3925a83e7db792f47a081a62cf3e5c4e23cf0ee",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/istanbul-reports/index.d.ts": {
-        "version": "905c3e8f7ddaa6c391b60c05b2f4c3931d7127ad717a080359db3df510b7bdab",
-        "signature": "905c3e8f7ddaa6c391b60c05b2f4c3931d7127ad717a080359db3df510b7bdab",
         "affectsGlobalScope": false
       },
       "./node_modules/jest-diff/build/cleanupSemantic.d.ts": {
@@ -3010,21 +2915,6 @@
         "version": "71f30fba971582dc744373cbc8b06c1eb64dc24a6ccbc9b457f94fb68c67cb4e",
         "signature": "71f30fba971582dc744373cbc8b06c1eb64dc24a6ccbc9b457f94fb68c67cb4e",
         "affectsGlobalScope": true
-      },
-      "./node_modules/@types/json5/index.d.ts": {
-        "version": "96d14f21b7652903852eef49379d04dbda28c16ed36468f8c9fa08f7c14c9538",
-        "signature": "96d14f21b7652903852eef49379d04dbda28c16ed36468f8c9fa08f7c14c9538",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/yargs-parser/index.d.ts": {
-        "version": "3bdd93ec24853e61bfa4c63ebaa425ff3e474156e87a47d90122e1d8cc717c1f",
-        "signature": "3bdd93ec24853e61bfa4c63ebaa425ff3e474156e87a47d90122e1d8cc717c1f",
-        "affectsGlobalScope": false
-      },
-      "./node_modules/@types/yargs/index.d.ts": {
-        "version": "5a2a25feca554a8f289ed62114771b8c63d89f2b58325e2f8b7043e4e0160d11",
-        "signature": "5a2a25feca554a8f289ed62114771b8c63d89f2b58325e2f8b7043e4e0160d11",
-        "affectsGlobalScope": false
       }
     },
     "options": {
@@ -3041,13 +2931,18 @@
       "rootDir": "./src",
       "incremental": true,
       "resolveJsonModule": true,
+      "types": [
+        "reflect-metadata",
+        "jest"
+      ],
+      "typeRoots": [
+        "./types",
+        "./node_modules/@types"
+      ],
       "project": "./",
       "configFilePath": "./tsconfig.json"
     },
     "referencedMap": {
-      "./node_modules/@babel/parser/typings/babel-parser.d.ts": [
-        "./node_modules/@babel/types/lib/index.d.ts"
-      ],
       "./node_modules/@nestjs/common/cache/cache.module.d.ts": [
         "./node_modules/@nestjs/common/cache/interfaces/cache-module.interface.d.ts",
         "./node_modules/@nestjs/common/interfaces/index.d.ts"
@@ -3993,71 +3888,11 @@
         "./node_modules/@nestjs/microservices/interfaces/serializer.interface.d.ts",
         "./node_modules/rxjs/index.d.ts"
       ],
-      "./node_modules/@nestjs/testing/index.d.ts": [
-        "./node_modules/@nestjs/testing/interfaces/index.d.ts",
-        "./node_modules/@nestjs/testing/test.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.builder.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/interfaces/index.d.ts": [
-        "./node_modules/@nestjs/testing/interfaces/override-by-factory-options.interface.d.ts",
-        "./node_modules/@nestjs/testing/interfaces/override-by.interface.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/interfaces/override-by.interface.d.ts": [
-        "./node_modules/@nestjs/testing/interfaces/override-by-factory-options.interface.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.builder.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/test.d.ts": [
-        "./node_modules/@nestjs/common/interfaces/modules/module-metadata.interface.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.builder.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/testing-module.builder.d.ts": [
-        "./node_modules/@nestjs/common/index.d.ts",
-        "./node_modules/@nestjs/common/interfaces/index.d.ts",
-        "./node_modules/@nestjs/core/metadata-scanner.d.ts",
-        "./node_modules/@nestjs/testing/interfaces/index.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/testing-module.d.ts": [
-        "./node_modules/@nestjs/common/index.d.ts",
-        "./node_modules/@nestjs/common/interfaces/microservices/nest-microservice-options.interface.d.ts",
-        "./node_modules/@nestjs/core/application-config.d.ts",
-        "./node_modules/@nestjs/core/index.d.ts",
-        "./node_modules/@nestjs/core/injector/container.d.ts",
-        "./node_modules/@nestjs/core/injector/module.d.ts"
-      ],
-      "./node_modules/@types/babel__core/index.d.ts": [
-        "./node_modules/@babel/parser/typings/babel-parser.d.ts",
-        "./node_modules/@babel/types/lib/index.d.ts",
-        "./node_modules/@types/babel__generator/index.d.ts",
-        "./node_modules/@types/babel__template/index.d.ts",
-        "./node_modules/@types/babel__traverse/index.d.ts"
-      ],
-      "./node_modules/@types/babel__generator/index.d.ts": [
-        "./node_modules/@babel/types/lib/index.d.ts"
-      ],
-      "./node_modules/@types/babel__template/index.d.ts": [
-        "./node_modules/@babel/parser/typings/babel-parser.d.ts",
-        "./node_modules/@babel/types/lib/index.d.ts"
-      ],
-      "./node_modules/@types/babel__traverse/index.d.ts": [
-        "./node_modules/@babel/types/lib/index.d.ts"
-      ],
-      "./node_modules/@types/graceful-fs/index.d.ts": [
-        "./node_modules/@types/node/fs.d.ts",
-        "./node_modules/@types/node/index.d.ts"
-      ],
       "./node_modules/@types/ioredis/index.d.ts": [
         "./node_modules/@types/node/events.d.ts",
         "./node_modules/@types/node/index.d.ts",
         "./node_modules/@types/node/stream.d.ts",
         "./node_modules/@types/node/tls.d.ts"
-      ],
-      "./node_modules/@types/istanbul-lib-report/index.d.ts": [
-        "./node_modules/@types/istanbul-lib-coverage/index.d.ts"
-      ],
-      "./node_modules/@types/istanbul-reports/index.d.ts": [
-        "./node_modules/@types/istanbul-lib-report/index.d.ts"
       ],
       "./node_modules/@types/jest/index.d.ts": [
         "./node_modules/jest-diff/build/index.d.ts",
@@ -4232,9 +4067,6 @@
       ],
       "./node_modules/@types/node/zlib.d.ts": [
         "./node_modules/@types/node/stream.d.ts"
-      ],
-      "./node_modules/@types/yargs/index.d.ts": [
-        "./node_modules/@types/yargs-parser/index.d.ts"
       ],
       "./node_modules/bullmq/dist/classes/backoffs.d.ts": [
         "./node_modules/bullmq/dist/interfaces/backoff-options.d.ts"
@@ -5150,15 +4982,6 @@
         "./node_modules/rxjs/internal/operators/zip.d.ts",
         "./node_modules/rxjs/internal/operators/zipAll.d.ts"
       ],
-      "./src/bullmq/bullMq.spec.ts": [
-        "./node_modules/@nestjs/testing/index.d.ts",
-        "./node_modules/bullmq/dist/index.d.ts",
-        "./node_modules/rxjs/index.d.ts",
-        "./node_modules/rxjs/operators/index.d.ts",
-        "./src/bullmq/bullMq.ts",
-        "./src/constants.ts",
-        "./src/interfaces/queueConfigService.interface.ts"
-      ],
       "./src/bullmq/bullMq.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
         "./node_modules/bullmq/dist/index.d.ts",
@@ -5322,11 +5145,6 @@
         "./src/decorators/constants.ts",
         "./src/interfaces/index.ts"
       ],
-      "./src/operators/ofType.spec.ts": [
-        "./node_modules/rxjs/index.d.ts",
-        "./src/interfaces/index.ts",
-        "./src/operators/ofTtype.ts"
-      ],
       "./src/pubsub/pubSub.controller.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
         "./node_modules/@nestjs/microservices/index.d.ts",
@@ -5399,9 +5217,6 @@
       ]
     },
     "exportedModulesMap": {
-      "./node_modules/@babel/parser/typings/babel-parser.d.ts": [
-        "./node_modules/@babel/types/lib/index.d.ts"
-      ],
       "./node_modules/@nestjs/common/cache/cache.module.d.ts": [
         "./node_modules/@nestjs/common/cache/interfaces/cache-module.interface.d.ts",
         "./node_modules/@nestjs/common/interfaces/index.d.ts"
@@ -6347,71 +6162,11 @@
         "./node_modules/@nestjs/microservices/interfaces/serializer.interface.d.ts",
         "./node_modules/rxjs/index.d.ts"
       ],
-      "./node_modules/@nestjs/testing/index.d.ts": [
-        "./node_modules/@nestjs/testing/interfaces/index.d.ts",
-        "./node_modules/@nestjs/testing/test.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.builder.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/interfaces/index.d.ts": [
-        "./node_modules/@nestjs/testing/interfaces/override-by-factory-options.interface.d.ts",
-        "./node_modules/@nestjs/testing/interfaces/override-by.interface.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/interfaces/override-by.interface.d.ts": [
-        "./node_modules/@nestjs/testing/interfaces/override-by-factory-options.interface.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.builder.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/test.d.ts": [
-        "./node_modules/@nestjs/common/interfaces/modules/module-metadata.interface.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.builder.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/testing-module.builder.d.ts": [
-        "./node_modules/@nestjs/common/index.d.ts",
-        "./node_modules/@nestjs/common/interfaces/index.d.ts",
-        "./node_modules/@nestjs/core/metadata-scanner.d.ts",
-        "./node_modules/@nestjs/testing/interfaces/index.d.ts",
-        "./node_modules/@nestjs/testing/testing-module.d.ts"
-      ],
-      "./node_modules/@nestjs/testing/testing-module.d.ts": [
-        "./node_modules/@nestjs/common/index.d.ts",
-        "./node_modules/@nestjs/common/interfaces/microservices/nest-microservice-options.interface.d.ts",
-        "./node_modules/@nestjs/core/application-config.d.ts",
-        "./node_modules/@nestjs/core/index.d.ts",
-        "./node_modules/@nestjs/core/injector/container.d.ts",
-        "./node_modules/@nestjs/core/injector/module.d.ts"
-      ],
-      "./node_modules/@types/babel__core/index.d.ts": [
-        "./node_modules/@babel/parser/typings/babel-parser.d.ts",
-        "./node_modules/@babel/types/lib/index.d.ts",
-        "./node_modules/@types/babel__generator/index.d.ts",
-        "./node_modules/@types/babel__template/index.d.ts",
-        "./node_modules/@types/babel__traverse/index.d.ts"
-      ],
-      "./node_modules/@types/babel__generator/index.d.ts": [
-        "./node_modules/@babel/types/lib/index.d.ts"
-      ],
-      "./node_modules/@types/babel__template/index.d.ts": [
-        "./node_modules/@babel/parser/typings/babel-parser.d.ts",
-        "./node_modules/@babel/types/lib/index.d.ts"
-      ],
-      "./node_modules/@types/babel__traverse/index.d.ts": [
-        "./node_modules/@babel/types/lib/index.d.ts"
-      ],
-      "./node_modules/@types/graceful-fs/index.d.ts": [
-        "./node_modules/@types/node/fs.d.ts",
-        "./node_modules/@types/node/index.d.ts"
-      ],
       "./node_modules/@types/ioredis/index.d.ts": [
         "./node_modules/@types/node/events.d.ts",
         "./node_modules/@types/node/index.d.ts",
         "./node_modules/@types/node/stream.d.ts",
         "./node_modules/@types/node/tls.d.ts"
-      ],
-      "./node_modules/@types/istanbul-lib-report/index.d.ts": [
-        "./node_modules/@types/istanbul-lib-coverage/index.d.ts"
-      ],
-      "./node_modules/@types/istanbul-reports/index.d.ts": [
-        "./node_modules/@types/istanbul-lib-report/index.d.ts"
       ],
       "./node_modules/@types/jest/index.d.ts": [
         "./node_modules/jest-diff/build/index.d.ts",
@@ -6586,9 +6341,6 @@
       ],
       "./node_modules/@types/node/zlib.d.ts": [
         "./node_modules/@types/node/stream.d.ts"
-      ],
-      "./node_modules/@types/yargs/index.d.ts": [
-        "./node_modules/@types/yargs-parser/index.d.ts"
       ],
       "./node_modules/bullmq/dist/classes/backoffs.d.ts": [
         "./node_modules/bullmq/dist/interfaces/backoff-options.d.ts"
@@ -7693,8 +7445,6 @@
       ]
     },
     "semanticDiagnosticsPerFile": [
-      "./node_modules/@babel/parser/typings/babel-parser.d.ts",
-      "./node_modules/@babel/types/lib/index.d.ts",
       "./node_modules/@nestjs/common/cache/cache.constants.d.ts",
       "./node_modules/@nestjs/common/cache/cache.module.d.ts",
       "./node_modules/@nestjs/common/cache/decorators/cache-key.decorator.d.ts",
@@ -7941,24 +7691,8 @@
       "./node_modules/@nestjs/microservices/server/server-tcp.d.ts",
       "./node_modules/@nestjs/microservices/server/server.d.ts",
       "./node_modules/@nestjs/microservices/tokens.d.ts",
-      "./node_modules/@nestjs/testing/index.d.ts",
-      "./node_modules/@nestjs/testing/interfaces/index.d.ts",
-      "./node_modules/@nestjs/testing/interfaces/override-by-factory-options.interface.d.ts",
-      "./node_modules/@nestjs/testing/interfaces/override-by.interface.d.ts",
-      "./node_modules/@nestjs/testing/test.d.ts",
-      "./node_modules/@nestjs/testing/testing-module.builder.d.ts",
-      "./node_modules/@nestjs/testing/testing-module.d.ts",
-      "./node_modules/@types/babel__core/index.d.ts",
-      "./node_modules/@types/babel__generator/index.d.ts",
-      "./node_modules/@types/babel__template/index.d.ts",
-      "./node_modules/@types/babel__traverse/index.d.ts",
-      "./node_modules/@types/graceful-fs/index.d.ts",
       "./node_modules/@types/ioredis/index.d.ts",
-      "./node_modules/@types/istanbul-lib-coverage/index.d.ts",
-      "./node_modules/@types/istanbul-lib-report/index.d.ts",
-      "./node_modules/@types/istanbul-reports/index.d.ts",
       "./node_modules/@types/jest/index.d.ts",
-      "./node_modules/@types/json5/index.d.ts",
       "./node_modules/@types/node/assert.d.ts",
       "./node_modules/@types/node/async_hooks.d.ts",
       "./node_modules/@types/node/base.d.ts",
@@ -8006,8 +7740,6 @@
       "./node_modules/@types/node/wasi.d.ts",
       "./node_modules/@types/node/worker_threads.d.ts",
       "./node_modules/@types/node/zlib.d.ts",
-      "./node_modules/@types/yargs-parser/index.d.ts",
-      "./node_modules/@types/yargs/index.d.ts",
       "./node_modules/axios/index.d.ts",
       "./node_modules/bullmq/dist/classes/backoffs.d.ts",
       "./node_modules/bullmq/dist/classes/child-pool.d.ts",
@@ -8247,283 +7979,6 @@
       "./node_modules/typescript/lib/lib.esnext.intl.d.ts",
       "./node_modules/typescript/lib/lib.scripthost.d.ts",
       "./node_modules/typescript/lib/lib.webworker.importscripts.d.ts",
-      [
-        "./src/bullmq/bullMq.spec.ts",
-        [
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 698,
-            "length": 4,
-            "messageText": "Cannot find name 'jest'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 754,
-            "length": 4,
-            "messageText": "Cannot find name 'jest'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 1326,
-            "length": 4,
-            "messageText": "Cannot find name 'jest'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 2157,
-            "length": 4,
-            "messageText": "Cannot find name 'jest'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3047,
-            "length": 8,
-            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3102,
-            "length": 10,
-            "messageText": "Cannot find name 'beforeEach'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3574,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3654,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3723,
-            "length": 8,
-            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3763,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3887,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3938,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 3995,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4052,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4106,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4180,
-            "length": 8,
-            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4221,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4327,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4379,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4430,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4505,
-            "length": 8,
-            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4540,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4838,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 4925,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 5217,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 5307,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 5591,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 5720,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 5807,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 6083,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 6165,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 6239,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 6567,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/bullmq/bullMq.spec.ts",
-            "start": 6801,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          }
-        ]
-      ],
       "./src/bullmq/bullMq.ts",
       "./src/constants.ts",
       "./src/decorators/constants.ts",
@@ -8562,75 +8017,6 @@
       "./src/interfaces/queues/queueOptions.interface.ts",
       "./src/operators/index.ts",
       "./src/operators/ofTtype.ts",
-      [
-        "./src/operators/ofType.spec.ts",
-        [
-          {
-            "file": "./src/operators/ofType.spec.ts",
-            "start": 106,
-            "length": 8,
-            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/operators/ofType.spec.ts",
-            "start": 310,
-            "length": 10,
-            "messageText": "Cannot find name 'beforeEach'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/operators/ofType.spec.ts",
-            "start": 494,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/operators/ofType.spec.ts",
-            "start": 677,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/operators/ofType.spec.ts",
-            "start": 716,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/operators/ofType.spec.ts",
-            "start": 996,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          },
-          {
-            "file": "./src/operators/ofType.spec.ts",
-            "start": 1046,
-            "length": 2,
-            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
-            "category": 1,
-            "code": 2582
-          },
-          {
-            "file": "./src/operators/ofType.spec.ts",
-            "start": 1331,
-            "length": 6,
-            "messageText": "Cannot find name 'expect'.",
-            "category": 1,
-            "code": 2304
-          }
-        ]
-      ],
       "./src/pubsub/pubSub.controller.ts",
       "./src/pubsub/pubsub.ts",
       "./src/queue.module.ts",
