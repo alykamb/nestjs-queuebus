@@ -2,8 +2,8 @@
   "program": {
     "fileInfos": {
       "./node_modules/typescript/lib/lib.es5.d.ts": {
-        "version": "9622e8bd7cc72a7dab819a8011ecbf81d443638082e5cb99ecf2e75ff56ffc9d",
-        "signature": "9622e8bd7cc72a7dab819a8011ecbf81d443638082e5cb99ecf2e75ff56ffc9d",
+        "version": "b3584bc5798ed422ce2516df360ffa9cf2d80b5eae852867db9ba3743145f895",
+        "signature": "b3584bc5798ed422ce2516df360ffa9cf2d80b5eae852867db9ba3743145f895",
         "affectsGlobalScope": true
       },
       "./node_modules/typescript/lib/lib.es2015.d.ts": {
@@ -27,8 +27,8 @@
         "affectsGlobalScope": false
       },
       "./node_modules/typescript/lib/lib.dom.d.ts": {
-        "version": "abadddbf660adeec27e9a56584907d52fa1d6e1e1dc49f639a921baa951b7a84",
-        "signature": "abadddbf660adeec27e9a56584907d52fa1d6e1e1dc49f639a921baa951b7a84",
+        "version": "feeeb1dd8a80fb76be42b0426e8f3ffa9bdef3c2f3c12c147e7660b1c5ba8b3b",
+        "signature": "feeeb1dd8a80fb76be42b0426e8f3ffa9bdef3c2f3c12c147e7660b1c5ba8b3b",
         "affectsGlobalScope": true
       },
       "./node_modules/typescript/lib/lib.dom.iterable.d.ts": {
@@ -72,13 +72,13 @@
         "affectsGlobalScope": true
       },
       "./node_modules/typescript/lib/lib.es2015.proxy.d.ts": {
-        "version": "7207e317a2cb07a177e7d963ab7b8c0e85dde7f9ddb50351f830239bf597569e",
-        "signature": "7207e317a2cb07a177e7d963ab7b8c0e85dde7f9ddb50351f830239bf597569e",
+        "version": "810627a82ac06fb5166da5ada4159c4ec11978dfbb0805fe804c86406dab8357",
+        "signature": "810627a82ac06fb5166da5ada4159c4ec11978dfbb0805fe804c86406dab8357",
         "affectsGlobalScope": true
       },
       "./node_modules/typescript/lib/lib.es2015.reflect.d.ts": {
-        "version": "cb609802a8698aa28b9c56331d4b53f590ca3c1c3a255350304ae3d06017779d",
-        "signature": "cb609802a8698aa28b9c56331d4b53f590ca3c1c3a255350304ae3d06017779d",
+        "version": "62d80405c46c3f4c527ee657ae9d43fda65a0bf582292429aea1e69144a522a6",
+        "signature": "62d80405c46c3f4c527ee657ae9d43fda65a0bf582292429aea1e69144a522a6",
         "affectsGlobalScope": true
       },
       "./node_modules/typescript/lib/lib.es2015.symbol.d.ts": {
@@ -152,8 +152,8 @@
         "affectsGlobalScope": true
       },
       "./node_modules/typescript/lib/lib.esnext.intl.d.ts": {
-        "version": "89bf2b7a601b73ea4311eda9c41f86a58994fec1bee3b87c4a14d68d9adcdcbd",
-        "signature": "89bf2b7a601b73ea4311eda9c41f86a58994fec1bee3b87c4a14d68d9adcdcbd",
+        "version": "506b80b9951c9381dc5f11897b31fca5e2a65731d96ddefa19687fbc26b23c6e",
+        "signature": "506b80b9951c9381dc5f11897b31fca5e2a65731d96ddefa19687fbc26b23c6e",
         "affectsGlobalScope": true
       },
       "./node_modules/typescript/lib/lib.es2017.full.d.ts": {
@@ -692,8 +692,8 @@
         "affectsGlobalScope": false
       },
       "./node_modules/@nestjs/common/interfaces/http/http-server.interface.d.ts": {
-        "version": "32a694e4eef5d82d525428d7f4b56f07f0f5107fffd218696dac92cd26128e13",
-        "signature": "32a694e4eef5d82d525428d7f4b56f07f0f5107fffd218696dac92cd26128e13",
+        "version": "de2e39833685a4746ad290c790f8e357edd5fb84945a3a6785915b7658089750",
+        "signature": "de2e39833685a4746ad290c790f8e357edd5fb84945a3a6785915b7658089750",
         "affectsGlobalScope": false
       },
       "./node_modules/@nestjs/common/interfaces/http/message-event.interface.d.ts": {
@@ -912,8 +912,8 @@
         "affectsGlobalScope": false
       },
       "./node_modules/@nestjs/common/decorators/http/route-params.decorator.d.ts": {
-        "version": "eb1c9abbde9020ba44cfcc500701432364293b8f3dd0898a2531d7c84592eab7",
-        "signature": "eb1c9abbde9020ba44cfcc500701432364293b8f3dd0898a2531d7c84592eab7",
+        "version": "323aa685b5d4087d8601b00bb0b7505b02def2a468825fff75b632968952c402",
+        "signature": "323aa685b5d4087d8601b00bb0b7505b02def2a468825fff75b632968952c402",
         "affectsGlobalScope": false
       },
       "./node_modules/@nestjs/common/decorators/http/http-code.decorator.d.ts": {
@@ -2017,8 +2017,8 @@
         "affectsGlobalScope": false
       },
       "./node_modules/bullmq/dist/interfaces/jobs-options.d.ts": {
-        "version": "ec572fe4de18dc3ca5b6d3014a787277d3924a7c311dc5948db1c3dd214b96d6",
-        "signature": "ec572fe4de18dc3ca5b6d3014a787277d3924a7c311dc5948db1c3dd214b96d6",
+        "version": "00c748752d3638ccc00ea7acedb3fb1f3f71a35f89c3f2b0c5225a0c4f349336",
+        "signature": "00c748752d3638ccc00ea7acedb3fb1f3f71a35f89c3f2b0c5225a0c4f349336",
         "affectsGlobalScope": false
       },
       "./node_modules/@types/ioredis/index.d.ts": {
@@ -2032,8 +2032,8 @@
         "affectsGlobalScope": false
       },
       "./node_modules/bullmq/dist/interfaces/queue-options.d.ts": {
-        "version": "ce45242b47d6200379bc8ad8d9edc454e2a73bc599fd81d387c1511ca9f84f83",
-        "signature": "ce45242b47d6200379bc8ad8d9edc454e2a73bc599fd81d387c1511ca9f84f83",
+        "version": "f45dabc0bc8ebdf4d794405ca362ecd9bdd127b12379c910388bc83adb7051f7",
+        "signature": "f45dabc0bc8ebdf4d794405ca362ecd9bdd127b12379c910388bc83adb7051f7",
         "affectsGlobalScope": false
       },
       "./node_modules/bullmq/dist/interfaces/queue-scheduler-options.d.ts": {
@@ -4340,7 +4340,6 @@
         "./node_modules/bullmq/dist/interfaces/repeat-options.d.ts"
       ],
       "./node_modules/bullmq/dist/interfaces/queue-options.d.ts": [
-        "./node_modules/@types/ioredis/index.d.ts",
         "./node_modules/bullmq/dist/interfaces/index.d.ts",
         "./node_modules/bullmq/dist/interfaces/redis-options.d.ts"
       ],
@@ -6695,7 +6694,6 @@
         "./node_modules/bullmq/dist/interfaces/repeat-options.d.ts"
       ],
       "./node_modules/bullmq/dist/interfaces/queue-options.d.ts": [
-        "./node_modules/@types/ioredis/index.d.ts",
         "./node_modules/bullmq/dist/interfaces/index.d.ts",
         "./node_modules/bullmq/dist/interfaces/redis-options.d.ts"
       ],
@@ -7603,6 +7601,7 @@
         "./src/types/hooks.type.ts"
       ],
       "./src/interfaces/queueConfigService.interface.ts": [
+        "./node_modules/@nestjs/microservices/index.d.ts",
         "./node_modules/bullmq/dist/index.d.ts",
         "./src/index.ts"
       ],
@@ -8248,7 +8247,283 @@
       "./node_modules/typescript/lib/lib.esnext.intl.d.ts",
       "./node_modules/typescript/lib/lib.scripthost.d.ts",
       "./node_modules/typescript/lib/lib.webworker.importscripts.d.ts",
-      "./src/bullmq/bullMq.spec.ts",
+      [
+        "./src/bullmq/bullMq.spec.ts",
+        [
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 698,
+            "length": 4,
+            "messageText": "Cannot find name 'jest'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 754,
+            "length": 4,
+            "messageText": "Cannot find name 'jest'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 1326,
+            "length": 4,
+            "messageText": "Cannot find name 'jest'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 2157,
+            "length": 4,
+            "messageText": "Cannot find name 'jest'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3047,
+            "length": 8,
+            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3102,
+            "length": 10,
+            "messageText": "Cannot find name 'beforeEach'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3574,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3654,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3723,
+            "length": 8,
+            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3763,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3887,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3938,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 3995,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4052,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4106,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4180,
+            "length": 8,
+            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4221,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4327,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4379,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4430,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4505,
+            "length": 8,
+            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4540,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4838,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 4925,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 5217,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 5307,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 5591,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 5720,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 5807,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 6083,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 6165,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 6239,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 6567,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/bullmq/bullMq.spec.ts",
+            "start": 6801,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          }
+        ]
+      ],
       "./src/bullmq/bullMq.ts",
       "./src/constants.ts",
       "./src/decorators/constants.ts",
@@ -8287,7 +8562,75 @@
       "./src/interfaces/queues/queueOptions.interface.ts",
       "./src/operators/index.ts",
       "./src/operators/ofTtype.ts",
-      "./src/operators/ofType.spec.ts",
+      [
+        "./src/operators/ofType.spec.ts",
+        [
+          {
+            "file": "./src/operators/ofType.spec.ts",
+            "start": 106,
+            "length": 8,
+            "messageText": "Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/operators/ofType.spec.ts",
+            "start": 310,
+            "length": 10,
+            "messageText": "Cannot find name 'beforeEach'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/operators/ofType.spec.ts",
+            "start": 494,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/operators/ofType.spec.ts",
+            "start": 677,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/operators/ofType.spec.ts",
+            "start": 716,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/operators/ofType.spec.ts",
+            "start": 996,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          },
+          {
+            "file": "./src/operators/ofType.spec.ts",
+            "start": 1046,
+            "length": 2,
+            "messageText": "Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.",
+            "category": 1,
+            "code": 2582
+          },
+          {
+            "file": "./src/operators/ofType.spec.ts",
+            "start": 1331,
+            "length": 6,
+            "messageText": "Cannot find name 'expect'.",
+            "category": 1,
+            "code": 2304
+          }
+        ]
+      ],
       "./src/pubsub/pubSub.controller.ts",
       "./src/pubsub/pubsub.ts",
       "./src/queue.module.ts",
@@ -8301,5 +8644,5 @@
       "./src/types/sagaDecorator.type.ts"
     ]
   },
-  "version": "4.1.3"
+  "version": "4.2.3"
 }
