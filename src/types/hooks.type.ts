@@ -1,4 +1,7 @@
+import { Job } from 'bullmq'
 import { Observable } from 'rxjs'
-export type Hook = (arg?: any, handler?: any, cb?: (d: any) =>  any | Observable<any> | Promise<any>
+
+export type HookContext = {data?: any, handler: any, name: string}
+export type Hook = (context: HookContext, cb?: (d: any) =>  any | Observable<any> | Promise<any>
 
 ) => any | Observable<any> | Promise<any>

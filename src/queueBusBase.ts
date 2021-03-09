@@ -20,7 +20,7 @@ import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface'
 import { from, Observable, of } from 'rxjs'
 import { mergeMap, mergeScan, scan, startWith } from 'rxjs/operators'
-import { Hook } from './types/hooks.type'
+import { Hook, HookContext } from './types/hooks.type'
 import { asObservable } from './helpers/asObservable'
 
 export type HandlerType = Type<IQueueHandler<IImpl>>
@@ -128,24 +128,24 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
 
         // return asObservable(handler.execute(data))
         return of(data).pipe(
-            mergeMap(this.runHooks(hooks.before, handler)),
+            mergeMap(this.runHooks(hooks.before, {name, handler})),
             mergeMap((data) => 
                 hooks.interceptor.length 
-                ? this.runHooks(hooks.interceptor, handler, (d => asObservable(handler.execute(d))))(data)
+                ? this.runHooks(hooks.interceptor, {name, handler, data}, (d => asObservable(handler.execute(d))))(data)
                 : asObservable(handler.execute(data))
             ),
-            mergeMap(this.runHooks(hooks.after, handler)),
+            mergeMap(this.runHooks(hooks.after, {name, handler})),
         )
     }
 
     protected runHooks(
         hooks: Hook[],
-        handler, 
+        context: HookContext,
         cb?: (d: any) =>  any | Observable<any> | Promise<any>,
     ): (data: any) => Observable<any> {
         return (data: any): Observable<any> =>
             from(hooks).pipe(
-                mergeScan((value, func) => asObservable(func(value, handler, cb)), data),
+                mergeScan((value, func) => asObservable(func({...context, data:value}, cb)), data),
             )
     }
 
