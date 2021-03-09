@@ -67,6 +67,7 @@ module.exports = {
                 accessorPairPositioning: 'getThenSet',
             },
         ],
+        "simple-import-sort/imports": "error",
     },
     parserOptions: {
         parser: '@typescript-eslint/parser',

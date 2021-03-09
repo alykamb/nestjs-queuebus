@@ -19,7 +19,7 @@ import { QUEUE_CONFIG_SERVICE } from './constants'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface'
 import { from, Observable, of } from 'rxjs'
-import { mergeMap, mergeScan } from 'rxjs/operators'
+import { mergeMap, mergeScan, scan, startWith } from 'rxjs/operators'
 import { Hook } from './types/hooks.type'
 import { asObservable } from './helpers/asObservable'
 
@@ -124,30 +124,40 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
             eventBus?: EventBusBase
         } = this.handlers.get(name)
 
-        const hooks = this.getHooks(handler)
+        const hooks = this.getHooks()
 
-        return asObservable(handler.execute(data))
-        // return of(data).pipe(
-        //     mergeMap(this.runHooks(hooks.before)),
-        //     mergeMap((data) =>
-        //         this.runHooks(hooks.interceptor, data)((d: any) =>  asObservable(handler.execute(d))),
-        //     ),
-        //     mergeMap(this.runHooks(hooks.after)),
-        // )
+        console.log(hooks)
+
+        // return asObservable(handler.execute(data))
+        return of(data).pipe(
+            mergeMap(this.runHooks(hooks.before, handler)),
+            mergeMap((data) => 
+                hooks.interceptor.length 
+                ? this.runHooks(hooks.interceptor, handler, (d => asObservable(handler.execute(d))))(data)
+                : asObservable(handler.execute(data))
+            ),
+            mergeMap(this.runHooks(hooks.after, handler)),
+        )
     }
 
-    protected runHooks(hooks: Hook[], initialData?: any): (data: any) => Observable<any> {
+    protected runHooks(
+        hooks: Hook[],
+        handler, 
+        cb?: (d: any) =>  any | Observable<any> | Promise<any>,
+    ): (data: any) => Observable<any> {
         return (data: any): Observable<any> =>
             from(hooks).pipe(
-                mergeScan((value, func) => asObservable(func(value)), data || initialData),
+                mergeScan((value, func) => asObservable(func(value, handler, cb)), data),
             )
     }
 
-    protected getHooks(handler: IQueueHandler<ImplBase, any>): IJobExecutionInterceptors {
+    protected getHooks(): IJobExecutionInterceptors {
+        const constructor = Reflect.getPrototypeOf(this).constructor
+        const map = (property: string) => this.queueConfig[property]
         return {
-            before: Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, handler) || [],
-            after: Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, handler) || [],
-            interceptor: Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, handler) || [],
+            before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || []).map(map),
+            after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || []).map(map),
+            interceptor: (Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []).map(map),
         }
     }
 
