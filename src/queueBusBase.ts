@@ -34,6 +34,8 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     protected metadataName = QUEUE_HANDLER_METADATA
     protected name = ''
 
+    protected hooks: IJobExecutionInterceptors
+
     constructor(
         protected readonly moduleRef: ModuleRef,
         protected bullMq: BullMq,
@@ -76,13 +78,26 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         data: T,
         options: IExecutionOptions = {},
     ): Observable<Ret> {
-        const { moveToQueue = false, module = this.name, jobOptions } = options
+        const { moveToQueue = false, module = this.queueConfig.name, jobOptions } = options
 
-        if (module === this.name && this.handlers.has(name) && !moveToQueue) {
-            return this.executeHandler(name, data)
+        const run = (name: string, d: T) => {
+            if (module === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
+                return this.executeHandler(name, d)
+            }
+            return this.bullMq.addJob(module + this.name, name, d, jobOptions)
         }
 
-        return this.bullMq.addJob(module + this.name, name, data, jobOptions)
+        const hooks = this.getHooks()
+
+        return of(data).pipe(
+            mergeMap(this.runHooks(hooks.before, {name, module, bus: this})),
+            mergeMap((data) => 
+                hooks.interceptor.length 
+                ? this.runHooks(hooks.interceptor, {name, module, data, bus: this}, (d => asObservable(run(name, d))))(data)
+                : asObservable(run(name, data))
+            ),
+            mergeMap(this.runHooks(hooks.after, {name, module, bus: this})),
+        )
     }
 
     /**
@@ -124,18 +139,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
             eventBus?: EventBusBase
         } = this.handlers.get(name)
 
-        const hooks = this.getHooks()
-
-        // return asObservable(handler.execute(data))
-        return of(data).pipe(
-            mergeMap(this.runHooks(hooks.before, {name, handler})),
-            mergeMap((data) => 
-                hooks.interceptor.length 
-                ? this.runHooks(hooks.interceptor, {name, handler, data}, (d => asObservable(handler.execute(d))))(data)
-                : asObservable(handler.execute(data))
-            ),
-            mergeMap(this.runHooks(hooks.after, {name, handler})),
-        )
+        return asObservable(handler.execute(data))       
     }
 
     protected runHooks(
@@ -150,13 +154,17 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     }
 
     protected getHooks(): IJobExecutionInterceptors {
-        const constructor = Reflect.getPrototypeOf(this).constructor
-        const map = (property: string) => this.queueConfig[property]
-        return {
-            before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || []).map(map),
-            after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || []).map(map),
-            interceptor: (Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []).map(map),
+        if(!this.hooks) {
+            const constructor = Reflect.getPrototypeOf(this).constructor
+            const map = (property: string) => this.queueConfig[property]
+            this.hooks =  {
+                before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || []).map(map),
+                after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || []).map(map),
+                interceptor: (Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []).map(map),
+            }
         }
+
+        return this.hooks
     }
 
     /**

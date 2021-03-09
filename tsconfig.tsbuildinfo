@@ -2702,8 +2702,8 @@
         "affectsGlobalScope": false
       },
       "./src/types/hooks.type.ts": {
-        "version": "619ea30fa889b064cf1bedae38c91240bc36afa9c610fcf3b917de53da21b688",
-        "signature": "9ac847f7076d179271a3a9648e140243752bb2376172a29ee650337844eef6ca",
+        "version": "26629d0f12259d7273ba99d6626f65f68deb5991dc5c957cc0bf50a7f68cd71a",
+        "signature": "87f5d3cedee2087313b8c8199bb2fed6df3f62e3174df0b9987af45979c6eb52",
         "affectsGlobalScope": false
       },
       "./src/interfaces/jobExecutionInterceptors.interface.ts": {
@@ -2722,8 +2722,8 @@
         "affectsGlobalScope": false
       },
       "./src/queueBusBase.ts": {
-        "version": "5a8fab30c65967348e63f5e433ba02060f69d67b11dd2ce6bad41c151131d01a",
-        "signature": "49e62b43679b4e64b434ba2561a956564a735c26cc7e864acf27e8a2a6a9655f",
+        "version": "e1bc9584d36edffd8215ea8bd3d3f779b4623ce6fcf83e620190107422de5229",
+        "signature": "dc8c3f58b4fd11809a9cca8c04de1643b66441346f6c2cdc8de542132e2e09a4",
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/queueOptions.interface.ts": {
@@ -5316,7 +5316,8 @@
       ],
       "./src/types/hooks.type.ts": [
         "./node_modules/bullmq/dist/index.d.ts",
-        "./node_modules/rxjs/index.d.ts"
+        "./node_modules/rxjs/index.d.ts",
+        "./src/queueBusBase.ts"
       ],
       "./src/types/queueHandlerDecorator.type.ts": [
         "./src/interfaces/queues/queue.interface.ts"
@@ -7624,7 +7625,8 @@
         "./src/interfaces/index.ts"
       ],
       "./src/types/hooks.type.ts": [
-        "./node_modules/rxjs/index.d.ts"
+        "./node_modules/rxjs/index.d.ts",
+        "./src/queueBusBase.ts"
       ],
       "./src/types/queueHandlerDecorator.type.ts": [
         "./src/interfaces/queues/queue.interface.ts"
