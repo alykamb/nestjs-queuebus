@@ -2722,7 +2722,7 @@
         "affectsGlobalScope": false
       },
       "./src/queueBusBase.ts": {
-        "version": "919f28b1b42d6b4f79fe671f3302856dd3e253835871b9ecbfff54468839fcfd",
+        "version": "83e1536667c0c111356b5bf474fbe436baea0b1579a0498a11520d469681aa96",
         "signature": "82f7cf608b41b0a1038cdf26d330cc3c334387f94b2872278e2861b06bbb91a7",
         "affectsGlobalScope": false
       },

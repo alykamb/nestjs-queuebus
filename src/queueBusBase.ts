@@ -126,8 +126,6 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
 
         const hooks = this.getHooks()
 
-        console.log(hooks)
-
         // return asObservable(handler.execute(data))
         return of(data).pipe(
             mergeMap(this.runHooks(hooks.before, handler)),
