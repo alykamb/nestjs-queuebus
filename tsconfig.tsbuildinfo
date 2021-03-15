@@ -2747,8 +2747,8 @@
         "affectsGlobalScope": false
       },
       "./src/queue.module.ts": {
-        "version": "5c0b0d2acbbdd64caed87358b91049656a59f5a0cad2f300a5d7e8d58b52f6c7",
-        "signature": "73230de46f17a31676cdcdb642b8d828f06bc8a03eb92a3bec089dd17cc9ffa1",
+        "version": "0416ce5eb922839365d97b87e15ba16de59677f459da879d7bb1bb24be172734",
+        "signature": "1cf11870752a51ae774baff310a55b4f6b7dadd118d6dfb2e6a5a1cfb65d2317",
         "affectsGlobalScope": false
       },
       "./src/types/queueHandlerDecorator.type.ts": {

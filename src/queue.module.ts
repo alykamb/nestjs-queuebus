@@ -8,6 +8,7 @@ import {
     Provider,
     Module,
     Type,
+    ModuleMetadata,
 } from '@nestjs/common'
 import { PubSubController } from './pubsub/pubSub.controller'
 import { RedisPubSub } from './pubsub/pubsub'
@@ -31,7 +32,8 @@ export class QueueModule implements OnApplicationBootstrap {
             new (...args: any[]): IQueueConfigService
         },
         queues: Array<Type<QueueBusBase> | Type<EventBusBase>>,
-        global = false
+        global = false,
+        moduleOptions?: ModuleMetadata,
     ): DynamicModule {
         const queueConfigService: Provider<IQueueConfigService> = {
             provide: QUEUE_CONFIG_SERVICE,
@@ -41,9 +43,10 @@ export class QueueModule implements OnApplicationBootstrap {
         return {
             global,
             module: QueueModule,
-            controllers: [PubSubController],
-            providers: [BullMq, ExplorerService, RedisPubSub, queueConfigService, ...queues],
-            exports: [...queues],
+            controllers: [PubSubController, ...(moduleOptions?.controllers || []),],
+            providers: [BullMq, ExplorerService, RedisPubSub, queueConfigService, ...queues, ...(moduleOptions?.providers || []),],
+            exports: [...queues, ...(moduleOptions?.exports || []),],
+            imports: [...(moduleOptions?.imports || []),]
         }
     }
     public onApplicationBootstrap(): void {
