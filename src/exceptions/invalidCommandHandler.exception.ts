@@ -3,6 +3,9 @@
  */
 export class InvalidQueueHandlerException extends Error {
     constructor(command?: string) {
-        super(`Invalid handler exception for impl ${command} (missing @QueueHandler() decorator?)`)
+        super(`Invalid handler exception for impl ${command}
+            * missing @QueueHandler() decorator? 
+            * or missing target module on bus.execute?
+        `)
     }
 }

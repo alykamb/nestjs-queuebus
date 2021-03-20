@@ -22,6 +22,7 @@ import { from, Observable, of } from 'rxjs'
 import { mergeMap, mergeScan, scan, startWith } from 'rxjs/operators'
 import { Hook, HookContext } from './types/hooks.type'
 import { asObservable } from './helpers/asObservable'
+import { Callback } from './types/callback'
 
 export type HandlerType = Type<IQueueHandler<IImpl>>
 
@@ -44,7 +45,6 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         this.name =
             Reflect.getMetadata(NAME_QUEUE_METADATA, Object.getPrototypeOf(this).constructor) || ''
 
-        this.bullMq.createQueue(this.queueConfig.name + this.name)
         this.bullMq.createWorker(this.queueConfig.name + this.name, (job: Job) =>
             this.handleJob(job),
         )
@@ -80,11 +80,14 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     ): Observable<Ret> {
         const { moveToQueue = false, module = this.queueConfig.name, jobOptions } = options
 
-        const run = (name: string, d: T) => {
+        const run = (name: string, d: T): Promise<Ret> => {
             if (module === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
                 return this.executeHandler(name, d)
             }
-            return this.bullMq.addJob(module + this.name, name, d, jobOptions)
+            return new Promise((resolve, reject) => {
+                
+                this.bullMq.addJob(module + this.name, name, d, cb, jobOptions)
+            })
         }
 
         const hooks = this.getHooks()
@@ -127,10 +130,10 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
      * @param job - trabalho do bullMq
      */
     public handleJob(job: Job): Promise<any> {
-        return this.executeHandler(job.name, job.data).toPromise()
+        return this.executeHandler(job.name, job.data)
     }
 
-    protected executeHandler(name: string, data: any): Observable<any> {
+    protected executeHandler(name: string, data: any): Promise<any> {
         if (!this.handlers.has(name)) {
             throw new InvalidQueueHandlerException(name)
         }
@@ -139,13 +142,21 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
             eventBus?: EventBusBase
         } = this.handlers.get(name)
 
-        return asObservable(handler.execute(data))       
+        try {
+            const result = handler.execute(data)
+            if(!(result instanceof Promise)) {
+                return Promise.resolve(result)
+            }
+            return result
+        } catch(err) {
+            return Promise.reject(err)
+        }
     }
 
     protected runHooks(
         hooks: Hook[],
         context: HookContext,
-        cb?: (d: any) =>  any | Observable<any> | Promise<any>,
+        cb?: (d: any) =>  Promise<any>,
     ): (data: any) => Observable<any> {
         return (data: any): Observable<any> =>
             from(hooks).pipe(

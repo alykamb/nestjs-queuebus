@@ -1,9 +1,7 @@
 import { IEvent } from './event.interface'
-import { JobEventType } from '../../constants'
 
 export interface JobEvent {
     jobId: string
-    event: JobEventType
 }
 export interface FailedEvent extends JobEvent {
     failedReason: any

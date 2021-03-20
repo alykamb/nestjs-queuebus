@@ -13,7 +13,7 @@ import {
 import { PubSubController } from './pubsub/pubSub.controller'
 import { RedisPubSub } from './pubsub/pubsub'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
-import { QUEUE_CONFIG_SERVICE } from './constants'
+import { QUEUE_CONFIG_SERVICE, MESSAGE_BROOKER, MessageBrooker } from './constants'
 import { ModuleRef } from '@nestjs/core'
 import { QueueBusBase } from '.'
 import { EventBusBase } from './eventBusBase'
@@ -44,9 +44,24 @@ export class QueueModule implements OnApplicationBootstrap {
             global,
             module: QueueModule,
             controllers: [PubSubController, ...(moduleOptions?.controllers || []),],
-            providers: [BullMq, ExplorerService, RedisPubSub, queueConfigService, ...queues, ...(moduleOptions?.providers || []),],
+            providers: [this.messageBrookerProvider, ExplorerService, RedisPubSub, queueConfigService, ...queues, ...(moduleOptions?.providers || []),],
             exports: [...queues, ...(moduleOptions?.exports || []),],
             imports: [...(moduleOptions?.imports || []),]
+        }
+    }
+
+    private static get messageBrookerProvider(): Provider {
+        return {
+            provide: MESSAGE_BROOKER,
+            useFactory: (queueConfig: IQueueConfigService) => {
+                if(queueConfig.messageBrooker === MessageBrooker.bullMQ) {
+                    if(!require('bullmq')) {
+                        throw new Error('bullMq')
+                    }
+                    return new BullMq(queueConfig)
+                }
+            },
+            inject: [QUEUE_CONFIG_SERVICE]
         }
     }
     public onApplicationBootstrap(): void {
