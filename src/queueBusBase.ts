@@ -15,16 +15,14 @@ import {
     NAME_QUEUE_METADATA,
     QUEUE_HANDLER_METADATA,
 } from './decorators/constants'
-import { QUEUE_CONFIG_SERVICE } from './constants'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface'
-import { from, Observable, of } from 'rxjs'
-import { mergeMap, mergeScan, scan, startWith } from 'rxjs/operators'
 import { Hook, HookContext } from './types/hooks.type'
-import { asObservable } from './helpers/asObservable'
-import { Callback } from './types/callback'
 
 export type HandlerType = Type<IQueueHandler<IImpl>>
+
+const compose = (...funcs: Array<((...args: any[]) => any | Promise<any>)  | false | undefined | null>) => (data: Promise<any> | any): Promise<any> => funcs.reduce(async(value, func) => (func && typeof func === 'function' && func(await value)) || value, data)
 
 /**
  * CqrsBus registra handlers para implementações e os executa quando chamado
@@ -39,7 +37,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
 
     constructor(
         protected readonly moduleRef: ModuleRef,
-        protected bullMq: BullMq,
+        @Inject(MESSAGE_BROOKER) protected readonly bullMq: BullMq,
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
     ) {
         this.name =
@@ -60,7 +58,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     public execute<Ret = any, T extends ImplBase = ImplBase>(
         impl: T,
         options: IExecutionOptions = {},
-    ): Observable<Ret> {
+    ): Promise<Ret> {
         const implName = this.getConstructorName(impl as any)
         return this.executeByName(implName, impl, options)
     }
@@ -77,30 +75,34 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         name: string,
         data: T,
         options: IExecutionOptions = {},
-    ): Observable<Ret> {
+    ): Promise<Ret> {
         const { moveToQueue = false, module = this.queueConfig.name, jobOptions } = options
 
         const run = (name: string, d: T): Promise<Ret> => {
             if (module === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
                 return this.executeHandler(name, d)
-            }
-            return new Promise((resolve, reject) => {
                 
-                this.bullMq.addJob(module + this.name, name, d, cb, jobOptions)
+            }
+            return new Promise((resolve, reject) => {                
+                this.bullMq.addJob(module + this.name, name, d, (err, data) => {
+                    if(err) {
+                        return reject(err)
+                    } 
+                    return resolve(data)
+                }, jobOptions)
             })
         }
 
+        
         const hooks = this.getHooks()
 
-        return of(data).pipe(
-            mergeMap(this.runHooks(hooks.before, {name, module, bus: this})),
-            mergeMap((data) => 
-                hooks.interceptor.length 
-                ? this.runHooks(hooks.interceptor, {name, module, data, bus: this}, (d => asObservable(run(name, d))))(data)
-                : asObservable(run(name, data))
-            ),
-            mergeMap(this.runHooks(hooks.after, {name, module, bus: this})),
-        )
+        return compose(
+            hooks.before && this.runHooks(hooks.before, {name, module, bus: this}),
+            hooks.interceptor.length 
+                ? this.runHooks(hooks.interceptor, {name, module, data, bus: this}, (d => run(name, d)))
+                : (data) => run(name, data),
+            hooks.after && this.runHooks(hooks.after, {name, module, bus: this}),
+        )(data)
     }
 
     /**
@@ -144,6 +146,9 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
 
         try {
             const result = handler.execute(data)
+            if(result?.toPromise) {
+                return result.toPromise()
+            }
             if(!(result instanceof Promise)) {
                 return Promise.resolve(result)
             }
@@ -157,21 +162,19 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         hooks: Hook[],
         context: HookContext,
         cb?: (d: any) =>  Promise<any>,
-    ): (data: any) => Observable<any> {
-        return (data: any): Observable<any> =>
-            from(hooks).pipe(
-                mergeScan((value, func) => asObservable(func({...context, data:value}, cb)), data),
-            )
+    ): (data: any) => Promise<any> {
+        return (data: any): Promise<any> => hooks.reduce(async(value, func) => func({...context, data: await value}, cb), data)
+           
     }
 
     protected getHooks(): IJobExecutionInterceptors {
         if(!this.hooks) {
             const constructor = Reflect.getPrototypeOf(this).constructor
-            const map = (property: string) => this.queueConfig[property]
+            const map = (property: {key: string, order: number}) => this.queueConfig[property.key]
             this.hooks =  {
-                before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || []).map(map),
-                after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || []).map(map),
-                interceptor: (Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []).map(map),
+                before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || []).sort((p1:  {key: string, order: number}, p2:  {key: string, order: number}) => p1.order - p2.order).map(map),
+                after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || []).sort((p1:  {key: string, order: number}, p2:  {key: string, order: number}) => p1.order - p2.order).map(map),
+                interceptor: (Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []).sort((p1:  {key: string, order: number}, p2:  {key: string, order: number}) => p1.order - p2.order).map(map),
             }
         }
 

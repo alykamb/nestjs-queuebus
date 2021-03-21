@@ -162,8 +162,8 @@
         "affectsGlobalScope": false
       },
       "./src/constants.ts": {
-        "version": "f4d60674a0ea4c30c26ac0c6d02e8826509171f5a4444b95e1f59dfb16c2d710",
-        "signature": "98ec2925fff3fe006de6d59210d2d453cc717bb79b76225c35670139aea21dc4",
+        "version": "002f4bd3ec050c20fa5b0787f72d37e2eab57734b6d5d6f4e6ad46526be72eae",
+        "signature": "9d6993c4263fea215a068d44ac5a8271f6b3aea9b8c96f03811e9a4dceb27352",
         "affectsGlobalScope": false
       },
       "./src/decorators/constants.ts": {
@@ -187,8 +187,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/events/jobEvent.interface.ts": {
-        "version": "32664c32fb38df39e50995e48f2442009a7f4f7560aa5a55df7b2dfb140d5a88",
-        "signature": "4daa4ab8a397ba4a609fe8e06e36a0eba9f3f6af827083812b9a6850806d664d",
+        "version": "e8b316ff385f4480b4898962e6df61809cd6d97730dd6ca7386c65cec49218a3",
+        "signature": "5c0b4ef67886581a0146e2c1eed80b34879896eae0d974d1cdf9658ea1ddd7fb",
         "affectsGlobalScope": false
       },
       "./src/interfaces/events/eventPublisher.interface.ts": {
@@ -2672,13 +2672,18 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/queueConfigService.interface.ts": {
-        "version": "773b03d42488a72daede7cc77917c4353a0f473e73f9d489ca525956b730bd59",
-        "signature": "ed5d1aa50d396e168aa0fed765ecab984179449044e19e474dd4d1985aa9af87",
+        "version": "160e1d5e6df9403677ad60643d8abfebf305453fe70787c2487e85f64e6d1950",
+        "signature": "4cd88c5cec3c88e0ca2fc0160dfd3968a4436b30c5100ecd54a0648ca44cc5c3",
+        "affectsGlobalScope": false
+      },
+      "./src/types/callback.ts": {
+        "version": "8314beb216bf5568cbd0477ded2203a6805faab8990bb6a6c5a10c334a1738c1",
+        "signature": "e1f5aee5b9be43921ea5102215abf78f0333e304cb2af73dd1b95d44973c470e",
         "affectsGlobalScope": false
       },
       "./src/bullmq/bullMq.ts": {
-        "version": "87e5b85d1b12d65b537a8c8131ce7c1febb18966faccca514948a8ed383977b8",
-        "signature": "46e39b519e340059b1260281a146ef43d02986b67f8319f583865ac99316a088",
+        "version": "084a64a6d0de5125f8108c4c9dc2c06ebd4a5ed332485e5bc531ddc6c95e2d0c",
+        "signature": "593a7ae2b5786d6b969b191c368acadfb7439e9a704d0baea244ee610b091bc9",
         "affectsGlobalScope": false
       },
       "./src/interfaces/executionOptions.interface.ts": {
@@ -2687,8 +2692,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/queueBus.interface.ts": {
-        "version": "8dd3966f5e5312d5d03c591d19ee05f7d0e06aa81a5165eeccdea60af25accbb",
-        "signature": "edce83e042bc388a0d99dafe274eeaac55ee8eba2b876ef397dcdb9d706f249e",
+        "version": "a2c53cb6aae73602d38e1ca6f4d0c4d88a965ca840be15950155e8370d68cd54",
+        "signature": "f8180f964634812f5d4fbb69f234e0017636f9c7655e2dc5949debf98d4b7896",
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/queueHandler.interface.ts": {
@@ -2711,19 +2716,9 @@
         "signature": "f469bd2ab9c9271aab38a5b0a8e3aca2eb77827f216858e0c9af223a5a869cf2",
         "affectsGlobalScope": false
       },
-      "./node_modules/@nestjs/common/utils/shared.utils.d.ts": {
-        "version": "4f8825a934a1273cb531a13ea9308435257f77832312d5dc343d48b2e89c5f1d",
-        "signature": "4f8825a934a1273cb531a13ea9308435257f77832312d5dc343d48b2e89c5f1d",
-        "affectsGlobalScope": false
-      },
-      "./src/helpers/asObservable.ts": {
-        "version": "41a528419d23a83ca5ec54cd1125a181cab0d01285e9c84fae00982a79bcdf97",
-        "signature": "3418ede3490eaf7c97dc6e7b82cf037d405b9e1f9a81e658424334ab41218d3d",
-        "affectsGlobalScope": false
-      },
       "./src/queueBusBase.ts": {
-        "version": "e1bc9584d36edffd8215ea8bd3d3f779b4623ce6fcf83e620190107422de5229",
-        "signature": "dc8c3f58b4fd11809a9cca8c04de1643b66441346f6c2cdc8de542132e2e09a4",
+        "version": "e073ef6f4127f2a2f467f20db6f759b9f6b3abefa4c894e8a16d03298bfc98d9",
+        "signature": "d521d0392622ff3e5ad179e1fe0677d5c432b26f7ff30170926860f808722838",
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/queueOptions.interface.ts": {
@@ -2747,8 +2742,8 @@
         "affectsGlobalScope": false
       },
       "./src/queue.module.ts": {
-        "version": "0416ce5eb922839365d97b87e15ba16de59677f459da879d7bb1bb24be172734",
-        "signature": "1cf11870752a51ae774baff310a55b4f6b7dadd118d6dfb2e6a5a1cfb65d2317",
+        "version": "27b1d36f3206427b7d4327303e3917a686344725d0b698da9cca1b05943ed64d",
+        "signature": "253863c3b57130f83517f5c45b7b66ca48e05b0265f9cdcbafb21ec1b9f04a46",
         "affectsGlobalScope": false
       },
       "./src/types/queueHandlerDecorator.type.ts": {
@@ -2802,23 +2797,23 @@
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/execution.decorator.ts": {
-        "version": "b10e78dbcf4298bf89b285c22c473c2fc31ac257226423257816aed536aaeaa2",
-        "signature": "f531d822a969531c76fa67788aed2cfe50dfb6ae6e90ad7a58af9fe2ecf87692",
+        "version": "9a2ff5fbc51c0a3dc7ac4165e27ec459c6d93302ac3eb0a4f0bcaf68b767bf40",
+        "signature": "679a2b2ccd0eda0d8a9b871629ae0db1cdc97699b61e916ff700c7e8faaf53bc",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/afterExecution.decorator.ts": {
         "version": "473559c142b94683d21c141e98ab3d484e1dc0599f319b45d0cd3cd7a2042e8b",
-        "signature": "264bea21b5474e7010e76d72a9391cfd6942498728417621d2eec01cbbac03ab",
+        "signature": "3bbd2798f5cc40515a54b75f7c2fe36e68fcda7888cf9938615ed07ef3ce16ec",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/beforeExecution.decorator.ts": {
         "version": "19801c0085e1e0dd3da4c55b3f1fd6a9fcae679729f73698c4e99cd345e95f18",
-        "signature": "930179009a470eb521b30c47e0ddf6f93f245ca181d600897c2a286d907c3684",
+        "signature": "ddb5fe90ae4b4d6df417caa9a43c7229e99bdb732a52fb42944dfb1802487cad",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/onExecute.decorator.ts": {
         "version": "ddc4208befe65a694529f21c92f3d72b92201b18248e1b10662a697ce88aff67",
-        "signature": "0e88b0af11e57a5c298822c418cfc6e2adfeff23d7c3e025520ed70a7c5b5206",
+        "signature": "e006173da1825593d3032c07784314befc1a70317a4cb199ff6cb38ba6e926b1",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/index.ts": {
@@ -2832,7 +2827,7 @@
         "affectsGlobalScope": false
       },
       "./src/exceptions/invalidCommandHandler.exception.ts": {
-        "version": "210e0e8d370e4d77fb145ecaec1e2e93120ea0f263ff2be3fd8b966735017c34",
+        "version": "dc954659976b0abf845c0fcb3d74b64fc9f244b5122290cece56ee2ca0a24e49",
         "signature": "7d5052d0d242ff6ab00cbc13ef9a1e05b42e3cd424b2e251be0a4afaf5019dee",
         "affectsGlobalScope": false
       },
@@ -2857,8 +2852,8 @@
         "affectsGlobalScope": false
       },
       "./src/index.ts": {
-        "version": "f1b3b2c7fd1e4b2d8c178206d08822a132395758280c241dc39f27184f485b4f",
-        "signature": "367108985b9dab63a9ab58281c2902cb66788a0569f235ea3055823b0823d6fb",
+        "version": "d1c81347e2ebeed6695eaf9a09aa0cd8eaf14ddef8e3f58a41214180d3c47c56",
+        "signature": "4a67318169414cd21e9cca058223450c6f569be2602fe892f8b9fbbd313e8aa9",
         "affectsGlobalScope": false
       },
       "./src/interfaces/events/saga.type.ts": {
@@ -2886,8 +2881,18 @@
         "signature": "51fa60c9d1be9960ea026b4a9dc2491716c391c3730ef54abf791a5c6f14834a",
         "affectsGlobalScope": false
       },
+      "./node_modules/@nestjs/common/utils/shared.utils.d.ts": {
+        "version": "4f8825a934a1273cb531a13ea9308435257f77832312d5dc343d48b2e89c5f1d",
+        "signature": "4f8825a934a1273cb531a13ea9308435257f77832312d5dc343d48b2e89c5f1d",
+        "affectsGlobalScope": false
+      },
+      "./src/helpers/asObservable.ts": {
+        "version": "41a528419d23a83ca5ec54cd1125a181cab0d01285e9c84fae00982a79bcdf97",
+        "signature": "3418ede3490eaf7c97dc6e7b82cf037d405b9e1f9a81e658424334ab41218d3d",
+        "affectsGlobalScope": false
+      },
       "./src/eventBusBase.ts": {
-        "version": "656ee1f17f82d88c52004de85250c1d7a52ce4a497fa0b72212940f3d1671b83",
+        "version": "df03e42dcde5ea9afcc6d293f3c65962374982891d03a62d3d493ce46fa28b11",
         "signature": "b8aaae1a2eb7a6810ee2068ff85b00d7cbeb2f1e5033aca145bd03aabe777d06",
         "affectsGlobalScope": false
       },
@@ -5076,7 +5081,8 @@
         "./src/constants.ts",
         "./src/exceptions/job.exception.ts",
         "./src/interfaces/events/jobEvent.interface.ts",
-        "./src/interfaces/queueConfigService.interface.ts"
+        "./src/interfaces/queueConfigService.interface.ts",
+        "./src/types/callback.ts"
       ],
       "./src/decorators/decorators.factory.ts": [
         "./src/decorators/eventsHandler.decorator.ts",
@@ -5104,6 +5110,7 @@
         "./src/decorators/hooks/execution.decorator.ts"
       ],
       "./src/decorators/hooks/execution.decorator.ts": [
+        "./src/index.ts",
         "./src/queueBusBase.ts"
       ],
       "./src/decorators/hooks/index.ts": [
@@ -5171,6 +5178,7 @@
         "./node_modules/rxjs/index.d.ts"
       ],
       "./src/index.ts": [
+        "./src/constants.ts",
         "./src/decorators/index.ts",
         "./src/eventBusBase.ts",
         "./src/exceptions/index.ts",
@@ -5189,7 +5197,6 @@
         "./src/interfaces/events/jobEvent.interface.ts"
       ],
       "./src/interfaces/events/jobEvent.interface.ts": [
-        "./src/constants.ts",
         "./src/interfaces/events/event.interface.ts"
       ],
       "./src/interfaces/events/saga.type.ts": [
@@ -5217,6 +5224,7 @@
       "./src/interfaces/queueConfigService.interface.ts": [
         "./node_modules/@nestjs/microservices/index.d.ts",
         "./node_modules/bullmq/dist/index.d.ts",
+        "./src/constants.ts",
         "./src/index.ts"
       ],
       "./src/interfaces/queues/index.ts": [
@@ -5284,13 +5292,10 @@
         "./node_modules/@nestjs/common/index.d.ts",
         "./node_modules/@nestjs/core/index.d.ts",
         "./node_modules/bullmq/dist/index.d.ts",
-        "./node_modules/rxjs/index.d.ts",
-        "./node_modules/rxjs/operators/index.d.ts",
         "./src/bullmq/bullMq.ts",
         "./src/constants.ts",
         "./src/decorators/constants.ts",
         "./src/eventBusBase.ts",
-        "./src/helpers/asObservable.ts",
         "./src/index.ts",
         "./src/interfaces/executionOptions.interface.ts",
         "./src/interfaces/jobExecutionInterceptors.interface.ts",
@@ -7430,8 +7435,8 @@
       "./src/bullmq/bullMq.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
         "./node_modules/bullmq/dist/index.d.ts",
-        "./node_modules/rxjs/index.d.ts",
-        "./src/interfaces/queueConfigService.interface.ts"
+        "./src/interfaces/queueConfigService.interface.ts",
+        "./src/types/callback.ts"
       ],
       "./src/decorators/decorators.factory.ts": [
         "./src/eventBusBase.ts",
@@ -7450,6 +7455,7 @@
         "./src/index.ts"
       ],
       "./src/decorators/hooks/execution.decorator.ts": [
+        "./src/index.ts",
         "./src/queueBusBase.ts"
       ],
       "./src/decorators/hooks/index.ts": [
@@ -7499,6 +7505,7 @@
         "./node_modules/rxjs/index.d.ts"
       ],
       "./src/index.ts": [
+        "./src/constants.ts",
         "./src/decorators/index.ts",
         "./src/eventBusBase.ts",
         "./src/exceptions/index.ts",
@@ -7517,7 +7524,6 @@
         "./src/interfaces/events/jobEvent.interface.ts"
       ],
       "./src/interfaces/events/jobEvent.interface.ts": [
-        "./src/constants.ts",
         "./src/interfaces/events/event.interface.ts"
       ],
       "./src/interfaces/events/saga.type.ts": [
@@ -7545,6 +7551,7 @@
       "./src/interfaces/queueConfigService.interface.ts": [
         "./node_modules/@nestjs/microservices/index.d.ts",
         "./node_modules/bullmq/dist/index.d.ts",
+        "./src/constants.ts",
         "./src/index.ts"
       ],
       "./src/interfaces/queues/index.ts": [
@@ -7556,7 +7563,6 @@
         "./src/interfaces/queues/queueOptions.interface.ts"
       ],
       "./src/interfaces/queues/queueBus.interface.ts": [
-        "./node_modules/rxjs/index.d.ts",
         "./src/interfaces/executionOptions.interface.ts"
       ],
       "./src/interfaces/queues/queueHandler.interface.ts": [
@@ -7602,7 +7608,6 @@
         "./node_modules/@nestjs/common/index.d.ts",
         "./node_modules/@nestjs/core/index.d.ts",
         "./node_modules/bullmq/dist/index.d.ts",
-        "./node_modules/rxjs/index.d.ts",
         "./src/bullmq/bullMq.ts",
         "./src/interfaces/executionOptions.interface.ts",
         "./src/interfaces/jobExecutionInterceptors.interface.ts",
@@ -8218,6 +8223,7 @@
       "./src/queue.module.ts",
       "./src/queueBusBase.ts",
       "./src/services/explorer.service.ts",
+      "./src/types/callback.ts",
       "./src/types/eventHandlerDecorator.type.ts",
       "./src/types/hooks.type.ts",
       "./src/types/indx.ts",
