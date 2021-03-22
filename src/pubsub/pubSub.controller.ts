@@ -1,6 +1,7 @@
 import { Body, Controller } from '@nestjs/common'
-import { EVENT_PATTERN } from '../constants'
 import { EventPattern } from '@nestjs/microservices'
+
+import { EVENT_PATTERN } from '../constants'
 import { PubEvent } from '../interfaces/events/jobEvent.interface'
 import { RedisPubSub } from './pubsub'
 

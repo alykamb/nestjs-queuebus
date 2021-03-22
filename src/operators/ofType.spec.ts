@@ -1,5 +1,6 @@
-import { IEvent } from '../interfaces'
 import { Subject } from 'rxjs'
+
+import { IEvent } from '../interfaces'
 import { ofType } from './ofTtype'
 
 describe('operators/ofType', () => {

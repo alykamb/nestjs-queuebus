@@ -1,8 +1,9 @@
+import { Type } from '@nestjs/common'
+import { Observable } from 'rxjs'
+import { filter, map } from 'rxjs/operators'
+
 import { EVENTS_METADATA } from '../decorators/constants'
 import { IEvent } from '../interfaces'
-import { Observable } from 'rxjs'
-import { Type } from '@nestjs/common'
-import { filter, map } from 'rxjs/operators'
 
 /**
  * Filter values depending on their instance type (comparison is made

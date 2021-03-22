@@ -10,8 +10,7 @@ export enum JobEventType {
     failed = 'failed',
 }
 
-
-export enum MessageBrooker {
+export enum Transport {
     bullMQ = 'bullMQ',
     rabbitMQ = 'rabbitMQ',
 }

@@ -1,6 +1,4 @@
-import { BehaviorSubject, Subject, Subscription, merge, Observable, from, throwError } from 'rxjs'
-import { CompletedEvent, FailedEvent } from '../interfaces/events/jobEvent.interface'
-
+import { Inject, Injectable } from '@nestjs/common'
 import {
     ConnectionOptions,
     Job,
@@ -11,15 +9,18 @@ import {
     Worker,
     WorkerOptions,
 } from 'bullmq'
+import { BehaviorSubject, merge, Subject, Subscription } from 'rxjs'
+import { map, scan } from 'rxjs/operators'
+
 import { EXTRA_SEPARATOR, JobEventType, QUEUE_CONFIG_SERVICE } from '../constants'
-import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common'
 import { JobException } from '../exceptions/job.exception'
-import { catchError, filter, map, scan, switchMap, take, tap } from 'rxjs/operators'
+import { CompletedEvent, FailedEvent } from '../interfaces/events/jobEvent.interface'
 import { IQueueConfigService } from '../interfaces/queueConfigService.interface'
+import { ITransport } from '../interfaces/transport.interface'
 import { Callback } from '../types/callback'
 
 @Injectable()
-export class BullMq implements OnModuleDestroy {
+export class BullMq implements ITransport {
     /** Mantém a referência do worker para cada queue */
     private workers = new Map<string, Worker>()
 
@@ -28,14 +29,6 @@ export class BullMq implements OnModuleDestroy {
 
     /** Mantém referencia dos listeners e eventos das queues */
     private queueEvents = new Map<string, QueueEvents>()
-
-    /** Mantém referências de streams de Jobs completados  */
-    // private completedJobs = new Map<string, Subject<CompletedEvent>>()
-
-    /** Mantém referências de streams de Jobs que falharam  */
-    // private failedJobs = new Map<string, Subject<FailedEvent>>()
-
-    // private jobs = new Map<string, Observable<FailedEvent | CompletedEvent>>()
 
     private numberOfActiveJobs$ = new BehaviorSubject<number>(0)
     private addJob$ = new Subject<null>()
@@ -89,57 +82,18 @@ export class BullMq implements OnModuleDestroy {
             this.createQueue(module)
         }
 
-        
-        this.queues.get(module).add(name, data, options).then((job) => {
-            this.addJob$.next()
-            this.callbacks.set(job.id, onFinish)
-        })
-        // cria o trabalho
-
-        //combina os streams de Jobs completos e falhos em um único stream
-        
-
-        // return from(this.queues.get(module).add(name, data, options)).pipe(
-        //     tap(() => this.addJob$.next()),
-        //     switchMap((job) => {
-        //         return this.getJobsEvents(module).pipe(
-        //             //filtra somente os com o id atual
-        //             filter((j) => j.jobId === job.id),
-        //             //só pega o primeiro resultado
-        //             take(1),
-        //             //retorna o valor se sucesso, e throw se ouver erro
-        //             map((j) => {
-        //                 if (j.event === JobEventType.completed) {
-        //                     return (j as CompletedEvent).returnvalue
-        //                 } else if (j.event === JobEventType.failed) {
-        //                     let extra = {}
-        //                     let message: string = (j as FailedEvent).failedReason
-        //                     const extraIndex = message.indexOf(EXTRA_SEPARATOR)
-        //                     if (extraIndex > -1) {
-        //                         const extraJson = message.slice(extraIndex + EXTRA_SEPARATOR.length)
-        //                         message = message.slice(0, extraIndex)
-        //                         try {
-        //                             extra = JSON.parse(extraJson)
-        //                         } catch (err) {
-        //                             extra = {}
-        //                         }
-        //                     }
-        //                     throw new JobException(message, extra)
-        //                 }
-        //             }),
-        //         )
-        //     }),
-        //     tap(() => this.removeJob$.next()),
-        //     catchError((err) => {
-        //         this.removeJob$.next()
-        //         return throwError(err)
-        //     }),
-        // )
+        void this.queues
+            .get(module)
+            .add(name, data, options)
+            .then((job) => {
+                this.addJob$.next()
+                this.callbacks.set(job.id, onFinish)
+            })
     }
 
     private endJob(j: FailedEvent | CompletedEvent, event: JobEventType): void {
         const cb = this.callbacks.get(j.jobId)
-        if(!cb) {
+        if (!cb) {
             return
         }
         this.removeJob$.next()
@@ -178,7 +132,7 @@ export class BullMq implements OnModuleDestroy {
      * Cria a queue e todas as referências necessárias
      * @param module
      */
-    public createQueue(module: string): void {
+    private createQueue(module: string): void {
         const queueOptions: QueueOptions = {
             connection: this.redis,
             defaultJobOptions: {
@@ -208,7 +162,7 @@ export class BullMq implements OnModuleDestroy {
      * @param module
      * @param callback
      */
-    public createWorker(module: string, callback: (job: Job) => Promise<any>): void {
+    public async createWorker(module: string, callback: (job: Job) => Promise<any>): Promise<void> {
         const workerOptions: WorkerOptions = {
             connection: this.redis,
             ...(this.queueConfig.defaultWorkerOptions || {}),

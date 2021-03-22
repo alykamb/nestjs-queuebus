@@ -1,5 +1,6 @@
-import { IEventHandler } from '../events/eventHandler.interface'
 import { Type } from '@nestjs/common'
+
+import { IEventHandler } from '../events/eventHandler.interface'
 import { IQueueHandler } from './queueHandler.interface'
 
 export interface QueueOptions {

@@ -1,23 +1,24 @@
+import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
+import { ModuleRef } from '@nestjs/core'
+import { Observable, of, Subscription } from 'rxjs'
+import { catchError, filter, switchMap, withLatestFrom } from 'rxjs/operators'
+
+import { QueueBusBase } from '.'
+import { QUEUE_CONFIG_SERVICE } from './constants'
 import {
     EVENTBUS_QUEUEBUS_METADATA,
     EVENTS_HANDLER_METADATA,
     SAGA_METADATA,
 } from './decorators/constants'
-import { IEvent, IEventBus, IEventHandler, ISaga } from './interfaces'
-import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
 import { InvalidSagaException } from './exceptions'
-import { ModuleRef } from '@nestjs/core'
-import { Observable, Subscription, of } from 'rxjs'
-import { PubEvent } from './interfaces/events/jobEvent.interface'
-import { RedisPubSub } from './pubsub/pubsub'
-import { catchError, filter, switchMap, withLatestFrom } from 'rxjs/operators'
-import { QueueBusBase } from '.'
-import { IQueue } from './interfaces/queues/queue.interface'
-import { IQueueJob } from './interfaces/queues/queueJob.interface'
-import { QUEUE_CONFIG_SERVICE } from './constants'
-import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { InvalidQueueBusForEventBusException } from './exceptions/invalidQueueBusForEventBus.exception'
 import { asObservable } from './helpers/asObservable'
+import { IEvent, IEventBus, IEventHandler, ISaga } from './interfaces'
+import { PubEvent } from './interfaces/events/jobEvent.interface'
+import { IQueueConfigService } from './interfaces/queueConfigService.interface'
+import { IQueue } from './interfaces/queues/queue.interface'
+import { IQueueJob } from './interfaces/queues/queueJob.interface'
+import { RedisPubSub } from './pubsub/pubsub'
 
 export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<IEventHandler<EventBase>>
 
@@ -197,22 +198,21 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                     const jobId = `${saga.name}_${commandName}_${event.timestamp}`
 
                     //executa o commando e captura os erros
-                    return asObservable(this.queueBus
-                        .execute(c, {
+                    return asObservable(
+                        this.queueBus.execute(c, {
                             moveToQueue: true,
                             jobOptions: { ...jobOptions, jobId },
                             module,
-                        })
+                        }),
+                    ).pipe(
+                        catchError((err) => {
+                            if (logErrors) {
+                                // eslint-disable-next-line no-console
+                                console.error({ err, jobId })
+                            }
+                            return of(err)
+                        }),
                     )
-                        .pipe(
-                            catchError((err) => {
-                                if (logErrors) {
-                                    // eslint-disable-next-line no-console
-                                    console.error({ err, jobId })
-                                }
-                                return of(err)
-                            }),
-                        )
                 }),
             )
             .subscribe((result) => {

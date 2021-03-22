@@ -1,13 +1,9 @@
-import { BullMq } from './bullmq/bullMq'
-import { EventBusBase } from './eventBusBase'
-import { IQueueBus } from './interfaces/queues/queueBus.interface'
-import { IQueueHandler } from './interfaces/queues/queueHandler.interface'
-import { IExecutionOptions } from './interfaces/executionOptions.interface'
-import { IImpl } from './interfaces/queues/queueImpl.interface'
-import { InvalidQueueHandlerException } from './index'
-import { Job } from 'bullmq'
-import { ModuleRef } from '@nestjs/core'
 import { Inject, Injectable, Type } from '@nestjs/common'
+import { ModuleRef } from '@nestjs/core'
+import { Job } from 'bullmq'
+
+import { BullMq } from './bullmq/bullMq'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
 import {
     JOB_AFTER_EXECUTION_METADATA,
     JOB_BEFORE_EXECUTION_METADATA,
@@ -15,14 +11,25 @@ import {
     NAME_QUEUE_METADATA,
     QUEUE_HANDLER_METADATA,
 } from './decorators/constants'
-import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
-import { IQueueConfigService } from './interfaces/queueConfigService.interface'
+import { EventBusBase } from './eventBusBase'
+import { InvalidQueueHandlerException } from './index'
+import { IExecutionOptions } from './interfaces/executionOptions.interface'
 import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface'
+import { IQueueConfigService } from './interfaces/queueConfigService.interface'
+import { IQueueBus } from './interfaces/queues/queueBus.interface'
+import { IQueueHandler } from './interfaces/queues/queueHandler.interface'
+import { IImpl } from './interfaces/queues/queueImpl.interface'
 import { Hook, HookContext } from './types/hooks.type'
 
 export type HandlerType = Type<IQueueHandler<IImpl>>
 
-const compose = (...funcs: Array<((...args: any[]) => any | Promise<any>)  | false | undefined | null>) => (data: Promise<any> | any): Promise<any> => funcs.reduce(async(value, func) => (func && typeof func === 'function' && func(await value)) || value, data)
+const compose = (
+    ...funcs: Array<((...args: any[]) => any | Promise<any>) | false | undefined | null>
+) => (data: Promise<any> | any): Promise<any> =>
+    funcs.reduce(
+        async (value, func) => (func && typeof func === 'function' && func(await value)) || value,
+        data,
+    )
 
 /**
  * CqrsBus registra handlers para implementações e os executa quando chamado
@@ -43,7 +50,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         this.name =
             Reflect.getMetadata(NAME_QUEUE_METADATA, Object.getPrototypeOf(this).constructor) || ''
 
-        this.bullMq.createWorker(this.queueConfig.name + this.name, (job: Job) =>
+        void this.bullMq.createWorker(this.queueConfig.name + this.name, (job: Job) =>
             this.handleJob(job),
         )
     }
@@ -81,27 +88,33 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         const run = (name: string, d: T): Promise<Ret> => {
             if (module === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
                 return this.executeHandler(name, d)
-                
             }
-            return new Promise((resolve, reject) => {                
-                this.bullMq.addJob(module + this.name, name, d, (err, data) => {
-                    if(err) {
-                        return reject(err)
-                    } 
-                    return resolve(data)
-                }, jobOptions)
+            return new Promise((resolve, reject) => {
+                this.bullMq.addJob(
+                    module + this.name,
+                    name,
+                    d,
+                    (err, data) => {
+                        if (err) {
+                            return reject(err)
+                        }
+                        return resolve(data)
+                    },
+                    jobOptions,
+                )
             })
         }
 
-        
         const hooks = this.getHooks()
 
         return compose(
-            hooks.before && this.runHooks(hooks.before, {name, module, bus: this}),
-            hooks.interceptor.length 
-                ? this.runHooks(hooks.interceptor, {name, module, data, bus: this}, (d => run(name, d)))
-                : (data) => run(name, data),
-            hooks.after && this.runHooks(hooks.after, {name, module, bus: this}),
+            hooks.before && this.runHooks(hooks.before, { name, module, bus: this }),
+            hooks.interceptor.length
+                ? this.runHooks(hooks.interceptor, { name, module, data, bus: this }, (d) =>
+                      run(name, d),
+                  )
+                : (data): Promise<any> => run(name, data),
+            hooks.after && this.runHooks(hooks.after, { name, module, bus: this }),
         )(data)
     }
 
@@ -146,14 +159,14 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
 
         try {
             const result = handler.execute(data)
-            if(result?.toPromise) {
+            if (result?.toPromise) {
                 return result.toPromise()
             }
-            if(!(result instanceof Promise)) {
+            if (!(result instanceof Promise)) {
                 return Promise.resolve(result)
             }
             return result
-        } catch(err) {
+        } catch (err) {
             return Promise.reject(err)
         }
     }
@@ -161,20 +174,38 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     protected runHooks(
         hooks: Hook[],
         context: HookContext,
-        cb?: (d: any) =>  Promise<any>,
+        cb?: (d: any) => Promise<any>,
     ): (data: any) => Promise<any> {
-        return (data: any): Promise<any> => hooks.reduce(async(value, func) => func({...context, data: await value}, cb), data)
-           
+        return (data: any): Promise<any> =>
+            hooks.reduce(async (value, func) => func({ ...context, data: await value }, cb), data)
     }
 
     protected getHooks(): IJobExecutionInterceptors {
-        if(!this.hooks) {
+        if (!this.hooks) {
             const constructor = Reflect.getPrototypeOf(this).constructor
-            const map = (property: {key: string, order: number}) => this.queueConfig[property.key]
-            this.hooks =  {
-                before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || []).sort((p1:  {key: string, order: number}, p2:  {key: string, order: number}) => p1.order - p2.order).map(map),
-                after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || []).sort((p1:  {key: string, order: number}, p2:  {key: string, order: number}) => p1.order - p2.order).map(map),
-                interceptor: (Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []).sort((p1:  {key: string, order: number}, p2:  {key: string, order: number}) => p1.order - p2.order).map(map),
+            const map = (property: { key: string; order: number }): any =>
+                this.queueConfig[property.key]
+            this.hooks = {
+                before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || [])
+                    .sort(
+                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
+                            p1.order - p2.order,
+                    )
+                    .map(map),
+                after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || [])
+                    .sort(
+                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
+                            p1.order - p2.order,
+                    )
+                    .map(map),
+                interceptor: (
+                    Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(
+                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
+                            p1.order - p2.order,
+                    )
+                    .map(map),
             }
         }
 

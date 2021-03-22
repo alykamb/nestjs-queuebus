@@ -5,11 +5,7 @@ module.exports = {
         sourceType: 'module',
     },
     plugins: ['@typescript-eslint/eslint-plugin', 'sort-class-members', 'simple-import-sort'],
-    extends: [
-        'plugin:@typescript-eslint/recommended',
-        'prettier/@typescript-eslint',
-        'plugin:prettier/recommended',
-    ],
+    extends: ['plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
     root: true,
     env: {
         node: true,
@@ -22,6 +18,7 @@ module.exports = {
         'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
         'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
         'no-unneeded-ternary': 'error',
+        'no-return-await': 'error',
         '@typescript-eslint/no-unused-vars': 'error',
         '@typescript-eslint/interface-name-prefix': 'off',
         '@typescript-eslint/no-floating-promises': [2, { ignoreVoid: true }],
@@ -67,7 +64,7 @@ module.exports = {
                 accessorPairPositioning: 'getThenSet',
             },
         ],
-        "simple-import-sort/imports": "error",
+        'simple-import-sort/imports': 'error',
     },
     parserOptions: {
         parser: '@typescript-eslint/parser',

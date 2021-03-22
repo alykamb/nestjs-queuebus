@@ -1,7 +1,8 @@
-import { EVENT_PATTERN, QUEUE_CONFIG_SERVICE } from '../constants'
-import { IEventPublisher } from '../interfaces'
 import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common'
 import { Observable, Subject, Subscription } from 'rxjs'
+
+import { EVENT_PATTERN, QUEUE_CONFIG_SERVICE } from '../constants'
+import { IEventPublisher } from '../interfaces'
 import { PubEvent } from '../interfaces/events/jobEvent.interface'
 import { IQueueConfigService } from '../interfaces/queueConfigService.interface'
 

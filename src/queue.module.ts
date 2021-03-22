@@ -1,22 +1,23 @@
-import { BullMq } from './bullmq/bullMq'
-import { ExplorerService } from './services/explorer.service'
 import {
     DynamicModule,
     Global,
     Inject,
+    Module,
+    ModuleMetadata,
     OnApplicationBootstrap,
     Provider,
-    Module,
     Type,
-    ModuleMetadata,
 } from '@nestjs/common'
-import { PubSubController } from './pubsub/pubSub.controller'
-import { RedisPubSub } from './pubsub/pubsub'
-import { IQueueConfigService } from './interfaces/queueConfigService.interface'
-import { QUEUE_CONFIG_SERVICE, MESSAGE_BROOKER, MessageBrooker } from './constants'
 import { ModuleRef } from '@nestjs/core'
+
 import { QueueBusBase } from '.'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, Transport } from './constants'
 import { EventBusBase } from './eventBusBase'
+import { IQueueConfigService } from './interfaces/queueConfigService.interface'
+import { ITransport } from './interfaces/transport.interface'
+import { RedisPubSub } from './pubsub/pubsub'
+import { PubSubController } from './pubsub/pubSub.controller'
+import { ExplorerService } from './services/explorer.service'
 
 @Global()
 @Module({})
@@ -43,25 +44,45 @@ export class QueueModule implements OnApplicationBootstrap {
         return {
             global,
             module: QueueModule,
-            controllers: [PubSubController, ...(moduleOptions?.controllers || []),],
-            providers: [this.messageBrookerProvider, ExplorerService, RedisPubSub, queueConfigService, ...queues, ...(moduleOptions?.providers || []),],
-            exports: [...queues, ...(moduleOptions?.exports || []),],
-            imports: [...(moduleOptions?.imports || []),]
+            controllers: [PubSubController, ...(moduleOptions?.controllers || [])],
+            providers: [
+                this.messageBrookerProvider,
+                ExplorerService,
+                RedisPubSub,
+                queueConfigService,
+                ...queues,
+                ...(moduleOptions?.providers || []),
+            ],
+            exports: [...queues, ...(moduleOptions?.exports || [])],
+            imports: [...(moduleOptions?.imports || [])],
         }
     }
 
     private static get messageBrookerProvider(): Provider {
         return {
             provide: MESSAGE_BROOKER,
-            useFactory: (queueConfig: IQueueConfigService) => {
-                if(queueConfig.messageBrooker === MessageBrooker.bullMQ) {
-                    if(!require('bullmq')) {
-                        throw new Error('bullMq')
+            useFactory: async (queueConfig: IQueueConfigService): Promise<ITransport> => {
+                if (queueConfig.messageBrooker === Transport.bullMQ) {
+                    if (!require('bullmq')) {
+                        throw new Error(
+                            'bullmq node package is missing. use: npm install --save amqplib',
+                        )
                     }
+                    const { BullMq } = await import('./bullmq/bullMq')
                     return new BullMq(queueConfig)
                 }
+                if (queueConfig.messageBrooker === Transport.rabbitMQ) {
+                    if (!require('amqplib')) {
+                        throw new Error(
+                            'amqplib node package is missing. use: npm install --save amqplib',
+                        )
+                    }
+
+                    const { RabbitMq } = await import('./rabbitMq/rabbitMq')
+                    return new RabbitMq(queueConfig)
+                }
             },
-            inject: [QUEUE_CONFIG_SERVICE]
+            inject: [QUEUE_CONFIG_SERVICE],
         }
     }
     public onApplicationBootstrap(): void {
