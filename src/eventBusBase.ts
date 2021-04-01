@@ -1,7 +1,6 @@
 import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
-import { Subject, Subscription } from 'rxjs'
-import { filter, tap } from 'rxjs/operators'
+import { Subscription } from 'rxjs'
 
 import { QueueBusBase } from '.'
 import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
@@ -12,12 +11,10 @@ import {
 } from './decorators/constants'
 import { InvalidSagaException } from './exceptions'
 import { InvalidQueueBusForEventBusException } from './exceptions/invalidQueueBusForEventBus.exception'
-// import { asObservable } from './helpers/asObservable'
 import { IEvent, IEventBus, IEventHandler, IQueue, ISaga } from './interfaces'
 import { PubEvent } from './interfaces/events/jobEvent.interface'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { ITransport } from './interfaces/transport.interface'
-import { ofType } from './operators'
 import { SagaData } from './types/sagaData.type'
 
 export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<IEventHandler<EventBase>>
@@ -126,10 +123,11 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                 }
 
                 return metadata.data.map(
-                    (arg: { key: string; events: IEvent[]; commands: IQueue[] }) => ({
+                    (arg: { key: string; events: IEvent[]; commands: IQueue[]; name: string }) => ({
                         call: instance[arg.key],
                         key: arg.key,
                         bus: metadata.bus,
+                        name: arg.name,
                         commands: arg.commands,
                         events: arg.events,
                     }),
@@ -178,91 +176,18 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         if (typeof saga.call !== 'function') {
             throw new InvalidSagaException()
         }
-        //cria o nome com a combinação de commands e events
-        const name = `${saga.name}_${saga.key}_${saga.events
-            .map((t) => t.name)
-            .join()}_${saga.commands.map((t) => t.name).join()}`
+
+        //cria o nome com a combinação de events
+        const name = `${saga.name}_${saga.key}_${saga.events.map((t) => t.name).join()}`
 
         this.transport.registerSaga(
+            this.queueBus['fullname'],
             name,
             (data: { event: PubEvent }): void => {
-                // console.clear()
-                console.log('RUN SAGA HERE')
-                // console.log(data)
-
-                console.log(data.event.data.name)
+                saga.call(data.event)
             },
             ...saga.events,
         )
-
-        // this.queueBusSaga['bind'](new command.Handler(), name)
-
-        // const subscription = this.stream$
-        //     .pipe(
-        //         ofType(...saga.events),
-        //         filter((e) => !!e),
-        //     )
-        //     .subscribe((e) => {
-        //         console.clear()
-        //         console.log('SENDING SAGA JOB: ' + `${name}_${e.data.timestamp}`)
-        //         void this.queueBusSaga.execute(new command[name](e), {
-        //             moveToQueue: true,
-        //             id: `${name}_${e.data.timestamp}`,
-        //         })
-        //     })
-
-        // this.subscriptions.push(subscription)
-
-        // this.queueBus['bind'](
-        //     {
-        //         execute: () => {
-        //             void saga
-        //                 .call(this.publisher.stream$)
-        //                 .pipe(
-        //                     //Filtra os commands resultantes que existem
-        //                     filter((e) => {
-        //                         return !!e
-        //                     }),
-
-        //                     //combina com o próprio evento atual
-        //                     withLatestFrom(this.publisher.stream$),
-        //                     switchMap(([command, event]: any[]) => {
-        //                         let c: IQueue = command
-        //                         let logErrors = false
-        //                         const jobOptions = command.options?.jobOptions || {}
-        //                         const module = command.options?.module
-
-        //                         if (command.job) {
-        //                             c = command.job
-        //                             logErrors = command.options?.logErrors ?? false
-        //                         }
-
-        //                         //usa o evento atual para criar um id único
-        //                         const jobId = `${name}_${event.timestamp}`
-
-        //                         //executa o commando e captura os erros
-        //                         return asObservable(
-        //                             this.queueBus.execute(c, {
-        //                                 moveToQueue: true,
-        //                                 jobOptions: { ...jobOptions, jobId },
-        //                                 module,
-        //                             }),
-        //                         ).pipe(
-        //                             catchError((err) => {
-        //                                 if (logErrors) {
-        //                                     // eslint-disable-next-line no-console
-        //                                     console.error({ err, jobId })
-        //                                 }
-        //                                 return of(err)
-        //                             }),
-        //                         )
-        //                     }),
-        //                 )
-        //                 .toPromise()
-        //         },
-        //     },
-        //     name,
-        // )
     }
 
     /**

@@ -1,3 +1,3 @@
-import { IEvent, IQueue } from '../interfaces'
+import { IEvent } from '../interfaces'
 
-export type SagaDecorator = (arg: { events: IEvent[]; commands: IQueue[] }) => PropertyDecorator
+export type SagaDecorator = (...events: IEvent[]) => PropertyDecorator

@@ -2687,8 +2687,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/transport.interface.ts": {
-        "version": "fc166f07c4444015d3b1c12de34b7a917e48db2de813338329c0f2df0b363fa4",
-        "signature": "aa0e46df47fe2e46107ebeeebe9b4d0739041fc2ab45064f84a600dcfc5a82bf",
+        "version": "1bba4bd71266a9fd9fefff9a6313b41585d812b4d9c82395b3e0e2aafcd639ca",
+        "signature": "7f5c8eb119c50590bbc53b5b4acbe1656c9ecf48008729602bf4d0550c3bfed2",
         "affectsGlobalScope": false
       },
       "./src/queueBusBase.ts": {
@@ -2711,14 +2711,14 @@
         "signature": "184c2f814bac876a20202715b3d87b2a1a359a881ee035cb649b66363cc5c006",
         "affectsGlobalScope": false
       },
+      "./src/interfaces/events/saga.type.ts": {
+        "version": "fe512a95098f2b0990c273c1aeee8ef8af018d4f4b1496987287c97b546340b6",
+        "signature": "67b96ec5a7bc2256c4adf4292347e659e57de51b5cbb63121043e0387c24e563",
+        "affectsGlobalScope": false
+      },
       "./src/interfaces/queues/queue.interface.ts": {
         "version": "175397fe88cb15b138929a66a357e4271591f6cb76df688f0a444508026fdd71",
         "signature": "a669e63def61ccea0463aa65150b4de7d0f040a85fff3ee740b4fe7e2709e1ec",
-        "affectsGlobalScope": false
-      },
-      "./src/interfaces/events/saga.type.ts": {
-        "version": "f355f27f90cdbf859ce4bffd4a1ed9984a28e14dc9f0d8c92d5f3a3c713a7beb",
-        "signature": "541a002d1685604fc041e3ba5cd5535cd31a6d335eb08c73c42319f991c5f86e",
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/queueJob.interface.ts": {
@@ -2792,8 +2792,8 @@
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/rabbitMq.ts": {
-        "version": "8011c24b0a486b7b76fd3febdbadbc723d977cc3cd4b3428c6bb464b3cfe7e29",
-        "signature": "983d6cfae4f6d5fe95a075b4f66a13037c86c5fbae41b5063e6f78485dc79a2b",
+        "version": "3b37eb40b94ec51db6cb1ae8d5ebde881624369a4f6d44590b45a3ee4a55e457",
+        "signature": "208d5f0045c3ffbdd799433d111007c10806424ce7af4a96de1f5762981098cc",
         "affectsGlobalScope": false
       },
       "./src/queue.module.ts": {
@@ -2817,12 +2817,12 @@
         "affectsGlobalScope": false
       },
       "./src/types/sagaDecorator.type.ts": {
-        "version": "8f89e2fc25e6ca0b80cad07328cf1899fb127fe11eab442572be778c359031d2",
-        "signature": "a2587226ca5c4860c273f070788dc67b0695d194d90ac6fb4ad7cfb24b6b2180",
+        "version": "166ae9518036f55a3a1295ae4536d36c0e93b38c8070062c15b31152a376bb59",
+        "signature": "75f69405667c4871a544473a5578f5efd1b8f5c0446cd1f18feed4eb13ef0998",
         "affectsGlobalScope": false
       },
       "./src/decorators/saga.decorator.ts": {
-        "version": "73b1b73c5b8c926e9f0297db31f31a60867d118559617c2d27dd1c30ff5c739a",
+        "version": "f19ea51c1220b6176b900bb5de5af44d28bffd7424c29866a52586e20be0296d",
         "signature": "fd7760e340c5ad7ff243e104cd59149a2dbb9015ee87fbdcd6e6afb1b29b8039",
         "affectsGlobalScope": false
       },
@@ -2902,13 +2902,13 @@
         "affectsGlobalScope": false
       },
       "./src/types/sagaData.type.ts": {
-        "version": "9822a800363c45574902714d3a211391aa5d4047ff2687241fb5e2e7d7ec3fe1",
-        "signature": "6a84afc169bcd96473d27057aa6724552966c83631abab9255f4586839ff4172",
+        "version": "6168f9dc1257e2b7bb4563df35accaa35cec0fb5838bcad707b5c6f02d4f49bb",
+        "signature": "bfd756514f9bff63561b9d917ad5ae2036285ad7012875c47d977e8f621527dc",
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "d57f6f13e726b598a176f6449abfa206941edf15b454f763aae8a2b956de324a",
-        "signature": "81bcb218698b26eacf43a78756bd896dcf3a3e26c9c3d149811210fec65297ce",
+        "version": "9adb20774235337207b5d7b01f8825812ecc9fc67dd588f2bc0f3b02ef5b3094",
+        "signature": "878ca94a3db5bcdcb083debe0af3c451276bb854eb1c05897fc0bf953770253b",
         "affectsGlobalScope": false
       },
       "./src/bullmq/bullMq.ts": {
@@ -5176,6 +5176,7 @@
       "./src/decorators/saga.decorator.ts": [
         "./src/decorators/constants.ts",
         "./src/eventBusBase.ts",
+        "./src/interfaces/index.ts",
         "./src/types/sagaDecorator.type.ts"
       ],
       "./src/decorators/useQueueBus.decorator.ts": [
@@ -5232,10 +5233,8 @@
       ],
       "./src/interfaces/events/saga.type.ts": [
         "./node_modules/rxjs/index.d.ts",
-        "./src/index.ts",
         "./src/interfaces/events/event.interface.ts",
-        "./src/interfaces/events/jobEvent.interface.ts",
-        "./src/interfaces/queues/queue.interface.ts"
+        "./src/interfaces/events/jobEvent.interface.ts"
       ],
       "./src/interfaces/index.ts": [
         "./src/interfaces/events/event.interface.ts",
@@ -7587,10 +7586,8 @@
       ],
       "./src/interfaces/events/saga.type.ts": [
         "./node_modules/rxjs/index.d.ts",
-        "./src/index.ts",
         "./src/interfaces/events/event.interface.ts",
-        "./src/interfaces/events/jobEvent.interface.ts",
-        "./src/interfaces/queues/queue.interface.ts"
+        "./src/interfaces/events/jobEvent.interface.ts"
       ],
       "./src/interfaces/index.ts": [
         "./src/interfaces/events/event.interface.ts",

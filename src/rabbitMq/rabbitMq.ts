@@ -1,5 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
-import { Channel, connect, Connection, Options } from 'amqplib'
+import { Channel, connect, Connection } from 'amqplib'
 import { BehaviorSubject, merge, Subject, Subscription } from 'rxjs'
 import { map, scan } from 'rxjs/operators'
 import { v4 } from 'uuid'
@@ -27,6 +27,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
     private consumer: Connection
     private workers = new Map<string, Channel>()
     private sagas = new Map<string, EventCallback>()
+    private queueSagas = new Map<string, string>()
     private sagasEvents = new WeakMap<EventCallback, string>()
     private publisherChannel: Channel
     private eventPublisherChannel: Channel
@@ -102,24 +103,77 @@ export class RabbitMq implements ITransport, OnModuleInit {
         const eventPublisher = await this.getEventPublisherChannel()
         await eventPublisher.assertExchange(EVENTS.CHANNEL, 'fanout', { durable: false })
 
-        // TODO: criar queue para coletar e escolher sagas
-        // enviar queue junto com os dados
-        // esperar 10 segundos para coletar todas as sagas, depois escolher e executar elas
-        // esperar execução e fechar o canal
-        // e fechar este canal
+        const [consumerChannel, publisherChannel] = await Promise.all([
+            this.createConsumerChannel(),
+            this.getPublisherChannel(),
+        ])
 
-        eventPublisher.publish(
-            WORKERS_EVENTS.CHANNEL,
-            '',
-            Buffer.from(JSON.stringify({ event: EVENTS.PUBLISH, from: this.from, data: event })),
-        )
+        const id = v4()
+        void consumerChannel.assertQueue('', { exclusive: true }).then((queue) => {
+            const sagas = new Map<string, string[]>()
+            let timeout
+
+            const sendToSaga = (v: { sagaName: string; id: string }): void => {
+                sagas.forEach((value) => {
+                    const chosen = Math.floor(Math.random() * value.length)
+
+                    value.forEach((val, i) => {
+                        publisherChannel.sendToQueue(
+                            val,
+                            Buffer.from(JSON.stringify(i === chosen ? event : false), 'utf-8'),
+                            {
+                                correlationId: v.id,
+                            },
+                        )
+                    })
+                })
+                void consumerChannel.close()
+            }
+
+            void consumerChannel.consume(
+                queue.queue,
+                (message) => {
+                    if (message?.properties?.correlationId !== id) {
+                        void consumerChannel.deleteQueue(queue.queue)
+                        void consumerChannel.close()
+                        return
+                    }
+
+                    const value = JSON.parse(message.content.toString())
+                    if (!sagas.has(value.sagaName)) {
+                        sagas.set(value.sagaName, [message.properties.replyTo])
+                    } else {
+                        sagas.get(value.sagaName).push(message.properties.replyTo)
+                    }
+
+                    if (timeout) {
+                        clearTimeout(timeout)
+                    }
+                    timeout = setTimeout(sendToSaga, 2000, value)
+                },
+                {
+                    noAck: true,
+                },
+            )
+
+            eventPublisher.publish(
+                WORKERS_EVENTS.CHANNEL,
+                '',
+                Buffer.from(
+                    JSON.stringify({ event: EVENTS.PUBLISH, from: this.from, data: event }),
+                ),
+                { replyTo: queue.queue, correlationId: id },
+            )
+        })
     }
 
     public registerSaga<EventBase extends PubEvent = PubEvent>(
+        queueBusName: string,
         name: string,
         callback: EventCallback<EventBase>,
         ...events: string[]
     ): void {
+        this.queueSagas.set(name, queueBusName)
         this.sagas.set(name, callback)
         events.forEach((e) => this.sagasEvents.set(callback, e))
     }
@@ -139,18 +193,58 @@ export class RabbitMq implements ITransport, OnModuleInit {
                         (msg) => {
                             if (msg.content) {
                                 const value: PubEvent = JSON.parse(msg.content.toString())
-                                if (value.from.id === this.from.id) {
+                                if (value.from.id === this.from.id && !value?.data?.queueName) {
                                     return
                                 }
-                                if (
-                                    value?.data?.queueName &&
-                                    this.sagas.has(value.data.queueName)
-                                ) {
-                                    // TODO: para cada saga, criar um queue de execução, e responder a queue que veio junto do envento
-                                    // com a queue da saga
-                                    // esperar resposta, e se forem os dados, chamar callback,
-                                    // se não forem, ou acabar o tempo, fechar o canal
+
+                                const sagaName = Array.from(this.queueSagas.entries()).find(
+                                    (name) => name[1] === value.data.queueName,
+                                )?.[0]
+
+                                if (!sagaName) {
+                                    return
                                 }
+
+                                const id = v4()
+
+                                void Promise.all([
+                                    this.createConsumerChannel(),
+                                    this.getPublisherChannel(),
+                                ]).then(([consumer, worker]) => {
+                                    void consumer
+                                        .assertQueue('', { exclusive: true })
+                                        .then((queue) => {
+                                            void consumer.consume(
+                                                queue.queue,
+                                                (message) => {
+                                                    try {
+                                                        const value = JSON.parse(
+                                                            message.content.toString('utf-8'),
+                                                        )
+
+                                                        if (value) {
+                                                            void this.sagas.get(sagaName)(value)
+                                                        }
+                                                    } catch (err) {}
+                                                },
+                                                {
+                                                    noAck: true,
+                                                },
+                                            )
+
+                                            worker.sendToQueue(
+                                                msg.properties.replyTo,
+                                                Buffer.from(
+                                                    JSON.stringify({ sagaName, id }),
+                                                    'utf-8',
+                                                ),
+                                                {
+                                                    correlationId: msg.properties.correlationId,
+                                                    replyTo: queue.queue,
+                                                },
+                                            )
+                                        })
+                                })
                             }
                         },
                         {
@@ -186,6 +280,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                         (message) => {
                             if (message?.properties?.correlationId !== id) {
                                 void consumer.deleteQueue(queue.queue)
+                                void consumer.close()
                                 return
                             }
 
@@ -244,7 +339,6 @@ export class RabbitMq implements ITransport, OnModuleInit {
             this.getPublisherChannel(),
         ])
 
-        // await workerChannel.bindExchange(name, '*', '*')
         void workerChannel.consume(
             name,
             (message) => {

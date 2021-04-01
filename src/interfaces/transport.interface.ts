@@ -23,6 +23,7 @@ export interface ITransport extends OnModuleDestroy {
     // ): void
 
     registerSaga<EventBase extends PubEvent = PubEvent>(
+        queueBusName: string,
         name: string,
         callback: EventCallback<EventBase>,
         ...events: string[]
