@@ -13,7 +13,13 @@ export interface CompletedEvent<T = any> extends JobEvent {
 
 export interface PubEvent<T extends IEvent = IEvent> {
     name: string
+    from?: {
+        name: string
+        id: string
+    }
     event: T
     timestamp?: number
     module?: string
+    queueName: string
+    data?: any
 }

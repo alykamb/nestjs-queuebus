@@ -11,7 +11,7 @@ import {
 import { ModuleRef } from '@nestjs/core'
 
 import { QueueBusBase } from '.'
-import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, Transport } from './constants'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME, Transport } from './constants'
 import { EventBusBase } from './eventBusBase'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { ITransport } from './interfaces/transport.interface'
@@ -52,6 +52,10 @@ export class QueueModule implements OnApplicationBootstrap {
                 queueConfigService,
                 ...queues,
                 ...(moduleOptions?.providers || []),
+                {
+                    provide: QUEUE_DEFAULT_NAME,
+                    useValue: '',
+                },
             ],
             exports: [...queues, ...(moduleOptions?.exports || [])],
             imports: [...(moduleOptions?.imports || [])],
@@ -62,15 +66,15 @@ export class QueueModule implements OnApplicationBootstrap {
         return {
             provide: MESSAGE_BROOKER,
             useFactory: async (queueConfig: IQueueConfigService): Promise<ITransport> => {
-                if (queueConfig.messageBrooker === Transport.bullMQ) {
-                    if (!require('bullmq')) {
-                        throw new Error(
-                            'bullmq node package is missing. use: npm install --save amqplib',
-                        )
-                    }
-                    const { BullMq } = await import('./bullmq/bullMq')
-                    return new BullMq(queueConfig)
-                }
+                // if (queueConfig.messageBrooker === Transport.bullMQ) {
+                //     if (!require('bullmq')) {
+                //         throw new Error(
+                //             'bullmq node package is missing. use: npm install --save amqplib',
+                //         )
+                //     }
+                //     const { BullMq } = await import('./bullmq/bullMq')
+                //     return new BullMq(queueConfig)
+                // }
                 if (queueConfig.messageBrooker === Transport.rabbitMQ) {
                     if (!require('amqplib')) {
                         throw new Error(

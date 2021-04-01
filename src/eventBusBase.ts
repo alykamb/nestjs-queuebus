@@ -1,10 +1,10 @@
 import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
-import { Observable, of, Subscription } from 'rxjs'
-import { catchError, filter, switchMap, withLatestFrom } from 'rxjs/operators'
+import { Subject, Subscription } from 'rxjs'
+import { filter, tap } from 'rxjs/operators'
 
 import { QueueBusBase } from '.'
-import { QUEUE_CONFIG_SERVICE } from './constants'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
 import {
     EVENTBUS_QUEUEBUS_METADATA,
     EVENTS_HANDLER_METADATA,
@@ -12,13 +12,13 @@ import {
 } from './decorators/constants'
 import { InvalidSagaException } from './exceptions'
 import { InvalidQueueBusForEventBusException } from './exceptions/invalidQueueBusForEventBus.exception'
-import { asObservable } from './helpers/asObservable'
-import { IEvent, IEventBus, IEventHandler, ISaga } from './interfaces'
+// import { asObservable } from './helpers/asObservable'
+import { IEvent, IEventBus, IEventHandler, IQueue, ISaga } from './interfaces'
 import { PubEvent } from './interfaces/events/jobEvent.interface'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
-import { IQueue } from './interfaces/queues/queue.interface'
-import { IQueueJob } from './interfaces/queues/queueJob.interface'
-import { RedisPubSub } from './pubsub/pubsub'
+import { ITransport } from './interfaces/transport.interface'
+import { ofType } from './operators'
+import { SagaData } from './types/sagaData.type'
 
 export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<IEventHandler<EventBase>>
 
@@ -43,11 +43,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     constructor(
         protected readonly moduleRef: ModuleRef,
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
-        /**
-         * O publisher é responsável por publicar os eventos na rede
-         * e ouvir aos eventos publicados por outras instâncias
-         */
-        protected publisher: RedisPubSub,
+        @Inject(MESSAGE_BROOKER) protected readonly transport: ITransport,
     ) {
         const prototype = Object.getPrototypeOf(this)
         const queueBus = Reflect.getMetadata(EVENTBUS_QUEUEBUS_METADATA, prototype.constructor)
@@ -78,30 +74,39 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         const timestamp = +new Date()
         const module = this.queueConfig.name
 
-        this.publisher.publish({ event, name, timestamp, module })
+        void this.transport.publishEvent({
+            event,
+            name,
+            timestamp,
+            module,
+            queueName: this.queueBus['fullname'],
+        })
+
+        const handler = this.handlers.get(name)
+        if (handler) {
+            try {
+                const res = handler.handle(event)
+                if (res instanceof Promise) {
+                    res.catch(() => {
+                        //
+                    })
+                } else if (res && res.subscribe) {
+                    res.toPromise().catch(() => {
+                        //
+                    })
+                }
+            } catch (err) {}
+        }
     }
 
     /**
-     * Registra o evento e cria um subscription para executar o handler
-     * cada vez que o evento for publicado na rede (sempre é através do pub$)
+     * Registra o evento handler
      *
      * @param handler - handler do evento
      * @param name - nome do evento
      */
     protected bind(handler: IEventHandler<EventBase>, name: string): void {
         this.handlers.set(name, handler)
-
-        const subscription = this.publisher.pub$
-            .pipe(
-                filter((e) => {
-                    return e.name === name
-                }),
-            )
-            .subscribe((e) => {
-                this.handlers.get(name).handle(e.event)
-            })
-
-        this.subscriptions.push(subscription)
     }
 
     /**
@@ -119,15 +124,20 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                 if (!instance) {
                     throw new InvalidSagaException()
                 }
-                return metadata.data.map((key: string) => ({
-                    call: instance[key],
-                    name: key,
-                    bus: metadata.bus,
-                }))
+
+                return metadata.data.map(
+                    (arg: { key: string; events: IEvent[]; commands: IQueue[] }) => ({
+                        call: instance[arg.key],
+                        key: arg.key,
+                        bus: metadata.bus,
+                        commands: arg.commands,
+                        events: arg.events,
+                    }),
+                )
             })
             .reduce((a, b) => a.concat(b), [])
 
-        sagas.forEach((saga: { call: ISaga<PubEvent>; name: string; bus: QueueBusBase }) =>
+        sagas.forEach((saga: { call: ISaga<PubEvent>; bus: QueueBusBase } & SagaData) =>
             this.registerSaga(saga),
         )
     }
@@ -152,7 +162,8 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             return
         }
         const eventsNames = this.reflectEventsNames(handler)
-        eventsNames.map((event) => this.bind(instance as IEventHandler<EventBase>, event.name))
+
+        eventsNames.data.map((event) => this.bind(instance as IEventHandler<EventBase>, event.name))
     }
 
     /**
@@ -163,65 +174,95 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      *
      * @param saga
      */
-    protected registerSaga(saga: { call: ISaga<IEvent>; name: string }): void {
+    protected registerSaga(saga: { call: ISaga<PubEvent>; bus: QueueBusBase } & SagaData): void {
         if (typeof saga.call !== 'function') {
             throw new InvalidSagaException()
         }
-        const stream$ = saga.call(this.publisher.stream$) as Observable<IQueueJob>
+        //cria o nome com a combinação de commands e events
+        const name = `${saga.name}_${saga.key}_${saga.events
+            .map((t) => t.name)
+            .join()}_${saga.commands.map((t) => t.name).join()}`
 
-        if (!(stream$ instanceof Observable)) {
-            throw new InvalidSagaException()
-        }
+        this.transport.registerSaga(
+            name,
+            (data: { event: PubEvent }): void => {
+                // console.clear()
+                console.log('RUN SAGA HERE')
+                // console.log(data)
 
-        const subscription = stream$
-            .pipe(
-                //Filtra os commands resultantes que existem
-                filter((e) => {
-                    return !!e
-                }),
+                console.log(data.event.data.name)
+            },
+            ...saga.events,
+        )
 
-                //combina com o próprio evento atual
-                withLatestFrom(this.publisher.stream$),
-                switchMap(([command, event]) => {
-                    let c: IQueue = command
-                    let logErrors = false
-                    const jobOptions = command.options?.jobOptions || {}
-                    const module = command.options?.module
+        // this.queueBusSaga['bind'](new command.Handler(), name)
 
-                    if (command.job) {
-                        c = command.job
-                        logErrors = command.options?.logErrors ?? false
-                    }
-                    const commandName = this.queueBus.getConstructorName(c as any)
+        // const subscription = this.stream$
+        //     .pipe(
+        //         ofType(...saga.events),
+        //         filter((e) => !!e),
+        //     )
+        //     .subscribe((e) => {
+        //         console.clear()
+        //         console.log('SENDING SAGA JOB: ' + `${name}_${e.data.timestamp}`)
+        //         void this.queueBusSaga.execute(new command[name](e), {
+        //             moveToQueue: true,
+        //             id: `${name}_${e.data.timestamp}`,
+        //         })
+        //     })
 
-                    //usa o evento atual para criar um id único
-                    const jobId = `${saga.name}_${commandName}_${event.timestamp}`
+        // this.subscriptions.push(subscription)
 
-                    //executa o commando e captura os erros
-                    return asObservable(
-                        this.queueBus.execute(c, {
-                            moveToQueue: true,
-                            jobOptions: { ...jobOptions, jobId },
-                            module,
-                        }),
-                    ).pipe(
-                        catchError((err) => {
-                            if (logErrors) {
-                                // eslint-disable-next-line no-console
-                                console.error({ err, jobId })
-                            }
-                            return of(err)
-                        }),
-                    )
-                }),
-            )
-            .subscribe((result) => {
-                console.log('eventExecuted: %o', result)
-                //erros de eventos não precisam parar a aplicação
-            })
+        // this.queueBus['bind'](
+        //     {
+        //         execute: () => {
+        //             void saga
+        //                 .call(this.publisher.stream$)
+        //                 .pipe(
+        //                     //Filtra os commands resultantes que existem
+        //                     filter((e) => {
+        //                         return !!e
+        //                     }),
 
-        //registra a subscription para removê-la depois
-        this.subscriptions.push(subscription)
+        //                     //combina com o próprio evento atual
+        //                     withLatestFrom(this.publisher.stream$),
+        //                     switchMap(([command, event]: any[]) => {
+        //                         let c: IQueue = command
+        //                         let logErrors = false
+        //                         const jobOptions = command.options?.jobOptions || {}
+        //                         const module = command.options?.module
+
+        //                         if (command.job) {
+        //                             c = command.job
+        //                             logErrors = command.options?.logErrors ?? false
+        //                         }
+
+        //                         //usa o evento atual para criar um id único
+        //                         const jobId = `${name}_${event.timestamp}`
+
+        //                         //executa o commando e captura os erros
+        //                         return asObservable(
+        //                             this.queueBus.execute(c, {
+        //                                 moveToQueue: true,
+        //                                 jobOptions: { ...jobOptions, jobId },
+        //                                 module,
+        //                             }),
+        //                         ).pipe(
+        //                             catchError((err) => {
+        //                                 if (logErrors) {
+        //                                     // eslint-disable-next-line no-console
+        //                                     console.error({ err, jobId })
+        //                                 }
+        //                                 return of(err)
+        //                             }),
+        //                         )
+        //                     }),
+        //                 )
+        //                 .toPromise()
+        //         },
+        //     },
+        //     name,
+        // )
     }
 
     /**
@@ -237,7 +278,9 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      * Retorna o valor do metadado, que é a implementação do evento
      * @param handler
      */
-    protected reflectEventsNames(handler: EventHandlerType<EventBase>): FunctionConstructor[] {
+    protected reflectEventsNames(
+        handler: EventHandlerType<EventBase>,
+    ): { data: FunctionConstructor[]; bus: Type<EventBusBase> } {
         return Reflect.getMetadata(EVENTS_HANDLER_METADATA, handler)
     }
 }

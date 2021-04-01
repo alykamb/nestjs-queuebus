@@ -6,7 +6,7 @@ import { Transport } from '../constants'
 
 export interface IQueueConfigService {
     name: string
-
+    id: string
     messageBrooker: Transport
     host?: string
     port: number

@@ -1,11 +1,11 @@
-import { QueueHandler } from './queueHandler.decorator'
-import { EventsHandler } from './eventsHandler.decorator'
 import { EventBusBase } from '../eventBusBase'
 import { QueueBusBase } from '../queueBusBase'
-import { Saga } from './saga.decorator'
-import { QueueHandlerDecorator } from '../types/queueHandlerDecorator.type'
 import { EventHandlerDecorator } from '../types/eventHandlerDecorator.type'
+import { QueueHandlerDecorator } from '../types/queueHandlerDecorator.type'
 import { SagaDecorator } from '../types/sagaDecorator.type'
+import { EventsHandler } from './eventsHandler.decorator'
+import { QueueHandler } from './queueHandler.decorator'
+import { Saga } from './saga.decorator'
 
 /**
  * Cria um decorador de Handler para um QueueBus

@@ -1,1 +1,1 @@
-export type IQueue = unknown
+export type IQueue = any

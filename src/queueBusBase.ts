@@ -2,8 +2,7 @@ import { Inject, Injectable, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { Job } from 'bullmq'
 
-import { BullMq } from './bullmq/bullMq'
-import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME } from './constants'
 import {
     JOB_AFTER_EXECUTION_METADATA,
     JOB_BEFORE_EXECUTION_METADATA,
@@ -19,6 +18,7 @@ import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { IQueueBus } from './interfaces/queues/queueBus.interface'
 import { IQueueHandler } from './interfaces/queues/queueHandler.interface'
 import { IImpl } from './interfaces/queues/queueImpl.interface'
+import { ITransport } from './interfaces/transport.interface'
 import { Hook, HookContext } from './types/hooks.type'
 
 export type HandlerType = Type<IQueueHandler<IImpl>>
@@ -38,23 +38,28 @@ const compose = (
 export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     protected handlers = new Map<string, IQueueHandler<ImplBase>>()
     protected metadataName = QUEUE_HANDLER_METADATA
-    protected name = ''
+    public readonly name = ''
 
     protected hooks: IJobExecutionInterceptors
 
     constructor(
         protected readonly moduleRef: ModuleRef,
-        @Inject(MESSAGE_BROOKER) protected readonly bullMq: BullMq,
+        @Inject(MESSAGE_BROOKER) protected readonly messageBrooker: ITransport,
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
+        @Inject(QUEUE_DEFAULT_NAME) name = '',
     ) {
         this.name =
-            Reflect.getMetadata(NAME_QUEUE_METADATA, Object.getPrototypeOf(this).constructor) || ''
+            Reflect.getMetadata(NAME_QUEUE_METADATA, Object.getPrototypeOf(this).constructor) ||
+            name
 
-        void this.bullMq.createWorker(this.queueConfig.name + this.name, (job: Job) =>
+        void this.messageBrooker.createWorker(this.queueConfig.name + this.name, (job: Job) =>
             this.handleJob(job),
         )
     }
 
+    protected get fullname(): string {
+        return this.queueConfig.name + this.name
+    }
     /**
      * Executa o handler registrado para a implementação de
      * acordo com o nome da classe
@@ -83,14 +88,14 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         data: T,
         options: IExecutionOptions = {},
     ): Promise<Ret> {
-        const { moveToQueue = false, module = this.queueConfig.name, jobOptions } = options
+        const { moveToQueue = false, module = this.queueConfig.name, ...o } = options
 
         const run = (name: string, d: T): Promise<Ret> => {
             if (module === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
                 return this.executeHandler(name, d)
             }
             return new Promise((resolve, reject) => {
-                this.bullMq.addJob(
+                this.messageBrooker.addJob(
                     module + this.name,
                     name,
                     d,
@@ -100,7 +105,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
                         }
                         return resolve(data)
                     },
-                    jobOptions,
+                    o,
                 )
             })
         }

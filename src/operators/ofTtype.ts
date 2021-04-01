@@ -1,6 +1,6 @@
 import { Type } from '@nestjs/common'
 import { Observable } from 'rxjs'
-import { filter, map } from 'rxjs/operators'
+import { filter } from 'rxjs/operators'
 
 import { EVENTS_METADATA } from '../decorators/constants'
 import { IEvent } from '../interfaces'
@@ -15,17 +15,13 @@ import { IEvent } from '../interfaces'
  */
 export function ofType<TInput extends IEvent, TOutput extends IEvent>(
     ...types: Array<Type<TOutput>>
-): (source: Observable<TInput>) => Observable<TOutput> {
-    const isInstanceOf = (event: any): event is TOutput => {
+): (source: Observable<TInput>) => Observable<TInput> {
+    const isInstanceOf = (event: any): event is TInput => {
         return !!types.find((classType) => {
             const m: string = Reflect.getMetadata(EVENTS_METADATA, classType)
-            return event.name === classType.name && m === event.module
+            return event.data.name === classType.name && m === event.from.name
         })
     }
 
-    return (source: Observable<TInput>): Observable<TOutput> =>
-        source.pipe(
-            filter(isInstanceOf),
-            map((e: any) => e.event),
-        )
+    return (source: Observable<TInput>): Observable<TInput> => source.pipe(filter(isInstanceOf))
 }

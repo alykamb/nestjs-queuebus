@@ -20,7 +20,7 @@ import { ITransport } from '../interfaces/transport.interface'
 import { Callback } from '../types/callback'
 
 @Injectable()
-export class BullMq implements ITransport {
+export class BullMq implements Partial<ITransport> {
     /** Mantém a referência do worker para cada queue */
     private workers = new Map<string, Worker>()
 
