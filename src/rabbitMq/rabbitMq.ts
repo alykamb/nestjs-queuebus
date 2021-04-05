@@ -5,34 +5,26 @@ import { map, scan } from 'rxjs/operators'
 import { v4 } from 'uuid'
 
 import { QUEUE_CONFIG_SERVICE } from '../constants'
+import { memoize } from '../decorators/memoize.decorator'
 import { JobException } from '../exceptions'
 import { IQueueConfigService } from '../interfaces'
 import { PubEvent } from '../interfaces/events/jobEvent.interface'
 import { IExecutionOptions } from '../interfaces/executionOptions.interface'
 import { EventCallback, ITransport } from '../interfaces/transport.interface'
 import { Callback } from '../types/callback'
-
-enum WORKERS_EVENTS {
-    CHANNEL = 'WORKERS',
-}
-
-enum EVENTS {
-    CHANNEL = 'EVENTS',
-    PUBLISH = 'PUBLISH',
-}
+import { consumePrivateQueue } from './helpers/consumePrivateQueue'
+import { parseConsumeMessage } from './helpers/parseConsumeMessage'
+import { EVENTS, WORKERS_EVENTS } from './rabbitMq.constants'
 
 @Injectable()
 export class RabbitMq implements ITransport, OnModuleInit {
-    private publisher: Connection
-    private consumer: Connection
+    //keep reference of workers
     private workers = new Map<string, Channel>()
     private sagas = new Map<string, EventCallback>()
     private queueSagas = new Map<string, string>()
     private sagasEvents = new WeakMap<EventCallback, string>()
-    private publisherChannel: Channel
-    private eventPublisherChannel: Channel
-    private eventListenerChannel: Channel
 
+    //keep track of open jobs
     private numberOfActiveJobs$ = new BehaviorSubject<number>(0)
     private addJob$ = new Subject<null>()
     private removeJob$ = new Subject<null>()
@@ -47,54 +39,43 @@ export class RabbitMq implements ITransport, OnModuleInit {
             .subscribe((n) => this.numberOfActiveJobs$.next(n))
     }
 
-    public async getPublisher(): Promise<Connection> {
-        if (!this.publisher) {
-            this.publisher = await connect(
-                `amqp://${this.queueConfig.host}:${this.queueConfig.port}`,
-            )
-        }
-        return this.publisher
+    @memoize()
+    public getPublisher(): Promise<Connection> {
+        return connect(`amqp://${this.queueConfig.host}:${this.queueConfig.port}`)
     }
 
+    @memoize()
     public async getConsumer(): Promise<Connection> {
-        if (!this.consumer) {
-            this.consumer = await connect(
-                `amqp://${this.queueConfig.host}:${this.queueConfig.port}`,
-            )
-        }
-        return this.consumer
+        return connect(`amqp://${this.queueConfig.host}:${this.queueConfig.port}`)
     }
 
     public async createConsumerChannel(): Promise<Channel> {
-        await this.getConsumer()
-        return this.consumer.createChannel()
+        const consumer = await this.getConsumer()
+        return consumer.createChannel()
     }
 
+    @memoize()
     public async getPublisherChannel(): Promise<Channel> {
-        await this.getPublisher()
-        if (!this.publisherChannel) {
-            this.publisherChannel = await this.publisher.createChannel()
-        }
-        return this.publisherChannel
+        const publisher = await this.getPublisher()
+        return publisher.createChannel()
     }
 
+    @memoize()
     public async getEventPublisherChannel(): Promise<Channel> {
-        await this.getPublisher()
-        if (!this.eventPublisherChannel) {
-            this.eventPublisherChannel = await this.publisher.createChannel()
-        }
-        return this.eventPublisherChannel
+        const publisher = await this.getPublisher()
+        return publisher.createChannel()
     }
 
+    @memoize()
     public async getEventListenerChannel(): Promise<Channel> {
-        await this.getPublisher()
-        if (!this.eventListenerChannel) {
-            this.eventListenerChannel = await this.publisher.createChannel()
-            await this.eventListenerChannel.assertExchange(WORKERS_EVENTS.CHANNEL, 'fanout', {
-                durable: false,
-            })
-        }
-        return this.eventListenerChannel
+        const publisher = await this.getPublisher()
+
+        const eventListenerChannel = await publisher.createChannel()
+        await eventListenerChannel.assertExchange(WORKERS_EVENTS.CHANNEL, 'fanout', {
+            durable: false,
+        })
+
+        return eventListenerChannel
     }
 
     public async publishEvent<EventBase extends PubEvent = PubEvent>(
@@ -109,62 +90,62 @@ export class RabbitMq implements ITransport, OnModuleInit {
         ])
 
         const id = v4()
-        void consumerChannel.assertQueue('', { exclusive: true }).then((queue) => {
-            const sagas = new Map<string, string[]>()
-            let timeout
 
-            const sendToSaga = (v: { sagaName: string; id: string }): void => {
-                sagas.forEach((value) => {
-                    const chosen = Math.floor(Math.random() * value.length)
+        const sagas = new Map<string, string[]>()
+        let timeout
 
-                    value.forEach((val, i) => {
-                        publisherChannel.sendToQueue(
-                            val,
-                            Buffer.from(JSON.stringify(i === chosen ? event : false), 'utf-8'),
-                            {
-                                correlationId: v.id,
-                            },
-                        )
-                    })
+        const sendToSaga = (v: { sagaName: string; id: string }): void => {
+            sagas.forEach((value) => {
+                const chosen = Math.floor(Math.random() * value.length)
+
+                value.forEach((val, i) => {
+                    publisherChannel.sendToQueue(
+                        val,
+                        Buffer.from(JSON.stringify(i === chosen ? event : false), 'utf-8'),
+                        {
+                            correlationId: v.id,
+                        },
+                    )
                 })
-                void consumerChannel.close()
-            }
+            })
+            void consumerChannel.close()
+        }
 
-            void consumerChannel.consume(
-                queue.queue,
-                (message) => {
-                    if (message?.properties?.correlationId !== id) {
-                        void consumerChannel.deleteQueue(queue.queue)
-                        void consumerChannel.close()
-                        return
-                    }
+        void consumePrivateQueue(
+            consumerChannel,
+            parseConsumeMessage((err, data, message, queue) => {
+                if (err) {
+                    return
+                }
+                if (message?.properties?.correlationId !== id) {
+                    void consumerChannel.deleteQueue(queue.queue)
+                    void consumerChannel.close()
+                    return
+                }
 
-                    const value = JSON.parse(message.content.toString())
-                    if (!sagas.has(value.sagaName)) {
-                        sagas.set(value.sagaName, [message.properties.replyTo])
-                    } else {
-                        sagas.get(value.sagaName).push(message.properties.replyTo)
-                    }
+                const value = JSON.parse(message.content.toString())
+                if (!sagas.has(value.sagaName)) {
+                    sagas.set(value.sagaName, [message.properties.replyTo])
+                } else {
+                    sagas.get(value.sagaName).push(message.properties.replyTo)
+                }
 
-                    if (timeout) {
-                        clearTimeout(timeout)
-                    }
-                    timeout = setTimeout(sendToSaga, 2000, value)
-                },
-                {
-                    noAck: true,
-                },
-            )
-
-            eventPublisher.publish(
-                WORKERS_EVENTS.CHANNEL,
-                '',
-                Buffer.from(
-                    JSON.stringify({ event: EVENTS.PUBLISH, from: this.from, data: event }),
-                ),
-                { replyTo: queue.queue, correlationId: id },
-            )
-        })
+                if (timeout) {
+                    clearTimeout(timeout)
+                }
+                timeout = setTimeout(sendToSaga, 2000, value)
+            }),
+            (queue) => {
+                eventPublisher.publish(
+                    WORKERS_EVENTS.CHANNEL,
+                    '',
+                    Buffer.from(
+                        JSON.stringify({ event: EVENTS.PUBLISH, from: this.from, data: event }),
+                    ),
+                    { replyTo: queue.queue, correlationId: id },
+                )
+            },
+        )
     }
 
     public registerSaga<EventBase extends PubEvent = PubEvent>(
@@ -404,6 +385,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         if (this.eventListenerChannel) {
             await this.eventListenerChannel.close()
         }
+
         return true
     }
 }
