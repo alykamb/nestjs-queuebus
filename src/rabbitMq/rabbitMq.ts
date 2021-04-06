@@ -25,6 +25,7 @@ enum EVENTS {
 export class RabbitMq implements ITransport, OnModuleInit {
     private publisher: Connection
     private consumer: Connection
+    private consumersChannels = new Map<string, Channel>()
     private workers = new Map<string, Channel>()
     private sagas = new Map<string, EventCallback>()
     private queueSagas = new Map<string, string>()
@@ -65,9 +66,18 @@ export class RabbitMq implements ITransport, OnModuleInit {
         return this.consumer
     }
 
-    public async createConsumerChannel(): Promise<Channel> {
+    public async createConsumerChannel(name?: string): Promise<Channel> {
         await this.getConsumer()
-        return this.consumer.createChannel()
+        if (!name) {
+            return this.consumer.createChannel()
+        }
+
+        let channel = this.consumersChannels.get(name)
+        if (!channel) {
+            channel = await this.consumer.createChannel()
+            this.consumersChannels.set(name, channel)
+        }
+        return channel
     }
 
     public async getPublisherChannel(): Promise<Channel> {
@@ -104,7 +114,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         await eventPublisher.assertExchange(EVENTS.CHANNEL, 'fanout', { durable: false })
 
         const [consumerChannel, publisherChannel] = await Promise.all([
-            this.createConsumerChannel(),
+            this.createConsumerChannel('event_publisher'),
             this.getPublisherChannel(),
         ])
 
@@ -133,15 +143,16 @@ export class RabbitMq implements ITransport, OnModuleInit {
                         )
                     })
                 })
-                void consumerChannel.close()
+                void consumerChannel.deleteQueue(queue.queue)
             }
 
             void consumerChannel.consume(
                 queue.queue,
                 (message) => {
                     if (message?.properties?.correlationId !== id) {
+                        // void consumerChannel.close()
+                        // console.log('WRONG MESSAGE!!!', message?.properties?.correlationId, id)
                         void consumerChannel.deleteQueue(queue.queue)
-                        void consumerChannel.close()
                         return
                     }
 
@@ -222,7 +233,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                 const id = v4()
 
                                 void Promise.all([
-                                    this.createConsumerChannel(),
+                                    this.createConsumerChannel('saga_consumer'),
                                     this.getPublisherChannel(),
                                 ]).then(([consumer, worker]) => {
                                     void consumer
@@ -233,7 +244,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                                 (message) => {
                                                     if (message?.properties?.correlationId !== id) {
                                                         void consumer.deleteQueue(queue.queue)
-                                                        void consumer.close()
+                                                        // void consumer.close()
                                                         return
                                                     }
 

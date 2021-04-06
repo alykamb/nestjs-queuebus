@@ -2792,8 +2792,8 @@
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/rabbitMq.ts": {
-        "version": "a1de0313fe62ffef16f4d5cd16ffbda4c2570102b9136300bde0a2bea6d18e01",
-        "signature": "208d5f0045c3ffbdd799433d111007c10806424ce7af4a96de1f5762981098cc",
+        "version": "d316120467a59e71ba94a71631ba94e7bd5d21d2041e4794875613c8e38f0939",
+        "signature": "a6a4140f703d4bedfe52923b06a8db678d55ee8a5541f4cb462d909842349625",
         "affectsGlobalScope": false
       },
       "./src/queue.module.ts": {
@@ -2937,13 +2937,13 @@
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/helpers/consumePrivateQueue.ts": {
-        "version": "eefe89af4409b4895d4468b64c389c3cb74bd5f79c49ea36f43db62e4c3e4859",
-        "signature": "f4e62ce8b66e04186612b8ebff638a694f2d2a42da36a62c3672bbec5161670b",
+        "version": "38ebcb6e4cd14401a52b34ff10c41d43e0c9688c4d52ecb6a55ee0a6b17694d1",
+        "signature": "01997dd7bd1de49b53b7d6cd869e3fed2181ac132baf42234b861cbe91e28dd5",
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/helpers/parseConsumeMessage.ts": {
-        "version": "37f0b6df80eda875ca1d967d1ed7a469cff10342b73cf48394d35aff2bcd4099",
-        "signature": "2364bd39307a5cf0f1e6b9103ba641d9c1828f4fb695aaf9a9f8abf762bc083f",
+        "version": "9f2974d74ea149ddedc778a09ad5367e55f2d340b93aa5bcb0514188ee79de3a",
+        "signature": "ea6ae8e0140cf4dec8fe714609317d0f608b46939d4b9acae69d0f2ab2c6e2d0",
         "affectsGlobalScope": false
       },
       "./src/types/queueResult.type.ts": {
