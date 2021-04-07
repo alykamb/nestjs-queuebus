@@ -287,10 +287,10 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         this.transport.registerSaga(
             this.queueBus['fullname'],
             name,
-            (data: { event: PubEvent }): void => {
+            (data: { event: PubEvent }): any | Promise<any> => {
                 const hooks = this.getHooks()
 
-                void compose(
+                return compose(
                     hooks.sagaBeforeExecution &&
                         this.runHooks(hooks.sagaBeforeExecution, { name, module, bus: this }),
                     async (data) => {

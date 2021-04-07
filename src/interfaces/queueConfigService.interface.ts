@@ -1,13 +1,10 @@
-import { ClientProxy } from '@nestjs/microservices'
-import { QueueOptions } from 'bullmq'
-
 import { EventBusBase, QueueBusBase } from '..'
-import { Transport } from '../constants'
+// import { Transport } from '../constants'
 
 export interface IQueueConfigService {
     name: string
     id: string
-    messageBrooker: Transport
+
     host?: string
     port: number
 
@@ -15,10 +12,4 @@ export interface IQueueConfigService {
         queues: Array<typeof QueueBusBase>
         events: Array<typeof EventBusBase>
     }
-    clientProxy: ClientProxy
-
-    onEvent?: (data: any) => void
-
-    defaultQueueOptions?: QueueOptions
-    defaultWorkerOptions?: WorkerOptions
 }

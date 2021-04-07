@@ -1,11 +1,12 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
 import { Channel, connect, Connection } from 'amqplib'
-import { BehaviorSubject, merge, Subject, Subscription } from 'rxjs'
-import { map, scan } from 'rxjs/operators'
+import { BehaviorSubject, forkJoin, interval, merge, of, race, Subject, Subscription } from 'rxjs'
+import { filter, map, mapTo, mergeMap, scan, take } from 'rxjs/operators'
 import { v4 } from 'uuid'
 
-import { QUEUE_CONFIG_SERVICE } from '../constants'
+import { QUEUE_CONFIG_SERVICE, TIMEOUT } from '../constants'
 import { JobException } from '../exceptions'
+import { TimeoutException } from '../exceptions/timeout.exception'
 import { IQueueConfigService } from '../interfaces'
 import { PubEvent } from '../interfaces/events/jobEvent.interface'
 import { IExecutionOptions } from '../interfaces/executionOptions.interface'
@@ -23,6 +24,7 @@ enum EVENTS {
 
 @Injectable()
 export class RabbitMq implements ITransport, OnModuleInit {
+    private closing = false
     private publisher: Connection
     private consumer: Connection
     private consumersChannels = new Map<string, Channel>()
@@ -37,6 +39,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
 
     private numberOfActiveJobs$ = new BehaviorSubject<number>(0)
     private addJob$ = new Subject<null>()
+    private workersJobs = new Map<string, BehaviorSubject<number>>()
     private removeJob$ = new Subject<null>()
     private numberOfActiveJobsSub: Subscription
 
@@ -226,73 +229,86 @@ export class RabbitMq implements ITransport, OnModuleInit {
                     void listener.consume(
                         q.queue,
                         (msg) => {
-                            if (msg.content) {
-                                const value: PubEvent = JSON.parse(msg.content.toString())
-                                if (value.from.id === this.from.id && !value?.data?.queueName) {
-                                    return
-                                }
-
-                                for (const cb of this.eventListeners.values()) {
-                                    try {
-                                        cb(value)
-                                    } catch (err) {}
-                                }
-
-                                const sagaName = Array.from(this.queueSagas.entries()).find(
-                                    (name) => name[1] === value.data.queueName,
-                                )?.[0]
-
-                                if (!sagaName) {
-                                    return
-                                }
-
-                                const id = v4()
-
-                                void Promise.all([
-                                    this.createConsumerChannel('saga_consumer'),
-                                    this.getPublisherChannel(),
-                                ]).then(([consumer, worker]) => {
-                                    void consumer
-                                        .assertQueue('', { exclusive: true })
-                                        .then((queue) => {
-                                            void consumer.consume(
-                                                queue.queue,
-                                                (message) => {
-                                                    if (message?.properties?.correlationId !== id) {
-                                                        void consumer.deleteQueue(queue.queue)
-                                                        // void consumer.close()
-                                                        return
-                                                    }
-
-                                                    try {
-                                                        const value = JSON.parse(
-                                                            message.content.toString('utf-8'),
-                                                        )
-
-                                                        if (value) {
-                                                            void this.sagas.get(sagaName)(value)
-                                                        }
-                                                    } catch (err) {}
-                                                },
-                                                {
-                                                    noAck: true,
-                                                },
-                                            )
-
-                                            worker.sendToQueue(
-                                                msg.properties.replyTo,
-                                                Buffer.from(
-                                                    JSON.stringify({ sagaName, id }),
-                                                    'utf-8',
-                                                ),
-                                                {
-                                                    correlationId: msg.properties.correlationId,
-                                                    replyTo: queue.queue,
-                                                },
-                                            )
-                                        })
-                                })
+                            if (!msg.content) {
+                                return
                             }
+
+                            if (this.closing) {
+                                return
+                            }
+
+                            const value: PubEvent = JSON.parse(msg.content.toString())
+                            if (value.from.id === this.from.id && !value?.data?.queueName) {
+                                return
+                            }
+
+                            for (const cb of this.eventListeners.values()) {
+                                try {
+                                    cb(value)
+                                } catch (err) {}
+                            }
+
+                            const sagaName = Array.from(this.queueSagas.entries()).find(
+                                (name) => name[1] === value.data.queueName,
+                            )?.[0]
+
+                            if (!sagaName) {
+                                return
+                            }
+
+                            const id = v4()
+
+                            void Promise.all([
+                                this.createConsumerChannel('saga_consumer'),
+                                this.getPublisherChannel(),
+                            ]).then(([consumer, worker]) => {
+                                void consumer.assertQueue('', { exclusive: true }).then((queue) => {
+                                    void consumer.consume(
+                                        queue.queue,
+                                        (message) => {
+                                            if (message?.properties?.correlationId !== id) {
+                                                void consumer.deleteQueue(queue.queue)
+                                                return
+                                            }
+
+                                            try {
+                                                const value = JSON.parse(
+                                                    message.content.toString('utf-8'),
+                                                )
+
+                                                if (value) {
+                                                    this.addJob$.next()
+                                                    try {
+                                                        const res = this.sagas.get(sagaName)(value)
+
+                                                        if (res instanceof Promise) {
+                                                            void res.then(() => {
+                                                                this.removeJob$.next()
+                                                            })
+                                                        } else {
+                                                            this.removeJob$.next()
+                                                        }
+                                                    } catch (err) {
+                                                        this.removeJob$.next()
+                                                    }
+                                                }
+                                            } catch (err) {}
+                                        },
+                                        {
+                                            noAck: true,
+                                        },
+                                    )
+
+                                    worker.sendToQueue(
+                                        msg.properties.replyTo,
+                                        Buffer.from(JSON.stringify({ sagaName, id }), 'utf-8'),
+                                        {
+                                            correlationId: msg.properties.correlationId,
+                                            replyTo: queue.queue,
+                                        },
+                                    )
+                                })
+                            })
                         },
                         {
                             noAck: true,
@@ -321,48 +337,66 @@ export class RabbitMq implements ITransport, OnModuleInit {
             ([consumer, worker]) => {
                 const id = options?.id || v4()
 
-                void consumer.assertQueue('', { exclusive: true }).then((queue) => {
-                    void consumer.consume(
-                        queue.queue,
-                        (message) => {
-                            if (message?.properties?.correlationId !== id) {
-                                void consumer.deleteQueue(queue.queue)
-                                void consumer.close()
-                                return
-                            }
+                return Promise.race([
+                    new Promise((resolve) => {
+                        void consumer.assertQueue('', { exclusive: true }).then((queue) => {
+                            void consumer.consume(
+                                queue.queue,
+                                (message) => {
+                                    if (message?.properties?.correlationId !== id) {
+                                        void consumer.deleteQueue(queue.queue)
+                                        void consumer.close()
+                                        return
+                                    }
 
-                            let error: Error
-                            let result: any = null
-                            try {
-                                const value = JSON.parse(message.content.toString('utf-8'))
-                                if (value.error) {
-                                    error = new JobException(value.error, value.extra)
-                                } else {
-                                    result = value.data
-                                }
-                            } catch (err) {
-                                error = err
-                            } finally {
-                                this.removeJob$.next()
-                                onFinish(error, result)
-                                void consumer.close()
-                            }
-                        },
-                        {
-                            noAck: true,
-                        },
-                    )
+                                    let error: Error
+                                    let result: any = null
+                                    try {
+                                        const value = JSON.parse(message.content.toString('utf-8'))
+                                        if (value.error) {
+                                            error = new JobException(value.error, value.extra)
+                                        } else {
+                                            result = value.data
+                                        }
+                                    } catch (err) {
+                                        error = err
+                                    } finally {
+                                        this.removeJob$.next()
+                                        resolve({ error, result })
+                                        void consumer.close()
+                                    }
+                                },
+                                {
+                                    noAck: true,
+                                },
+                            )
 
-                    worker.sendToQueue(
-                        module,
-                        Buffer.from(JSON.stringify({ name, data }), 'utf-8'),
-                        {
-                            correlationId: id,
-                            replyTo: queue.queue,
-                        },
-                    )
-                    this.addJob$.next()
-                })
+                            worker.sendToQueue(
+                                module,
+                                Buffer.from(JSON.stringify({ name, data }), 'utf-8'),
+                                {
+                                    correlationId: id,
+                                    replyTo: queue.queue,
+                                },
+                            )
+                            this.addJob$.next()
+                        })
+                    }),
+                    new Promise((resolve) =>
+                        setTimeout(
+                            () =>
+                                resolve({
+                                    error: new TimeoutException(
+                                        module,
+                                        name,
+                                        data,
+                                        options.timeout || TIMEOUT,
+                                    ),
+                                }),
+                            options.timeout || TIMEOUT,
+                        ),
+                    ),
+                ]).then(({ error, result }) => onFinish(error, result))
             },
         )
     }
@@ -372,6 +406,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         if (!channel) {
             channel = await this.createConsumerChannel()
             this.workers.set(name, channel)
+            this.workersJobs.set(name, new BehaviorSubject(0))
 
             await channel.assertQueue(name, {
                 durable: true,
@@ -392,6 +427,13 @@ export class RabbitMq implements ITransport, OnModuleInit {
                 let value = null
                 let result: Buffer | Promise<Buffer>
                 try {
+                    if (this.closing) {
+                        workerChannel.nack(message)
+                        return
+                    }
+
+                    this.workersJobs.get(name).next(this.workersJobs.get(name).value + 1)
+
                     value = JSON.parse(message.content.toString('utf-8'))
                     result = callback(value)
                         .then((data) => {
@@ -422,6 +464,9 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                     correlationId: message.properties.correlationId,
                                 })
                                 workerChannel.ack(message)
+                                this.workersJobs
+                                    .get(name)
+                                    .next(this.workersJobs.get(name).value - 1)
                             })
                             return
                         }
@@ -429,6 +474,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             correlationId: message.properties.correlationId,
                         })
                         workerChannel.ack(message)
+                        this.workersJobs.get(name).next(this.workersJobs.get(name).value - 1)
                     } catch (err) {
                         // eslint-disable-next-line no-console
                         console.error('Error in responding job result: ')
@@ -448,6 +494,37 @@ export class RabbitMq implements ITransport, OnModuleInit {
     }
 
     public async onModuleDestroy(): Promise<boolean> {
+        this.closing = true
+
+        //espera workers terminarem
+        await of(Array.from(this.workersJobs.values()))
+            .pipe(
+                mergeMap((v) =>
+                    forkJoin(
+                        v.map((a) =>
+                            race([
+                                a.pipe(
+                                    filter((v2) => v2 <= 0),
+                                    // tap(console.log),
+                                    take(1),
+                                ),
+                                interval(10000).pipe(take(1)),
+                            ]),
+                        ),
+                    ),
+                ),
+                mapTo(true),
+            )
+            .toPromise()
+
+        await Promise.all(
+            Array.from(this.workers.entries()).map(async (worker) => {
+                worker[1].nackAll()
+                await worker[1].deleteQueue(worker[0])
+                await worker[1].close()
+            }),
+        )
+
         if (this.eventListenerChannel) {
             await this.eventListenerChannel.close()
         }

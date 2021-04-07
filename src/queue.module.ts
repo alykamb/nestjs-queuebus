@@ -11,12 +11,10 @@ import {
 import { ModuleRef } from '@nestjs/core'
 
 import { QueueBusBase } from '.'
-import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME, Transport } from './constants'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME } from './constants'
 import { EventBusBase } from './eventBusBase'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { ITransport } from './interfaces/transport.interface'
-import { RedisPubSub } from './pubsub/pubsub'
-import { PubSubController } from './pubsub/pubSub.controller'
 import { ExplorerService } from './services/explorer.service'
 
 @Global()
@@ -44,11 +42,10 @@ export class QueueModule implements OnApplicationBootstrap {
         return {
             global,
             module: QueueModule,
-            controllers: [PubSubController, ...(moduleOptions?.controllers || [])],
+            controllers: moduleOptions?.controllers || [],
             providers: [
                 this.messageBrookerProvider,
                 ExplorerService,
-                RedisPubSub,
                 queueConfigService,
                 ...queues,
                 ...(moduleOptions?.providers || []),
@@ -66,25 +63,17 @@ export class QueueModule implements OnApplicationBootstrap {
         return {
             provide: MESSAGE_BROOKER,
             useFactory: async (queueConfig: IQueueConfigService): Promise<ITransport> => {
-                // if (queueConfig.messageBrooker === Transport.bullMQ) {
-                //     if (!require('bullmq')) {
-                //         throw new Error(
-                //             'bullmq node package is missing. use: npm install --save amqplib',
-                //         )
-                //     }
-                //     const { BullMq } = await import('./bullmq/bullMq')
-                //     return new BullMq(queueConfig)
-                // }
-                if (queueConfig.messageBrooker === Transport.rabbitMQ) {
-                    if (!require('amqplib')) {
-                        throw new Error(
-                            'amqplib node package is missing. use: npm install --save amqplib',
-                        )
-                    }
-
-                    const { RabbitMq } = await import('./rabbitMq/rabbitMq')
-                    return new RabbitMq(queueConfig)
+                //* rabbitmq is the only supported transport for now.
+                // if (queueConfig.messageBrooker === Transport.rabbitMQ) {
+                if (!require('amqplib')) {
+                    throw new Error(
+                        'amqplib node package is missing. use: npm install --save amqplib',
+                    )
                 }
+
+                const { RabbitMq } = await import('./rabbitMq/rabbitMq')
+                return new RabbitMq(queueConfig)
+                // }
             },
             inject: [QUEUE_CONFIG_SERVICE],
         }

@@ -3,7 +3,7 @@ import { ModuleRef } from '@nestjs/core'
 import { Job } from 'bullmq'
 import { Observable } from 'rxjs'
 
-import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME } from './constants'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME, TIMEOUT } from './constants'
 import {
     JOB_AFTER_EXECUTION_METADATA,
     JOB_BEFORE_EXECUTION_METADATA,
@@ -32,6 +32,7 @@ export type HandlerType = Type<IQueueHandler<IImpl>>
 export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     protected handlers = new Map<string, IQueueHandler<ImplBase>>()
     protected metadataName = QUEUE_HANDLER_METADATA
+    protected timeout = TIMEOUT
     public readonly name = ''
 
     protected hooks: IJobExecutionInterceptors
@@ -99,7 +100,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
                         }
                         return resolve(data)
                     },
-                    o,
+                    { timeout: this.timeout, ...(o || {}) },
                 )
             })
         }

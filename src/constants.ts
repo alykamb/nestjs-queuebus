@@ -6,12 +6,13 @@ export const QUEUE_CONFIG_SERVICE = Symbol()
 export const QUEUE_DEFAULT_NAME = Symbol()
 export const MESSAGE_BROOKER = Symbol()
 
+export const TIMEOUT = 20000
+
 export enum JobEventType {
     completed = 'completed',
     failed = 'failed',
 }
 
 export enum Transport {
-    bullMQ = 'bullMQ',
     rabbitMQ = 'rabbitMQ',
 }

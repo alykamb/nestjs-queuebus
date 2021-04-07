@@ -3,7 +3,9 @@ import { OnModuleDestroy } from '@nestjs/common'
 import { Callback } from '../types/callback'
 import { PubEvent } from './events/jobEvent.interface'
 
-export type EventCallback<EventBase extends PubEvent = PubEvent> = (e: EventBase) => void
+export type EventCallback<EventBase extends PubEvent = PubEvent> = (
+    e: EventBase,
+) => any | Promise<any>
 
 export interface ITransport extends OnModuleDestroy {
     addJob<TRet = any, TData = any>(

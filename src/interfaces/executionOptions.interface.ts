@@ -3,4 +3,5 @@ export interface IExecutionOptions {
     module?: string
     logErrors?: boolean
     id?: string
+    timeout?: number
 }
