@@ -162,8 +162,8 @@
         "affectsGlobalScope": false
       },
       "./src/constants.ts": {
-        "version": "99b874ee88ac2c2f9d7853c216d1d9933c62e5fb6411c8ea803d84ca9e9c24ab",
-        "signature": "d212e25d0bd4825c12d6d8d34edf46867dfe6cb5a8095c54703265c3fe061bb9",
+        "version": "e04cafab9c30c0e50dcc3e818225d86e9b31df7ce7b6661ae2634894600017ee",
+        "signature": "8e89ff29204f0ae03999fbf39f4554fcad5a59dfa62d1857fe8b82ec49a44fb0",
         "affectsGlobalScope": false
       },
       "./node_modules/reflect-metadata/index.d.ts": {
@@ -1817,7 +1817,7 @@
         "affectsGlobalScope": false
       },
       "./src/queueBusBase.ts": {
-        "version": "1de73fba4a30667d336d9dfb955e4fa62e00230c2b93d6bd3747a20846f66db4",
+        "version": "40f46db79fd53f1eb1def7c0199b97de8c9930e9f784762b1ab981411f8e4125",
         "signature": "276e63ee7ca2edb1147508118029727642eaa7d4eacb4a881e5ed9fc68bdbb13",
         "affectsGlobalScope": false
       },
@@ -2432,7 +2432,7 @@
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/rabbitMq.ts": {
-        "version": "7d16a63fc42eab6d6b8ea35c5dac205bae22ea66a6244e636be341f9387c077a",
+        "version": "1dd3bd8b5791b7094297f8b89a993d5c71506836dc8cd5d3c8d28832df2347bd",
         "signature": "58c7735541e211525f4c8dd3b29101556d004662419f480441376b3aeec9d8e6",
         "affectsGlobalScope": false
       },
@@ -2498,52 +2498,52 @@
       },
       "./src/decorators/hooks/jobAfterExecution.decorator.ts": {
         "version": "8455200639540309b497519aa30add4c17c2b5a4829bbddaf6fcbedb8683284f",
-        "signature": "733f2a93062221613a5fd87022c7fe05181732cb5b009cca980f460b5d3344a7",
+        "signature": "cc3de946f0216f3ec25ccada6af7f72a6e74c767c53fd10f54bfe5de3850f197",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/jobBeforeExecution.decorator.ts": {
         "version": "74b5f3fc1e01a85cbe35a91a9704ba299fee0a409fa10c1aa3cd8a21234118c2",
-        "signature": "d3285dd8b14710a8244b56f626beb0e812cb1c58258925e0dd37e5bba0ed33c1",
+        "signature": "f7d1b59350b1e1205380a10c8279d67bedf792fee35b54968a338c52d21f5cc8",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/jobOnExecute.decorator.ts": {
         "version": "d06eda01ea4a7d4ecf7162c88527966bcb33511ac645555da6dda1b0d7a0aafc",
-        "signature": "e006173da1825593d3032c07784314befc1a70317a4cb199ff6cb38ba6e926b1",
+        "signature": "d5e1f8b3f4ecfd5552f8e39d4727ecaf2bc48d61c70eca8b2e2011cbbd9cb775",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventBeforePublish.decorator.ts": {
         "version": "e0ffc7bc6d0bf73a4b55004e629df3eb39c27be405f7f2994f87aa841afd40bf",
-        "signature": "edac44d4977dff1510be9282011ceded88bf13ef5b3ed84dc2da263837ee223a",
+        "signature": "2972db5c1aa8a6f698760eb5972b4693b6985006e42e263bab28b27c9099e965",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventAfterPublish.decorator.ts": {
         "version": "fea717da47d1ae9edc00d2724a57e3ed5a525e2d6afdb5c66e829a579c003a93",
-        "signature": "18bcbb598ceb1fbf7f1a24733e756604cf8404d5514ef4d0e0c3327ac4c72b7e",
+        "signature": "cf9d8f064e98a44188360e6eeb06dc66116a163533b63d75ba38cc463487d3c0",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventBeforeExecution.decorator.ts": {
         "version": "f4ca493aa2dabfe402aba279e303438f473e6b6e666559d6510f73859cb7e263",
-        "signature": "bc498def5ff5ab6d9039d6a5e1c3f1357a1311e81167508a7838f2799e50f6a5",
+        "signature": "beda39effcedb99b8586c71d4c14ceca1c73f2c5cb565fec34f24a492267cb81",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventAfterExecution.decorator.ts": {
         "version": "bc4d1c7654e341ff25da276d6ffba4004f468584c3d1d5c3bba80e66617b81c3",
-        "signature": "2f35304c2511f1fd55528e62e05375b3c6133760650871f130231e0ce6b9563d",
+        "signature": "146066865f6f07d2da28dc16e57cc99bc6dffeaae5cc7c3e16f1f46ab81fa9a8",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventOnReceive.decorator.ts": {
         "version": "efc7766235234c9583340b374f18341b353d59c888a308f7ed4a15f8198de956",
-        "signature": "946b6f8fc610c4dd4ed41c87dbbe396dce2ee60da9ec80d6abc57458cd26ba8c",
+        "signature": "e03f814a38de6fddd1dc707d4007c534f586dff6e7bcd0ec251b0946c514bd1f",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/sagaBeforeExecution.decorator.ts": {
         "version": "08a5f78c1c96e11e29a76504ffbc84cc2933ea4e9491b09f2199870151f3dd88",
-        "signature": "4749657a2292cd560d20eca6b44389d748e2d8ad83a18b124252f06049d3e95d",
+        "signature": "b936bebab4f21c53cf0e844389a536a3c819d703d8ee3e637a6099b83c39ad8a",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/sagaAfterExecution.decorator.ts": {
         "version": "92cfc1f86fb3c56a5c27fc285f7ff01657d9a8575b00cf4ff5fefa6dd8b7f781",
-        "signature": "b295b1323e48c9817b38844d7dc93cf1ae366e93e12a46367681d3b6f753893b",
+        "signature": "cf25b383c63ad79e42f2c363c9d1f72d1aa3b3c9761b49675e3138651db74909",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/index.ts": {
