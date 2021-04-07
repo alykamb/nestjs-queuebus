@@ -28,6 +28,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
     private consumersChannels = new Map<string, Channel>()
     private workers = new Map<string, Channel>()
     private sagas = new Map<string, EventCallback>()
+    private eventListeners = new Map<string, EventCallback>()
     private queueSagas = new Map<string, string>()
     private sagasEvents = new WeakMap<EventCallback, string>()
     private publisherChannel: Channel
@@ -150,8 +151,6 @@ export class RabbitMq implements ITransport, OnModuleInit {
                 queue.queue,
                 (message) => {
                     if (message?.properties?.correlationId !== id) {
-                        // void consumerChannel.close()
-                        // console.log('WRONG MESSAGE!!!', message?.properties?.correlationId, id)
                         void consumerChannel.deleteQueue(queue.queue)
                         return
                     }
@@ -207,6 +206,17 @@ export class RabbitMq implements ITransport, OnModuleInit {
         this.sagas.delete(name)
     }
 
+    public registerEventListener<EventBase extends PubEvent = PubEvent>(
+        name: string,
+        cb: EventCallback<EventBase>,
+    ): void {
+        this.eventListeners.set(name, cb)
+    }
+
+    public removeEventListener(name: string): void {
+        this.eventListeners.delete(name)
+    }
+
     public listenToEvents(): void {
         void Promise.all([this.getEventListenerChannel(), this.getEventPublisherChannel()]).then(
             ([listener]) => {
@@ -220,6 +230,12 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                 const value: PubEvent = JSON.parse(msg.content.toString())
                                 if (value.from.id === this.from.id && !value?.data?.queueName) {
                                     return
+                                }
+
+                                for (const cb of this.eventListeners.values()) {
+                                    try {
+                                        cb(value)
+                                    } catch (err) {}
                                 }
 
                                 const sagaName = Array.from(this.queueSagas.entries()).find(

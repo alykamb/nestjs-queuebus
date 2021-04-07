@@ -1,6 +1,7 @@
 import { Inject, Injectable, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { Job } from 'bullmq'
+import { Observable } from 'rxjs'
 
 import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME } from './constants'
 import {
@@ -11,9 +12,10 @@ import {
     QUEUE_HANDLER_METADATA,
 } from './decorators/constants'
 import { EventBusBase } from './eventBusBase'
+import { compose } from './helpers/compose'
 import { InvalidQueueHandlerException } from './index'
 import { IExecutionOptions } from './interfaces/executionOptions.interface'
-import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface'
+import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface copy'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { IQueueBus } from './interfaces/queues/queueBus.interface'
 import { IQueueHandler } from './interfaces/queues/queueHandler.interface'
@@ -22,14 +24,6 @@ import { ITransport } from './interfaces/transport.interface'
 import { Hook, HookContext } from './types/hooks.type'
 
 export type HandlerType = Type<IQueueHandler<IImpl>>
-
-const compose = (
-    ...funcs: Array<((...args: any[]) => any | Promise<any>) | false | undefined | null>
-) => (data: Promise<any> | any): Promise<any> =>
-    funcs.reduce(
-        async (value, func) => (func && typeof func === 'function' && func(await value)) || value,
-        data,
-    )
 
 /**
  * CqrsBus registra handlers para implementações e os executa quando chamado
@@ -182,7 +176,17 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         cb?: (d: any) => Promise<any>,
     ): (data: any) => Promise<any> {
         return (data: any): Promise<any> =>
-            hooks.reduce(async (value, func) => func({ ...context, data: await value }, cb), data)
+            hooks.reduce(
+                async (value, func) => func({ ...context, data: await this.parseHook(value) }, cb),
+                data,
+            )
+    }
+
+    protected parseHook(value: any | Promise<any> | Observable<any>): Promise<any> | any {
+        if (value && typeof value.subscribe === 'function') {
+            return value.toPromise()
+        }
+        return value
     }
 
     protected getHooks(): IJobExecutionInterceptors {

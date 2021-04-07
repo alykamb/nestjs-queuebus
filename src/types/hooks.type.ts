@@ -1,9 +1,15 @@
 import { Observable } from 'rxjs'
 
+import { EventBusBase } from '..'
 import { QueueBusBase } from '../queueBusBase'
 
-export type HookContext = { data?: any; name: string; bus: QueueBusBase; module?: any }
-export type Hook = (
-    context: HookContext,
+export type HookContext<T = any> = {
+    data?: T
+    name: string
+    bus: QueueBusBase | EventBusBase
+    module?: any
+}
+export type Hook<T = any> = (
+    context: HookContext<T>,
     cb?: (d: any) => any | Observable<any> | Promise<any>,
 ) => any | Observable<any> | Promise<any>

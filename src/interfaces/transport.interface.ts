@@ -31,5 +31,12 @@ export interface ITransport extends OnModuleDestroy {
 
     removeSaga(name: string): void
 
+    registerEventListener<EventBase extends PubEvent = PubEvent>(
+        name: string,
+        callback: EventCallback<EventBase>,
+    ): void
+
+    removeEventListener(name: string): void
+
     onModuleDestroy(): Promise<boolean>
 }

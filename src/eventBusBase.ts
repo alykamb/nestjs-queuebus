@@ -1,20 +1,30 @@
 import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
-import { Subscription } from 'rxjs'
+import { noop, Observable, Subscription } from 'rxjs'
 
 import { QueueBusBase } from '.'
 import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
 import {
+    EVENT_AFTER_EXECUTION_METADATA,
+    EVENT_AFTER_PUBLISH_METADATA,
+    EVENT_BEFORE_EXECUTION_METADATA,
+    EVENT_BEFORE_PUBLISH_METADATA,
+    EVENT_ON_RECEIVE_METADATA,
     EVENTBUS_QUEUEBUS_METADATA,
     EVENTS_HANDLER_METADATA,
+    SAGA_AFTER_EXECUTION_METADATA,
+    SAGA_BEFORE_EXECUTION_METADATA,
     SAGA_METADATA,
 } from './decorators/constants'
 import { InvalidSagaException } from './exceptions'
 import { InvalidQueueBusForEventBusException } from './exceptions/invalidQueueBusForEventBus.exception'
-import { IEvent, IEventBus, IEventHandler, IQueue, ISaga } from './interfaces'
+import { compose } from './helpers/compose'
+import { IEvent, IEventBus, IEventHandler, ISaga } from './interfaces'
+import { IEventExecutionInterceptors } from './interfaces/eventExecutionInterceptors.interface'
 import { PubEvent } from './interfaces/events/jobEvent.interface'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { ITransport } from './interfaces/transport.interface'
+import { Hook, HookContext } from './types/hooks.type'
 import { SagaData } from './types/sagaData.type'
 
 export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<IEventHandler<EventBase>>
@@ -37,6 +47,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      */
     protected readonly subscriptions: Subscription[] = []
     protected queueBus: QueueBusBase
+    protected hooks: IEventExecutionInterceptors
     constructor(
         protected readonly moduleRef: ModuleRef,
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
@@ -48,6 +59,17 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             throw new InvalidQueueBusForEventBusException(prototype.name)
         }
         this.queueBus = this.moduleRef.get(queueBus)
+
+        this.transport.registerEventListener(prototype.name, (event: PubEvent) => {
+            const hooks = this.getHooks()
+            if (hooks.eventOnReceive) {
+                void this.runHooks(hooks.eventOnReceive, {
+                    name: event.name,
+                    module: event.module,
+                    bus: this,
+                })(event).catch(noop)
+            }
+        })
     }
 
     /**
@@ -71,7 +93,18 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         const timestamp = +new Date()
         const module = this.queueConfig.name
 
-        void this.transport.publishEvent({
+        const hooks = this.getHooks()
+
+        void compose(
+            hooks.eventBeforePublish &&
+                this.runHooks(hooks.eventBeforePublish, { name, module, bus: this }),
+            (data) => {
+                void this.transport.publishEvent(data).catch(noop)
+                return data
+            },
+            hooks.eventAfterPublish &&
+                this.runHooks(hooks.eventAfterPublish, { name, module, bus: this }),
+        )({
             event,
             name,
             timestamp,
@@ -82,13 +115,16 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         const handler = this.handlers.get(name)
         if (handler) {
             try {
-                const res = handler.handle(event)
+                const res = compose(
+                    hooks.eventBeforeExecution &&
+                        this.runHooks(hooks.eventBeforeExecution, { name, module, bus: this }),
+                    (data) => this.parseHook(handler.handle(data)),
+                    hooks.eventAfterExecution &&
+                        this.runHooks(hooks.eventAfterPublish, { name, module, bus: this }),
+                )(event)
+
                 if (res instanceof Promise) {
                     res.catch(() => {
-                        //
-                    })
-                } else if (res && res.subscribe) {
-                    res.toPromise().catch(() => {
                         //
                     })
                 }
@@ -123,12 +159,11 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                 }
 
                 return metadata.data.map(
-                    (arg: { key: string; events: IEvent[]; commands: IQueue[]; name: string }) => ({
+                    (arg: { key: string; events: IEvent[]; name: string }) => ({
                         call: instance[arg.key],
                         key: arg.key,
                         bus: metadata.bus,
                         name: arg.name,
-                        commands: arg.commands,
                         events: arg.events,
                     }),
                 )
@@ -164,6 +199,75 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         eventsNames.data.map((event) => this.bind(instance as IEventHandler<EventBase>, event.name))
     }
 
+    protected getHooks(): IEventExecutionInterceptors {
+        const sort = (
+            p1: { key: string; order: number },
+            p2: { key: string; order: number },
+        ): number => p1.order - p2.order
+
+        if (!this.hooks) {
+            const constructor = Reflect.getPrototypeOf(this).constructor
+            const map = (property: { key: string; order: number }): any =>
+                this.queueConfig[property.key]
+            this.hooks = {
+                eventBeforeExecution: (
+                    Reflect.getMetadata(EVENT_BEFORE_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                eventAfterExecution: (
+                    Reflect.getMetadata(EVENT_AFTER_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                eventOnReceive: (Reflect.getMetadata(EVENT_ON_RECEIVE_METADATA, constructor) || [])
+                    .sort(sort)
+                    .map(map),
+                eventBeforePublish: (
+                    Reflect.getMetadata(EVENT_BEFORE_PUBLISH_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                eventAfterPublish: (
+                    Reflect.getMetadata(EVENT_AFTER_PUBLISH_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                sagaBeforeExecution: (
+                    Reflect.getMetadata(SAGA_BEFORE_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                sagaAfterExecution: (
+                    Reflect.getMetadata(SAGA_AFTER_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+            }
+        }
+
+        return this.hooks
+    }
+
+    protected runHooks(
+        hooks: Hook[],
+        context: HookContext,
+        cb?: (d: any) => Promise<any>,
+    ): (data: any) => Promise<any> {
+        return (data: any): Promise<any> =>
+            hooks.reduce(
+                async (value, func) => func({ ...context, data: await this.parseHook(value) }, cb),
+                data,
+            )
+    }
+
+    protected parseHook(value: any | Promise<any> | Observable<any>): Promise<any> | any {
+        if (value && typeof value.subscribe === 'function') {
+            return value.toPromise()
+        }
+        return value
+    }
+
     /**
      * Registra as sagas
      *
@@ -184,7 +288,19 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             this.queueBus['fullname'],
             name,
             (data: { event: PubEvent }): void => {
-                saga.call(data.event)
+                const hooks = this.getHooks()
+
+                void compose(
+                    hooks.sagaBeforeExecution &&
+                        this.runHooks(hooks.sagaBeforeExecution, { name, module, bus: this }),
+                    async (data) => {
+                        try {
+                            await this.parseHook(saga.call(data.event))
+                        } catch (err) {}
+                    },
+                    hooks.sagaAfterExecution &&
+                        this.runHooks(hooks.sagaAfterExecution, { name, module, bus: this }),
+                )(data)
             },
             ...saga.events,
         )
