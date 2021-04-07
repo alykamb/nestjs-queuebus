@@ -1,6 +1,6 @@
 {
     "name": "nestjs-queuebus",
-    "version": "0.1.20",
+    "version": "1.0.0",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
     "repository": {
