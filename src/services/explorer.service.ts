@@ -1,16 +1,17 @@
+import { Injectable, Type } from '@nestjs/common'
+import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'
+import { Module } from '@nestjs/core/injector/module'
+import { ModulesContainer } from '@nestjs/core/injector/modules-container'
+
 import {
     EVENTS_HANDLER_METADATA,
     QUEUE_HANDLER_METADATA,
     SAGA_METADATA,
 } from '../decorators/constants'
-import { QueueOptions } from '../interfaces/queues/queueOptions.interface'
-import { Injectable, Type } from '@nestjs/common'
-import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'
-import { Module } from '@nestjs/core/injector/module'
-import { ModulesContainer } from '@nestjs/core/injector/modules-container'
-import { IQueueHandler } from '../interfaces/queues/queueHandler.interface'
-import { QueueBusBase } from '../queueBusBase'
 import { EventBusBase } from '../eventBusBase'
+import { IQueueHandler } from '../interfaces/queues/queueHandler.interface'
+import { QueueOptions } from '../interfaces/queues/queueOptions.interface'
+import { QueueBusBase } from '../queueBusBase'
 
 @Injectable()
 export class ExplorerService {

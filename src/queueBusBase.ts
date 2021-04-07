@@ -1,13 +1,9 @@
-import { BullMq } from './bullmq/bullMq'
-import { EventBusBase } from './eventBusBase'
-import { IQueueBus } from './interfaces/queues/queueBus.interface'
-import { IQueueHandler } from './interfaces/queues/queueHandler.interface'
-import { IExecutionOptions } from './interfaces/executionOptions.interface'
-import { IImpl } from './interfaces/queues/queueImpl.interface'
-import { InvalidQueueHandlerException } from './index'
-import { Job } from 'bullmq'
-import { ModuleRef } from '@nestjs/core'
 import { Inject, Injectable, Type } from '@nestjs/common'
+import { ModuleRef } from '@nestjs/core'
+import { Job } from 'bullmq'
+import { Observable } from 'rxjs'
+
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME, TIMEOUT } from './constants'
 import {
     JOB_AFTER_EXECUTION_METADATA,
     JOB_BEFORE_EXECUTION_METADATA,
@@ -15,13 +11,17 @@ import {
     NAME_QUEUE_METADATA,
     QUEUE_HANDLER_METADATA,
 } from './decorators/constants'
-import { QUEUE_CONFIG_SERVICE } from './constants'
+import { EventBusBase } from './eventBusBase'
+import { compose } from './helpers/compose'
+import { InvalidQueueHandlerException } from './index'
+import { IExecutionOptions } from './interfaces/executionOptions.interface'
+import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface copy'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
-import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface'
-import { from, Observable, of } from 'rxjs'
-import { mergeMap, mergeScan, scan, startWith } from 'rxjs/operators'
+import { IQueueBus } from './interfaces/queues/queueBus.interface'
+import { IQueueHandler } from './interfaces/queues/queueHandler.interface'
+import { IImpl } from './interfaces/queues/queueImpl.interface'
+import { ITransport } from './interfaces/transport.interface'
 import { Hook, HookContext } from './types/hooks.type'
-import { asObservable } from './helpers/asObservable'
 
 export type HandlerType = Type<IQueueHandler<IImpl>>
 
@@ -32,24 +32,29 @@ export type HandlerType = Type<IQueueHandler<IImpl>>
 export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     protected handlers = new Map<string, IQueueHandler<ImplBase>>()
     protected metadataName = QUEUE_HANDLER_METADATA
-    protected name = ''
+    protected timeout = TIMEOUT
+    public readonly name = ''
 
     protected hooks: IJobExecutionInterceptors
 
     constructor(
         protected readonly moduleRef: ModuleRef,
-        protected bullMq: BullMq,
+        @Inject(MESSAGE_BROOKER) protected readonly messageBrooker: ITransport,
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
+        @Inject(QUEUE_DEFAULT_NAME) name = '',
     ) {
         this.name =
-            Reflect.getMetadata(NAME_QUEUE_METADATA, Object.getPrototypeOf(this).constructor) || ''
+            Reflect.getMetadata(NAME_QUEUE_METADATA, Object.getPrototypeOf(this).constructor) ||
+            name
 
-        this.bullMq.createQueue(this.queueConfig.name + this.name)
-        this.bullMq.createWorker(this.queueConfig.name + this.name, (job: Job) =>
+        void this.messageBrooker.createWorker(this.queueConfig.name + this.name, (job: Job) =>
             this.handleJob(job),
         )
     }
 
+    protected get fullname(): string {
+        return this.queueConfig.name + this.name
+    }
     /**
      * Executa o handler registrado para a implementação de
      * acordo com o nome da classe
@@ -60,7 +65,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
     public execute<Ret = any, T extends ImplBase = ImplBase>(
         impl: T,
         options: IExecutionOptions = {},
-    ): Observable<Ret> {
+    ): Promise<Ret> {
         const implName = this.getConstructorName(impl as any)
         return this.executeByName(implName, impl, options)
     }
@@ -77,27 +82,40 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         name: string,
         data: T,
         options: IExecutionOptions = {},
-    ): Observable<Ret> {
-        const { moveToQueue = false, module = this.queueConfig.name, jobOptions } = options
+    ): Promise<Ret> {
+        const { moveToQueue = false, module = this.queueConfig.name, ...o } = options
 
-        const run = (name: string, d: T) => {
+        const run = (name: string, d: T): Promise<Ret> => {
             if (module === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
                 return this.executeHandler(name, d)
             }
-            return this.bullMq.addJob(module + this.name, name, d, jobOptions)
+            return new Promise((resolve, reject) => {
+                this.messageBrooker.addJob(
+                    module + this.name,
+                    name,
+                    d,
+                    (err, data) => {
+                        if (err) {
+                            return reject(err)
+                        }
+                        return resolve(data)
+                    },
+                    { timeout: this.timeout, ...(o || {}) },
+                )
+            })
         }
 
         const hooks = this.getHooks()
 
-        return of(data).pipe(
-            mergeMap(this.runHooks(hooks.before, {name, module, bus: this})),
-            mergeMap((data) => 
-                hooks.interceptor.length 
-                ? this.runHooks(hooks.interceptor, {name, module, data, bus: this}, (d => asObservable(run(name, d))))(data)
-                : asObservable(run(name, data))
-            ),
-            mergeMap(this.runHooks(hooks.after, {name, module, bus: this})),
-        )
+        return compose(
+            hooks.before && this.runHooks(hooks.before, { name, module, bus: this }),
+            hooks.interceptor.length
+                ? this.runHooks(hooks.interceptor, { name, module, data, bus: this }, (d) =>
+                      run(name, d),
+                  )
+                : (data): Promise<any> => run(name, data),
+            hooks.after && this.runHooks(hooks.after, { name, module, bus: this }),
+        )(data)
     }
 
     /**
@@ -127,10 +145,10 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
      * @param job - trabalho do bullMq
      */
     public handleJob(job: Job): Promise<any> {
-        return this.executeHandler(job.name, job.data).toPromise()
+        return this.executeHandler(job.name, job.data)
     }
 
-    protected executeHandler(name: string, data: any): Observable<any> {
+    protected executeHandler(name: string, data: any): Promise<any> {
         if (!this.handlers.has(name)) {
             throw new InvalidQueueHandlerException(name)
         }
@@ -139,28 +157,65 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
             eventBus?: EventBusBase
         } = this.handlers.get(name)
 
-        return asObservable(handler.execute(data))       
+        try {
+            const result = handler.execute(data)
+            if (result?.toPromise) {
+                return result.toPromise()
+            }
+            if (!(result instanceof Promise)) {
+                return Promise.resolve(result)
+            }
+            return result
+        } catch (err) {
+            return Promise.reject(err)
+        }
     }
 
     protected runHooks(
         hooks: Hook[],
         context: HookContext,
-        cb?: (d: any) =>  any | Observable<any> | Promise<any>,
-    ): (data: any) => Observable<any> {
-        return (data: any): Observable<any> =>
-            from(hooks).pipe(
-                mergeScan((value, func) => asObservable(func({...context, data:value}, cb)), data),
+        cb?: (d: any) => Promise<any>,
+    ): (data: any) => Promise<any> {
+        return (data: any): Promise<any> =>
+            hooks.reduce(
+                async (value, func) => func({ ...context, data: await this.parseHook(value) }, cb),
+                data,
             )
     }
 
+    protected parseHook(value: any | Promise<any> | Observable<any>): Promise<any> | any {
+        if (value && typeof value.subscribe === 'function') {
+            return value.toPromise()
+        }
+        return value
+    }
+
     protected getHooks(): IJobExecutionInterceptors {
-        if(!this.hooks) {
+        if (!this.hooks) {
             const constructor = Reflect.getPrototypeOf(this).constructor
-            const map = (property: string) => this.queueConfig[property]
-            this.hooks =  {
-                before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || []).map(map),
-                after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || []).map(map),
-                interceptor: (Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []).map(map),
+            const map = (property: { key: string; order: number }): any =>
+                this.queueConfig[property.key]
+            this.hooks = {
+                before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || [])
+                    .sort(
+                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
+                            p1.order - p2.order,
+                    )
+                    .map(map),
+                after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || [])
+                    .sort(
+                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
+                            p1.order - p2.order,
+                    )
+                    .map(map),
+                interceptor: (
+                    Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(
+                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
+                            p1.order - p2.order,
+                    )
+                    .map(map),
             }
         }
 

@@ -1,23 +1,31 @@
+import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
+import { ModuleRef } from '@nestjs/core'
+import { noop, Observable, Subscription } from 'rxjs'
+
+import { QueueBusBase } from '.'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
 import {
+    EVENT_AFTER_EXECUTION_METADATA,
+    EVENT_AFTER_PUBLISH_METADATA,
+    EVENT_BEFORE_EXECUTION_METADATA,
+    EVENT_BEFORE_PUBLISH_METADATA,
+    EVENT_ON_RECEIVE_METADATA,
     EVENTBUS_QUEUEBUS_METADATA,
     EVENTS_HANDLER_METADATA,
+    SAGA_AFTER_EXECUTION_METADATA,
+    SAGA_BEFORE_EXECUTION_METADATA,
     SAGA_METADATA,
 } from './decorators/constants'
-import { IEvent, IEventBus, IEventHandler, ISaga } from './interfaces'
-import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
 import { InvalidSagaException } from './exceptions'
-import { ModuleRef } from '@nestjs/core'
-import { Observable, Subscription, EMPTY, of } from 'rxjs'
-import { PubEvent } from './interfaces/events/jobEvent.interface'
-import { RedisPubSub } from './pubsub/pubsub'
-import { catchError, filter, switchMap, withLatestFrom } from 'rxjs/operators'
-import { QueueBusBase } from '.'
-import { IQueue } from './interfaces/queues/queue.interface'
-import { IQueueJob } from './interfaces/queues/queueJob.interface'
-import { QUEUE_CONFIG_SERVICE } from './constants'
-import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { InvalidQueueBusForEventBusException } from './exceptions/invalidQueueBusForEventBus.exception'
-import { asObservable } from './helpers/asObservable'
+import { compose } from './helpers/compose'
+import { IEvent, IEventBus, IEventHandler, ISaga } from './interfaces'
+import { IEventExecutionInterceptors } from './interfaces/eventExecutionInterceptors.interface'
+import { PubEvent } from './interfaces/events/jobEvent.interface'
+import { IQueueConfigService } from './interfaces/queueConfigService.interface'
+import { ITransport } from './interfaces/transport.interface'
+import { Hook, HookContext } from './types/hooks.type'
+import { SagaData } from './types/sagaData.type'
 
 export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<IEventHandler<EventBase>>
 
@@ -39,14 +47,11 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      */
     protected readonly subscriptions: Subscription[] = []
     protected queueBus: QueueBusBase
+    protected hooks: IEventExecutionInterceptors
     constructor(
         protected readonly moduleRef: ModuleRef,
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
-        /**
-         * O publisher é responsável por publicar os eventos na rede
-         * e ouvir aos eventos publicados por outras instâncias
-         */
-        protected publisher: RedisPubSub,
+        @Inject(MESSAGE_BROOKER) protected readonly transport: ITransport,
     ) {
         const prototype = Object.getPrototypeOf(this)
         const queueBus = Reflect.getMetadata(EVENTBUS_QUEUEBUS_METADATA, prototype.constructor)
@@ -54,6 +59,17 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             throw new InvalidQueueBusForEventBusException(prototype.name)
         }
         this.queueBus = this.moduleRef.get(queueBus)
+
+        this.transport.registerEventListener(prototype.name, (event: PubEvent) => {
+            const hooks = this.getHooks()
+            if (hooks.eventOnReceive) {
+                void this.runHooks(hooks.eventOnReceive, {
+                    name: event.name,
+                    module: event.module,
+                    bus: this,
+                })(event).catch(noop)
+            }
+        })
     }
 
     /**
@@ -77,30 +93,53 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         const timestamp = +new Date()
         const module = this.queueConfig.name
 
-        this.publisher.publish({ event, name, timestamp, module })
+        const hooks = this.getHooks()
+
+        void compose(
+            hooks.eventBeforePublish &&
+                this.runHooks(hooks.eventBeforePublish, { name, module, bus: this }),
+            (data) => {
+                void this.transport.publishEvent(data).catch(noop)
+                return data
+            },
+            hooks.eventAfterPublish &&
+                this.runHooks(hooks.eventAfterPublish, { name, module, bus: this }),
+        )({
+            event,
+            name,
+            timestamp,
+            module,
+            queueName: this.queueBus['fullname'],
+        })
+
+        const handler = this.handlers.get(name)
+        if (handler) {
+            try {
+                const res = compose(
+                    hooks.eventBeforeExecution &&
+                        this.runHooks(hooks.eventBeforeExecution, { name, module, bus: this }),
+                    (data) => this.parseHook(handler.handle(data)),
+                    hooks.eventAfterExecution &&
+                        this.runHooks(hooks.eventAfterPublish, { name, module, bus: this }),
+                )(event)
+
+                if (res instanceof Promise) {
+                    res.catch(() => {
+                        //
+                    })
+                }
+            } catch (err) {}
+        }
     }
 
     /**
-     * Registra o evento e cria um subscription para executar o handler
-     * cada vez que o evento for publicado na rede (sempre é através do pub$)
+     * Registra o evento handler
      *
      * @param handler - handler do evento
      * @param name - nome do evento
      */
     protected bind(handler: IEventHandler<EventBase>, name: string): void {
         this.handlers.set(name, handler)
-
-        const subscription = this.publisher.pub$
-            .pipe(
-                filter((e) => {
-                    return e.name === name
-                }),
-            )
-            .subscribe((e) => {
-                this.handlers.get(name).handle(e.event)
-            })
-
-        this.subscriptions.push(subscription)
     }
 
     /**
@@ -118,15 +157,20 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                 if (!instance) {
                     throw new InvalidSagaException()
                 }
-                return metadata.data.map((key: string) => ({
-                    call: instance[key],
-                    name: key,
-                    bus: metadata.bus,
-                }))
+
+                return metadata.data.map(
+                    (arg: { key: string; events: IEvent[]; name: string }) => ({
+                        call: instance[arg.key],
+                        key: arg.key,
+                        bus: metadata.bus,
+                        name: arg.name,
+                        events: arg.events,
+                    }),
+                )
             })
             .reduce((a, b) => a.concat(b), [])
 
-        sagas.forEach((saga: { call: ISaga<PubEvent>; name: string; bus: QueueBusBase }) =>
+        sagas.forEach((saga: { call: ISaga<PubEvent>; bus: QueueBusBase } & SagaData) =>
             this.registerSaga(saga),
         )
     }
@@ -151,7 +195,77 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             return
         }
         const eventsNames = this.reflectEventsNames(handler)
-        eventsNames.map((event) => this.bind(instance as IEventHandler<EventBase>, event.name))
+
+        eventsNames.data.map((event) => this.bind(instance as IEventHandler<EventBase>, event.name))
+    }
+
+    protected getHooks(): IEventExecutionInterceptors {
+        const sort = (
+            p1: { key: string; order: number },
+            p2: { key: string; order: number },
+        ): number => p1.order - p2.order
+
+        if (!this.hooks) {
+            const constructor = Reflect.getPrototypeOf(this).constructor
+            const map = (property: { key: string; order: number }): any =>
+                this.queueConfig[property.key]
+            this.hooks = {
+                eventBeforeExecution: (
+                    Reflect.getMetadata(EVENT_BEFORE_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                eventAfterExecution: (
+                    Reflect.getMetadata(EVENT_AFTER_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                eventOnReceive: (Reflect.getMetadata(EVENT_ON_RECEIVE_METADATA, constructor) || [])
+                    .sort(sort)
+                    .map(map),
+                eventBeforePublish: (
+                    Reflect.getMetadata(EVENT_BEFORE_PUBLISH_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                eventAfterPublish: (
+                    Reflect.getMetadata(EVENT_AFTER_PUBLISH_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                sagaBeforeExecution: (
+                    Reflect.getMetadata(SAGA_BEFORE_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+                sagaAfterExecution: (
+                    Reflect.getMetadata(SAGA_AFTER_EXECUTION_METADATA, constructor) || []
+                )
+                    .sort(sort)
+                    .map(map),
+            }
+        }
+
+        return this.hooks
+    }
+
+    protected runHooks(
+        hooks: Hook[],
+        context: HookContext,
+        cb?: (d: any) => Promise<any>,
+    ): (data: any) => Promise<any> {
+        return (data: any): Promise<any> =>
+            hooks.reduce(
+                async (value, func) => func({ ...context, data: await this.parseHook(value) }, cb),
+                data,
+            )
+    }
+
+    protected parseHook(value: any | Promise<any> | Observable<any>): Promise<any> | any {
+        if (value && typeof value.subscribe === 'function') {
+            return value.toPromise()
+        }
+        return value
     }
 
     /**
@@ -162,66 +276,34 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      *
      * @param saga
      */
-    protected registerSaga(saga: { call: ISaga<IEvent>; name: string }): void {
+    protected registerSaga(saga: { call: ISaga<PubEvent>; bus: QueueBusBase } & SagaData): void {
         if (typeof saga.call !== 'function') {
             throw new InvalidSagaException()
         }
-        const stream$ = saga.call(this.publisher.stream$) as Observable<IQueueJob>
 
-        if (!(stream$ instanceof Observable)) {
-            throw new InvalidSagaException()
-        }
+        //cria o nome com a combinação de events
+        const name = `${saga.name}_${saga.key}_${saga.events.map((t) => t.name).join()}`
 
-        const subscription = stream$
-            .pipe(
-                //Filtra os commands resultantes que existem
-                filter((e) => {
-                    return !!e
-                }),
+        this.transport.registerSaga(
+            this.queueBus['fullname'],
+            name,
+            (data: { event: PubEvent }): any | Promise<any> => {
+                const hooks = this.getHooks()
 
-                //combina com o próprio evento atual
-                withLatestFrom(this.publisher.stream$),
-                switchMap(([command, event]) => {
-                    let c: IQueue = command
-                    let logErrors = false
-                    const jobOptions = command.options?.jobOptions || {}
-                    const module = command.options?.module
-
-                    if (command.job) {
-                        c = command.job
-                        logErrors = command.options?.logErrors ?? false
-                    }
-                    const commandName = this.queueBus.getConstructorName(c as any)
-
-                    //usa o evento atual para criar um id único
-                    const jobId = `${saga.name}_${commandName}_${event.timestamp}`
-
-                    //executa o commando e captura os erros
-                    return asObservable(this.queueBus
-                        .execute(c, {
-                            moveToQueue: true,
-                            jobOptions: { ...jobOptions, jobId },
-                            module,
-                        })
-                    )
-                        .pipe(
-                            catchError((err) => {
-                                if (logErrors) {
-                                    // eslint-disable-next-line no-console
-                                    console.error({ err, jobId })
-                                }
-                                return of(err)
-                            }),
-                        )
-                }),
-            )
-            .subscribe((result) => {
-                console.log('eventExecuted: %o', result)
-                //erros de eventos não precisam parar a aplicação
-            })
-
-        //registra a subscription para removê-la depois
-        this.subscriptions.push(subscription)
+                return compose(
+                    hooks.sagaBeforeExecution &&
+                        this.runHooks(hooks.sagaBeforeExecution, { name, module, bus: this }),
+                    async (data) => {
+                        try {
+                            await this.parseHook(saga.call(data.event))
+                        } catch (err) {}
+                    },
+                    hooks.sagaAfterExecution &&
+                        this.runHooks(hooks.sagaAfterExecution, { name, module, bus: this }),
+                )(data)
+            },
+            ...saga.events,
+        )
     }
 
     /**
@@ -237,7 +319,9 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      * Retorna o valor do metadado, que é a implementação do evento
      * @param handler
      */
-    protected reflectEventsNames(handler: EventHandlerType<EventBase>): FunctionConstructor[] {
+    protected reflectEventsNames(
+        handler: EventHandlerType<EventBase>,
+    ): { data: FunctionConstructor[]; bus: Type<EventBusBase> } {
         return Reflect.getMetadata(EVENTS_HANDLER_METADATA, handler)
     }
 }
