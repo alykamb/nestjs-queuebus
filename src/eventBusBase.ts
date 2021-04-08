@@ -276,7 +276,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      *
      * @param saga
      */
-    protected registerSaga(saga: { call: ISaga<PubEvent>; bus: QueueBusBase } & SagaData): void {
+    protected registerSaga(saga: { call: ISaga<IEvent>; bus: QueueBusBase } & SagaData): void {
         if (typeof saga.call !== 'function') {
             throw new InvalidSagaException()
         }
@@ -293,14 +293,14 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                 return compose(
                     hooks.sagaBeforeExecution &&
                         this.runHooks(hooks.sagaBeforeExecution, { name, module, bus: this }),
-                    async (data) => {
+                    async (data: PubEvent) => {
                         try {
-                            await this.parseHook(saga.call(data.event))
+                            await this.parseHook(saga.call(data?.event))
                         } catch (err) {}
                     },
                     hooks.sagaAfterExecution &&
                         this.runHooks(hooks.sagaAfterExecution, { name, module, bus: this }),
-                )(data)
+                )(data.event)
             },
             ...saga.events,
         )

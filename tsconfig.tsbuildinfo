@@ -2407,8 +2407,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/events/saga.type.ts": {
-        "version": "fe512a95098f2b0990c273c1aeee8ef8af018d4f4b1496987287c97b546340b6",
-        "signature": "67b96ec5a7bc2256c4adf4292347e659e57de51b5cbb63121043e0387c24e563",
+        "version": "d403668fa2e5f9538b3516fc3104f73e295c1ac58b28c5bf3ae0ccb748f49c66",
+        "signature": "e1f244abfe46093f0901f272b2b743c2e51f14c595f721c79d67e84d19ff658f",
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/queue.interface.ts": {
@@ -2498,52 +2498,52 @@
       },
       "./src/decorators/hooks/jobAfterExecution.decorator.ts": {
         "version": "8455200639540309b497519aa30add4c17c2b5a4829bbddaf6fcbedb8683284f",
-        "signature": "cc3de946f0216f3ec25ccada6af7f72a6e74c767c53fd10f54bfe5de3850f197",
+        "signature": "733f2a93062221613a5fd87022c7fe05181732cb5b009cca980f460b5d3344a7",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/jobBeforeExecution.decorator.ts": {
         "version": "74b5f3fc1e01a85cbe35a91a9704ba299fee0a409fa10c1aa3cd8a21234118c2",
-        "signature": "f7d1b59350b1e1205380a10c8279d67bedf792fee35b54968a338c52d21f5cc8",
+        "signature": "d3285dd8b14710a8244b56f626beb0e812cb1c58258925e0dd37e5bba0ed33c1",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/jobOnExecute.decorator.ts": {
         "version": "d06eda01ea4a7d4ecf7162c88527966bcb33511ac645555da6dda1b0d7a0aafc",
-        "signature": "d5e1f8b3f4ecfd5552f8e39d4727ecaf2bc48d61c70eca8b2e2011cbbd9cb775",
+        "signature": "e006173da1825593d3032c07784314befc1a70317a4cb199ff6cb38ba6e926b1",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventBeforePublish.decorator.ts": {
         "version": "e0ffc7bc6d0bf73a4b55004e629df3eb39c27be405f7f2994f87aa841afd40bf",
-        "signature": "2972db5c1aa8a6f698760eb5972b4693b6985006e42e263bab28b27c9099e965",
+        "signature": "edac44d4977dff1510be9282011ceded88bf13ef5b3ed84dc2da263837ee223a",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventAfterPublish.decorator.ts": {
         "version": "fea717da47d1ae9edc00d2724a57e3ed5a525e2d6afdb5c66e829a579c003a93",
-        "signature": "cf9d8f064e98a44188360e6eeb06dc66116a163533b63d75ba38cc463487d3c0",
+        "signature": "18bcbb598ceb1fbf7f1a24733e756604cf8404d5514ef4d0e0c3327ac4c72b7e",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventBeforeExecution.decorator.ts": {
         "version": "f4ca493aa2dabfe402aba279e303438f473e6b6e666559d6510f73859cb7e263",
-        "signature": "beda39effcedb99b8586c71d4c14ceca1c73f2c5cb565fec34f24a492267cb81",
+        "signature": "bc498def5ff5ab6d9039d6a5e1c3f1357a1311e81167508a7838f2799e50f6a5",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventAfterExecution.decorator.ts": {
         "version": "bc4d1c7654e341ff25da276d6ffba4004f468584c3d1d5c3bba80e66617b81c3",
-        "signature": "146066865f6f07d2da28dc16e57cc99bc6dffeaae5cc7c3e16f1f46ab81fa9a8",
+        "signature": "2f35304c2511f1fd55528e62e05375b3c6133760650871f130231e0ce6b9563d",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventOnReceive.decorator.ts": {
         "version": "efc7766235234c9583340b374f18341b353d59c888a308f7ed4a15f8198de956",
-        "signature": "e03f814a38de6fddd1dc707d4007c534f586dff6e7bcd0ec251b0946c514bd1f",
+        "signature": "946b6f8fc610c4dd4ed41c87dbbe396dce2ee60da9ec80d6abc57458cd26ba8c",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/sagaBeforeExecution.decorator.ts": {
         "version": "08a5f78c1c96e11e29a76504ffbc84cc2933ea4e9491b09f2199870151f3dd88",
-        "signature": "b936bebab4f21c53cf0e844389a536a3c819d703d8ee3e637a6099b83c39ad8a",
+        "signature": "4749657a2292cd560d20eca6b44389d748e2d8ad83a18b124252f06049d3e95d",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/sagaAfterExecution.decorator.ts": {
         "version": "92cfc1f86fb3c56a5c27fc285f7ff01657d9a8575b00cf4ff5fefa6dd8b7f781",
-        "signature": "cf25b383c63ad79e42f2c363c9d1f72d1aa3b3c9761b49675e3138651db74909",
+        "signature": "b295b1323e48c9817b38844d7dc93cf1ae366e93e12a46367681d3b6f753893b",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/index.ts": {
@@ -2587,8 +2587,8 @@
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "972ad4f6de1a753d1212990c18442d48d2cd75322a123a32a3ba918de9e222ea",
-        "signature": "cf7ea857f0ca41734b4d9d95ad0746548b0bf73ac3510d8399a5db8dd1f7494f",
+        "version": "0ca859ff2f834069172f3d8a3f22e136f93b05539271bfc9783b2447a8e7687c",
+        "signature": "5f2a907d7ac3ef0144cdfabb40427ef60410f894e9ad8cfa64e41e0a7e57f273",
         "affectsGlobalScope": false
       },
       "./src/decorators/memoize.decorator.ts": {
@@ -4638,8 +4638,7 @@
       ],
       "./src/interfaces/events/saga.type.ts": [
         "./node_modules/rxjs/index.d.ts",
-        "./src/interfaces/events/event.interface.ts",
-        "./src/interfaces/events/jobEvent.interface.ts"
+        "./src/interfaces/events/event.interface.ts"
       ],
       "./src/interfaces/index.ts": [
         "./src/interfaces/events/event.interface.ts",
@@ -6643,7 +6642,6 @@
         "./node_modules/rxjs/index.d.ts",
         "./src/index.ts",
         "./src/interfaces/eventExecutionInterceptors.interface.ts",
-        "./src/interfaces/events/jobEvent.interface.ts",
         "./src/interfaces/index.ts",
         "./src/interfaces/queueConfigService.interface.ts",
         "./src/interfaces/transport.interface.ts",
@@ -6686,8 +6684,7 @@
       ],
       "./src/interfaces/events/saga.type.ts": [
         "./node_modules/rxjs/index.d.ts",
-        "./src/interfaces/events/event.interface.ts",
-        "./src/interfaces/events/jobEvent.interface.ts"
+        "./src/interfaces/events/event.interface.ts"
       ],
       "./src/interfaces/index.ts": [
         "./src/interfaces/events/event.interface.ts",
