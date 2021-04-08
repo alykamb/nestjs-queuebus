@@ -1,17 +1,17 @@
 import { IEvent } from './event.interface'
 
-export interface JobEvent {
+export interface IJobEvent {
     jobId: string
 }
-export interface FailedEvent extends JobEvent {
+export interface IFailedEvent extends IJobEvent {
     failedReason: any
 }
 
-export interface CompletedEvent<T = any> extends JobEvent {
+export interface ICompletedEvent<T = any> extends IJobEvent {
     returnvalue: T
 }
 
-export interface PubEvent<T extends IEvent = IEvent> {
+export interface IPubEvent<T extends IEvent = IEvent> {
     name: string
     from?: {
         name: string

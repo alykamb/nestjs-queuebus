@@ -1,3 +1,3 @@
 export * from './invalidCommandHandler.exception'
-export * from './invalidSaga.exception'
+export * from './invalidEffect.exception'
 export * from './job.exception'

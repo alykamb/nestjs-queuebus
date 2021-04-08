@@ -8,7 +8,7 @@ import { QUEUE_CONFIG_SERVICE, TIMEOUT } from '../constants'
 import { JobException } from '../exceptions'
 import { TimeoutException } from '../exceptions/timeout.exception'
 import { IQueueConfigService } from '../interfaces'
-import { PubEvent } from '../interfaces/events/jobEvent.interface'
+import { IPubEvent } from '../interfaces/events/jobEvent.interface'
 import { IExecutionOptions } from '../interfaces/executionOptions.interface'
 import { EventCallback, ITransport } from '../interfaces/transport.interface'
 import { Callback } from '../types/callback'
@@ -29,10 +29,10 @@ export class RabbitMq implements ITransport, OnModuleInit {
     private consumer: Connection
     private consumersChannels = new Map<string, Channel>()
     private workers = new Map<string, Channel>()
-    private sagas = new Map<string, EventCallback>()
+    private effects = new Map<string, EventCallback>()
     private eventListeners = new Map<string, EventCallback>()
-    private queueSagas = new Map<string, string>()
-    private sagasEvents = new WeakMap<EventCallback, string>()
+    private queueEffects = new Map<string, string>()
+    private effectsEvents = new WeakMap<EventCallback, string>()
     private publisherChannel: Channel
     private eventPublisherChannel: Channel
     private eventListenerChannel: Channel
@@ -111,7 +111,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         return this.eventListenerChannel
     }
 
-    public async publishEvent<EventBase extends PubEvent = PubEvent>(
+    public async publishEvent<EventBase extends IPubEvent = IPubEvent>(
         event: EventBase,
     ): Promise<void> {
         const eventPublisher = await this.getEventPublisherChannel()
@@ -124,7 +124,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
 
         const id = v4()
         void consumerChannel.assertQueue('', { exclusive: true }).then((queue) => {
-            const sagas = new Map<
+            const effects = new Map<
                 string,
                 Array<{
                     replyTo: string
@@ -133,8 +133,8 @@ export class RabbitMq implements ITransport, OnModuleInit {
             >()
             let timeout
 
-            const sendToSaga = (): void => {
-                sagas.forEach((value) => {
+            const sendToEffect = (): void => {
+                effects.forEach((value) => {
                     const chosen = Math.floor(Math.random() * value.length)
 
                     value.forEach((val, i) => {
@@ -159,15 +159,15 @@ export class RabbitMq implements ITransport, OnModuleInit {
                     }
 
                     const value = JSON.parse(message.content.toString())
-                    if (!sagas.has(value.sagaName)) {
-                        sagas.set(value.sagaName, [
+                    if (!effects.has(value.effecName)) {
+                        effects.set(value.effecName, [
                             {
                                 replyTo: message.properties.replyTo,
                                 correlationId: value.id,
                             },
                         ])
                     } else {
-                        sagas.get(value.sagaName).push({
+                        effects.get(value.effecName).push({
                             replyTo: message.properties.replyTo,
                             correlationId: value.id,
                         })
@@ -176,7 +176,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                     if (timeout) {
                         clearTimeout(timeout)
                     }
-                    timeout = setTimeout(sendToSaga, 2000)
+                    timeout = setTimeout(sendToEffect, 2000)
                 },
                 {
                     noAck: true,
@@ -194,22 +194,22 @@ export class RabbitMq implements ITransport, OnModuleInit {
         })
     }
 
-    public registerSaga<EventBase extends PubEvent = PubEvent>(
+    public registerEffect<EventBase extends IPubEvent = IPubEvent>(
         queueBusName: string,
         name: string,
         callback: EventCallback<EventBase>,
         ...events: string[]
     ): void {
-        this.queueSagas.set(name, queueBusName)
-        this.sagas.set(name, callback)
-        events.forEach((e) => this.sagasEvents.set(callback, e))
+        this.queueEffects.set(name, queueBusName)
+        this.effects.set(name, callback)
+        events.forEach((e) => this.effectsEvents.set(callback, e))
     }
 
-    public removeSaga(name: string): void {
-        this.sagas.delete(name)
+    public removeEffect(name: string): void {
+        this.effects.delete(name)
     }
 
-    public registerEventListener<EventBase extends PubEvent = PubEvent>(
+    public registerEventListener<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         cb: EventCallback<EventBase>,
     ): void {
@@ -237,7 +237,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                 return
                             }
 
-                            const value: PubEvent = JSON.parse(msg.content.toString())
+                            const value: IPubEvent = JSON.parse(msg.content.toString())
                             if (value.from.id === this.from.id && !value?.data?.queueName) {
                                 return
                             }
@@ -248,18 +248,18 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                 } catch (err) {}
                             }
 
-                            const sagaName = Array.from(this.queueSagas.entries()).find(
+                            const effecName = Array.from(this.queueEffects.entries()).find(
                                 (name) => name[1] === value.data.queueName,
                             )?.[0]
 
-                            if (!sagaName) {
+                            if (!effecName) {
                                 return
                             }
 
                             const id = v4()
 
                             void Promise.all([
-                                this.createConsumerChannel('saga_consumer'),
+                                this.createConsumerChannel('effect_consumer'),
                                 this.getPublisherChannel(),
                             ]).then(([consumer, worker]) => {
                                 void consumer.assertQueue('', { exclusive: true }).then((queue) => {
@@ -279,7 +279,9 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                                 if (value) {
                                                     this.addJob$.next()
                                                     try {
-                                                        const res = this.sagas.get(sagaName)(value)
+                                                        const res = this.effects.get(effecName)(
+                                                            value,
+                                                        )
 
                                                         if (res instanceof Promise) {
                                                             void res.then(() => {
@@ -301,7 +303,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
 
                                     worker.sendToQueue(
                                         msg.properties.replyTo,
-                                        Buffer.from(JSON.stringify({ sagaName, id }), 'utf-8'),
+                                        Buffer.from(JSON.stringify({ effecName, id }), 'utf-8'),
                                         {
                                             correlationId: msg.properties.correlationId,
                                             replyTo: queue.queue,
@@ -319,7 +321,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         )
     }
 
-    private get from(): PubEvent['from'] {
+    private get from(): IPubEvent['from'] {
         return {
             name: this.queueConfig.name,
             id: this.queueConfig.id,

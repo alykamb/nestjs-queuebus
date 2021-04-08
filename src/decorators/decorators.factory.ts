@@ -1,11 +1,11 @@
 import { EventBusBase } from '../eventBusBase'
 import { QueueBusBase } from '../queueBusBase'
+import { EffectDecorator } from '../types/effectDecorator.type'
 import { EventHandlerDecorator } from '../types/eventHandlerDecorator.type'
 import { QueueHandlerDecorator } from '../types/queueHandlerDecorator.type'
-import { SagaDecorator } from '../types/sagaDecorator.type'
+import { Effect } from './effect.decorator'
 import { EventsHandler } from './eventsHandler.decorator'
 import { QueueHandler } from './queueHandler.decorator'
-import { Saga } from './saga.decorator'
 
 /**
  * Cria um decorador de Handler para um QueueBus
@@ -26,12 +26,12 @@ export function createEventBusDecorator(eventBus: typeof EventBusBase): EventHan
 }
 
 /**
- * Cria um decorador de Saga para um EventBus
+ * Cria um decorador de Effect para um EventBus
  * @param eventBus - EventBus para qual o decorador será criado
- * @returns um decorador de Saga
+ * @returns um decorador de Effect
  */
-export function createEventSagaDecorator(eventBus: typeof EventBusBase): SagaDecorator {
-    return Saga(eventBus)
+export function createEventEffectDecorator(eventBus: typeof EventBusBase): EffectDecorator {
+    return Effect(eventBus)
 }
 
 /**
@@ -44,7 +44,7 @@ export function createDecorators(buses: {
     events?: Array<typeof EventBusBase>
 }): {
     queues: QueueHandlerDecorator[]
-    events: Array<[EventHandlerDecorator, SagaDecorator]>
+    events: Array<[EventHandlerDecorator, EffectDecorator]>
 } {
     return {
         queues: !buses.queues ? [] : buses.queues.map(createQueueBusDecorator),
@@ -52,7 +52,7 @@ export function createDecorators(buses: {
             ? []
             : buses.events.map((eventBus) => [
                   createEventBusDecorator(eventBus),
-                  createEventSagaDecorator(eventBus),
+                  createEventEffectDecorator(eventBus),
               ]),
     }
 }

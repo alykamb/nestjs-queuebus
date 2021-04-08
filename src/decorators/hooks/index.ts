@@ -10,5 +10,5 @@ export * from './eventAfterExecution.decorator'
 
 export * from './eventOnReceive.decorator'
 
-export * from './sagaBeforeExecution.decorator'
-export * from './sagaAfterExecution.decorator'
+export * from './effectBeforeExecution.decorator'
+export * from './effectAfterExecution.decorator'

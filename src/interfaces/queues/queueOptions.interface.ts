@@ -1,10 +1,10 @@
 import { Type } from '@nestjs/common'
 
-import { IEventHandler } from '../events/eventHandler.interface'
+import { EventHandler } from '../events/eventHandler.interface'
 import { IQueueHandler } from './queueHandler.interface'
 
 export interface QueueOptions {
-    events?: Array<Array<Type<IEventHandler>>>
+    events?: Array<Array<Type<EventHandler>>>
     queues?: Array<Array<Type<IQueueHandler>>>
-    sagas?: Array<Array<Type<any>>>
+    effects?: Array<Array<Type<any>>>
 }

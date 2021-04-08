@@ -1,6 +1,6 @@
 import { IEvent } from '../interfaces'
 
-export type SagaData = {
+export type EffectData = {
     key: string
     name: string
     events: IEvent[]

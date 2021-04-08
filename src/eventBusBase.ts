@@ -5,35 +5,35 @@ import { noop, Observable, Subscription } from 'rxjs'
 import { QueueBusBase } from '.'
 import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
 import {
+    EFFECT_AFTER_EXECUTION_METADATA,
+    EFFECT_BEFORE_EXECUTION_METADATA,
+    EFFECT_METADATA,
+    EFFECT_ON_RECEIVE_METADATA,
     EVENT_AFTER_EXECUTION_METADATA,
     EVENT_AFTER_PUBLISH_METADATA,
     EVENT_BEFORE_EXECUTION_METADATA,
     EVENT_BEFORE_PUBLISH_METADATA,
-    EVENT_ON_RECEIVE_METADATA,
     EVENTBUS_QUEUEBUS_METADATA,
     EVENTS_HANDLER_METADATA,
-    SAGA_AFTER_EXECUTION_METADATA,
-    SAGA_BEFORE_EXECUTION_METADATA,
-    SAGA_METADATA,
 } from './decorators/constants'
-import { InvalidSagaException } from './exceptions'
+import { InvalidEffectException } from './exceptions'
 import { InvalidQueueBusForEventBusException } from './exceptions/invalidQueueBusForEventBus.exception'
 import { compose } from './helpers/compose'
-import { IEvent, IEventBus, IEventHandler, ISaga } from './interfaces'
+import { EventHandler, IEffect, IEvent, IEventBus } from './interfaces'
 import { IEventExecutionInterceptors } from './interfaces/eventExecutionInterceptors.interface'
-import { PubEvent } from './interfaces/events/jobEvent.interface'
+import { IPubEvent } from './interfaces/events/jobEvent.interface'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { ITransport } from './interfaces/transport.interface'
+import { EffectData } from './types/effectData.type'
 import { Hook, HookContext } from './types/hooks.type'
-import { SagaData } from './types/sagaData.type'
 
-export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<IEventHandler<EventBase>>
+export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<EventHandler<EventBase>>
 
 /**
  * Registra os handlers para as implementações de eventos.
  *
  * Executa handlers somente para eventos locais.
- * Eventos da rede passam somente pelas sagas
+ * Eventos da rede passam somente pelos effects
  */
 @Injectable()
 export class EventBusBase<EventBase extends IEvent = IEvent>
@@ -41,7 +41,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     /**
      * Guarda referência de todos os handlers registrados
      */
-    protected handlers = new Map<string, IEventHandler>()
+    protected handlers = new Map<string, EventHandler>()
     /**
      * Mantem referência de todas subscrições para desativá-las.
      */
@@ -60,7 +60,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         }
         this.queueBus = this.moduleRef.get(queueBus)
 
-        this.transport.registerEventListener(prototype.name, (event: PubEvent) => {
+        this.transport.registerEventListener(prototype.name, (event: IPubEvent) => {
             const hooks = this.getHooks()
             if (hooks.eventOnReceive) {
                 void this.runHooks(hooks.eventOnReceive, {
@@ -82,9 +82,9 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     /**
      * Publica o evento
      *
-     * Assina com o timestamp da hora que ele foi publicado, para evitar que sagas iguais
+     * Assina com o timestamp da hora que ele foi publicado, para evitar que effects iguais
      * criem comandos duplicados
-     * E adiciona o nome, para que outras sagas na rede possam identificar o evento.
+     * E adiciona o nome, para que outros effects na rede possam identificar o evento.
      *
      * @param event - evento que será publicado
      */
@@ -138,24 +138,24 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      * @param handler - handler do evento
      * @param name - nome do evento
      */
-    protected bind(handler: IEventHandler<EventBase>, name: string): void {
+    protected bind(handler: EventHandler<EventBase>, name: string): void {
         this.handlers.set(name, handler)
     }
 
     /**
-     * Registra as sagas encontradas pelo decorador Saga
+     * Registra os effects encontradas pelo decorador Effect
      *
      * @param types
      */
-    public registerSagas(types: Array<Type<unknown>> = []): void {
-        const sagas = types
+    public registerEffects(types: Array<Type<unknown>> = []): void {
+        const effects = types
             .map((target) => {
-                const metadata = Reflect.getMetadata(SAGA_METADATA, target) || []
-                const instance: { [key: string]: ISaga<PubEvent> } = this.moduleRef.get(target, {
+                const metadata = Reflect.getMetadata(EFFECT_METADATA, target) || []
+                const instance: { [key: string]: IEffect<IPubEvent> } = this.moduleRef.get(target, {
                     strict: false,
                 })
                 if (!instance) {
-                    throw new InvalidSagaException()
+                    throw new InvalidEffectException()
                 }
 
                 return metadata.data.map(
@@ -170,8 +170,8 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             })
             .reduce((a, b) => a.concat(b), [])
 
-        sagas.forEach((saga: { call: ISaga<PubEvent>; bus: QueueBusBase } & SagaData) =>
-            this.registerSaga(saga),
+        effects.forEach((effect: { call: IEffect<IPubEvent>; bus: QueueBusBase } & EffectData) =>
+            this.registerEffect(effect),
         )
     }
 
@@ -196,7 +196,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         }
         const eventsNames = this.reflectEventsNames(handler)
 
-        eventsNames.data.map((event) => this.bind(instance as IEventHandler<EventBase>, event.name))
+        eventsNames.data.map((event) => this.bind(instance as EventHandler<EventBase>, event.name))
     }
 
     protected getHooks(): IEventExecutionInterceptors {
@@ -220,7 +220,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                 )
                     .sort(sort)
                     .map(map),
-                eventOnReceive: (Reflect.getMetadata(EVENT_ON_RECEIVE_METADATA, constructor) || [])
+                eventOnReceive: (Reflect.getMetadata(EFFECT_ON_RECEIVE_METADATA, constructor) || [])
                     .sort(sort)
                     .map(map),
                 eventBeforePublish: (
@@ -233,13 +233,13 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                 )
                     .sort(sort)
                     .map(map),
-                sagaBeforeExecution: (
-                    Reflect.getMetadata(SAGA_BEFORE_EXECUTION_METADATA, constructor) || []
+                effectBeforeExecution: (
+                    Reflect.getMetadata(EFFECT_BEFORE_EXECUTION_METADATA, constructor) || []
                 )
                     .sort(sort)
                     .map(map),
-                sagaAfterExecution: (
-                    Reflect.getMetadata(SAGA_AFTER_EXECUTION_METADATA, constructor) || []
+                effectAfterExecution: (
+                    Reflect.getMetadata(EFFECT_AFTER_EXECUTION_METADATA, constructor) || []
                 )
                     .sort(sort)
                     .map(map),
@@ -269,40 +269,42 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     }
 
     /**
-     * Registra as sagas
+     * Registra os effectss
      *
-     * Recebe o nome e a instância da saga. Chama a instância passando o stream de eventos
+     * Recebe o nome e a instância do effect. Chama a instância passando o stream de eventos
      * e executa o command resultante.
      *
-     * @param saga
+     * @param effect
      */
-    protected registerSaga(saga: { call: ISaga<IEvent>; bus: QueueBusBase } & SagaData): void {
-        if (typeof saga.call !== 'function') {
-            throw new InvalidSagaException()
+    protected registerEffect(
+        effect: { call: IEffect<IEvent>; bus: QueueBusBase } & EffectData,
+    ): void {
+        if (typeof effect.call !== 'function') {
+            throw new InvalidEffectException()
         }
 
         //cria o nome com a combinação de events
-        const name = `${saga.name}_${saga.key}_${saga.events.map((t) => t.name).join()}`
+        const name = `${effect.name}_${effect.key}_${effect.events.map((t) => t.name).join()}`
 
-        this.transport.registerSaga(
+        this.transport.registerEffect(
             this.queueBus['fullname'],
             name,
-            (data: { event: PubEvent }): any | Promise<any> => {
+            (data: IPubEvent): any | Promise<any> => {
                 const hooks = this.getHooks()
 
                 return compose(
-                    hooks.sagaBeforeExecution &&
-                        this.runHooks(hooks.sagaBeforeExecution, { name, module, bus: this }),
-                    async (data: PubEvent) => {
+                    hooks.effectBeforeExecution &&
+                        this.runHooks(hooks.effectBeforeExecution, { name, module, bus: this }),
+                    async (data: IPubEvent) => {
                         try {
-                            await this.parseHook(saga.call(data?.event))
+                            await this.parseHook(effect.call(data?.event))
                         } catch (err) {}
                     },
-                    hooks.sagaAfterExecution &&
-                        this.runHooks(hooks.sagaAfterExecution, { name, module, bus: this }),
-                )(data.event)
+                    hooks.effectAfterExecution &&
+                        this.runHooks(hooks.effectAfterExecution, { name, module, bus: this }),
+                )(data)
             },
-            ...saga.events,
+            ...effect.events,
         )
     }
 

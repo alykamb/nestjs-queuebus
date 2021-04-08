@@ -6,6 +6,6 @@ export interface IEventExecutionInterceptors {
     eventOnReceive: Hook[]
     eventBeforePublish: Hook[]
     eventAfterPublish: Hook[]
-    sagaBeforeExecution: Hook[]
-    sagaAfterExecution: Hook[]
+    effectBeforeExecution: Hook[]
+    effectAfterExecution: Hook[]
 }

@@ -4,9 +4,9 @@ import { Module } from '@nestjs/core/injector/module'
 import { ModulesContainer } from '@nestjs/core/injector/modules-container'
 
 import {
+    EFFECT_METADATA,
     EVENTS_HANDLER_METADATA,
     QUEUE_HANDLER_METADATA,
-    SAGA_METADATA,
 } from '../decorators/constants'
 import { EventBusBase } from '../eventBusBase'
 import { IQueueHandler } from '../interfaces/queues/queueHandler.interface'
@@ -26,7 +26,7 @@ export class ExplorerService {
             )
         })
 
-        const [events, sagas] = eventsBuses.reduce(
+        const [events, effects] = eventsBuses.reduce(
             (acc, eventBus) => {
                 acc[0].push(
                     this.flatMap<IQueueHandler>(modules, (instance) =>
@@ -35,7 +35,7 @@ export class ExplorerService {
                 )
                 acc[1].push(
                     this.flatMap(modules, (instance) =>
-                        this.filterProvider(instance, SAGA_METADATA, eventBus),
+                        this.filterProvider(instance, EFFECT_METADATA, eventBus),
                     ),
                 )
                 return acc
@@ -43,7 +43,7 @@ export class ExplorerService {
             [[], []],
         )
 
-        return { events, sagas, queues }
+        return { events, effects, queues }
     }
 
     public flatMap<T>(

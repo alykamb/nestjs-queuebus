@@ -1,9 +1,9 @@
 import { OnModuleDestroy } from '@nestjs/common'
 
 import { Callback } from '../types/callback'
-import { PubEvent } from './events/jobEvent.interface'
+import { IPubEvent } from './events/jobEvent.interface'
 
-export type EventCallback<EventBase extends PubEvent = PubEvent> = (
+export type EventCallback<EventBase extends IPubEvent = IPubEvent> = (
     e: EventBase,
 ) => any | Promise<any>
 
@@ -17,23 +17,23 @@ export interface ITransport extends OnModuleDestroy {
     ): void
     createWorker(module: string, callback: (data: any) => Promise<any>): Promise<void>
 
-    publishEvent<EventBase extends PubEvent = PubEvent>(event: EventBase): Promise<void>
+    publishEvent<EventBase extends IPubEvent = IPubEvent>(event: EventBase): Promise<void>
 
     // onEvent<EventBase extends PubEvent = PubEvent>(
     //     queueBusName: string,
     //     callback: EventCallback<EventBase>,
     // ): void
 
-    registerSaga<EventBase extends PubEvent = PubEvent>(
+    registerEffect<EventBase extends IPubEvent = IPubEvent>(
         queueBusName: string,
         name: string,
         callback: EventCallback<EventBase>,
         ...events: string[]
     ): void
 
-    removeSaga(name: string): void
+    removeEffect(name: string): void
 
-    registerEventListener<EventBase extends PubEvent = PubEvent>(
+    registerEventListener<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         callback: EventCallback<EventBase>,
     ): void
