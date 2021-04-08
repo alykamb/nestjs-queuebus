@@ -280,7 +280,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                                     this.addJob$.next()
                                                     try {
                                                         const res = this.effects.get(effecName)(
-                                                            value,
+                                                            value.data,
                                                         )
 
                                                         if (res instanceof Promise) {
