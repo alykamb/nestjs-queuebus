@@ -109,7 +109,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             name,
             timestamp,
             module,
-            queueName: this.queueBus['fullname'],
+            queueName: this.queueBus.name,
         })
 
         const handler = this.handlers.get(name)
@@ -287,7 +287,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         const name = `${effect.name}_${effect.key}_${effect.events.map((t) => t.name).join()}`
 
         this.transport.registerEffect(
-            this.queueBus['fullname'],
+            this.queueBus.name,
             name,
             (data: IPubEvent): any | Promise<any> => {
                 const hooks = this.getHooks()

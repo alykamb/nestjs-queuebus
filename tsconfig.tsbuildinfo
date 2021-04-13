@@ -2577,7 +2577,7 @@
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "61aebc740417264f8382cbddbddc328c5c8db7144b0c662ba12ba46eee3806ff",
+        "version": "10a5e182a3a0a2f198670fc611453d3a96be6de5862f72e7e0e12ae73c18774a",
         "signature": "eebd8e30e75ca14a0c7c22096602bd0d8db9b27c74917d01300385184c58d8ef",
         "affectsGlobalScope": false
       },
