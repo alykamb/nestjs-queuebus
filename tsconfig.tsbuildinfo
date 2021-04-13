@@ -2416,11 +2416,6 @@
         "signature": "a669e63def61ccea0463aa65150b4de7d0f040a85fff3ee740b4fe7e2709e1ec",
         "affectsGlobalScope": false
       },
-      "./src/interfaces/queues/queueJob.interface.ts": {
-        "version": "479797c0219dbb0bd9c6f6b44a65b8719351bf7384716326b4d34cfabeda5353",
-        "signature": "ed58376144341636698e035ddf6617ea2136b7c3bf6ec4c98f76cea4d52b7ec8",
-        "affectsGlobalScope": false
-      },
       "./src/interfaces/queues/index.ts": {
         "version": "d59ba4ee30080c248846b873d355489005bb1495d5d039ca967c9425aa5d6c27",
         "signature": "ca01672aa02468e85ebdcc2e337d8b36392ebfcc2eb563130ceaccf752e34272",
@@ -4649,7 +4644,6 @@
         "./src/interfaces/queues/queueBus.interface.ts",
         "./src/interfaces/queues/queueHandler.interface.ts",
         "./src/interfaces/queues/queueImpl.interface.ts",
-        "./src/interfaces/queues/queueJob.interface.ts",
         "./src/interfaces/queues/queueOptions.interface.ts"
       ],
       "./src/interfaces/queues/queueBus.interface.ts": [
@@ -4657,10 +4651,6 @@
       ],
       "./src/interfaces/queues/queueHandler.interface.ts": [
         "./node_modules/rxjs/index.d.ts"
-      ],
-      "./src/interfaces/queues/queueJob.interface.ts": [
-        "./src/interfaces/executionOptions.interface.ts",
-        "./src/interfaces/queues/queue.interface.ts"
       ],
       "./src/interfaces/queues/queueOptions.interface.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
@@ -6693,10 +6683,6 @@
       "./src/interfaces/queues/queueHandler.interface.ts": [
         "./node_modules/rxjs/index.d.ts"
       ],
-      "./src/interfaces/queues/queueJob.interface.ts": [
-        "./src/interfaces/executionOptions.interface.ts",
-        "./src/interfaces/queues/queue.interface.ts"
-      ],
       "./src/interfaces/queues/queueOptions.interface.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
         "./src/interfaces/events/eventHandler.interface.ts",
@@ -7284,12 +7270,23 @@
       "./src/interfaces/index.ts",
       "./src/interfaces/jobExecutionInterceptors.interface copy.ts",
       "./src/interfaces/queueConfigService.interface.ts",
-      "./src/interfaces/queues/index.ts",
+      [
+        "./src/interfaces/queues/index.ts",
+        [
+          {
+            "file": "./src/interfaces/queues/index.ts",
+            "start": 164,
+            "length": 22,
+            "messageText": "Cannot find module './queueJob.interface' or its corresponding type declarations.",
+            "category": 1,
+            "code": 2307
+          }
+        ]
+      ],
       "./src/interfaces/queues/queue.interface.ts",
       "./src/interfaces/queues/queueBus.interface.ts",
       "./src/interfaces/queues/queueHandler.interface.ts",
       "./src/interfaces/queues/queueImpl.interface.ts",
-      "./src/interfaces/queues/queueJob.interface.ts",
       "./src/interfaces/queues/queueOptions.interface.ts",
       "./src/interfaces/transport.interface.ts",
       "./src/queue.module.ts",
