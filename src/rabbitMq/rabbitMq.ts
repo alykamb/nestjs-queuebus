@@ -31,7 +31,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
     private workers = new Map<string, Channel>()
     private effects = new Map<string, EventCallback>()
     private eventListeners = new Map<string, EventCallback>()
-    private effectsEvents = new Map<string, string>()
+    private effectsEvents = new Map<string, { name: string; module: string }>()
     private publisherChannel: Channel
     private eventPublisherChannel: Channel
     private eventListenerChannel: Channel
@@ -233,10 +233,12 @@ export class RabbitMq implements ITransport, OnModuleInit {
     public registerEffect<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         callback: EventCallback<EventBase>,
-        ...events: string[]
+        ...events: Array<{ name: string; module: string }>
     ): void {
         this.effects.set(name, callback)
-        events.forEach((e) => this.effectsEvents.set(name, e))
+        events.forEach((e) => {
+            this.effectsEvents.set(name, e)
+        })
     }
 
     public removeEffect(name: string): void {
@@ -272,7 +274,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             }
 
                             const value: IPubEvent = JSON.parse(msg.content.toString())
-                            if (value.from.id === this.from.id && !value?.data?.queueName) {
+                            if (value.from.id === this.from.id && !value?.data?.module) {
                                 return
                             }
 
@@ -282,14 +284,16 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                 } catch (err) {}
                             }
 
-                            const effects = Array.from(this.effects.keys()).filter(
-                                (name) => this.effectsEvents.get(name) === value.data.name,
+                            const effects = Array.from(this.effectsEvents.entries()).filter(
+                                (name) =>
+                                    name[1].module === value.data.module &&
+                                    this.effectsEvents.get(name[0]) === value.data.name,
                             )
 
                             if (!effects?.length) {
                                 return
                             }
-                            effects.forEach((effecName) => {
+                            effects.forEach(([effecName]) => {
                                 const id = v4()
 
                                 void Promise.all([

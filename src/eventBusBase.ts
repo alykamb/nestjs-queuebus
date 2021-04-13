@@ -15,6 +15,7 @@ import {
     EVENT_BEFORE_PUBLISH_METADATA,
     EVENTBUS_QUEUEBUS_METADATA,
     EVENTS_HANDLER_METADATA,
+    EVENTS_METADATA,
 } from './decorators/constants'
 import { InvalidEffectException } from './exceptions'
 import { InvalidQueueBusForEventBusException } from './exceptions/invalidQueueBusForEventBus.exception'
@@ -109,7 +110,6 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             name,
             timestamp,
             module,
-            queueName: this.queueBus.name,
         })
 
         const handler = this.handlers.get(name)
@@ -303,7 +303,10 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                         this.runHooks(hooks.effectAfterExecution, { name, module, bus: this }),
                 )(data)
             },
-            ...effect.events.map((t) => t.name),
+            ...effect.events.map((t) => ({
+                name: t.name,
+                module: Reflect.getMetadata(EVENTS_METADATA, t),
+            })),
         )
     }
 

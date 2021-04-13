@@ -1812,8 +1812,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/transport.interface.ts": {
-        "version": "b7512019c5689ec42b29009293e2d491893bd4612a79c5e5894e21edb2391229",
-        "signature": "c63f3f86944e77d7a6ec6f35b7226b5efde86df8d353b04807c802f0082f5e94",
+        "version": "6db843c911cad7175e4f653b5cefc6069260afef1d7e9ddceb328746ffce67ef",
+        "signature": "583272ef9eae6305e5008322ca5eab052d72c38b94868ed0bfd12dea6a77b671",
         "affectsGlobalScope": false
       },
       "./src/queueBusBase.ts": {
@@ -2432,8 +2432,8 @@
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/rabbitMq.ts": {
-        "version": "a2654197fae5073db224345c19e78d5a9e495de048abc3aaa910001ffc6d745b",
-        "signature": "5cc46a3dd2a044bf20a7f48f86e63594cbd15d6c5d4894c54f239f3f79bc42a7",
+        "version": "eeb84aab46a464823cd3fa05772ee2ca35d7cc5b9e3bca5b8a2dd1883fb7c0fd",
+        "signature": "89889284f0ae09e7c56de1f9711324ce70441a27fa0e8ba801a75016fc4aecbd",
         "affectsGlobalScope": false
       },
       "./src/queue.module.ts": {
@@ -2487,7 +2487,7 @@
         "affectsGlobalScope": false
       },
       "./src/decorators/event.decorator.ts": {
-        "version": "b300bbe2e9c3d37628e2d743a61400d85bbead236ebad961043dc5cb13635298",
+        "version": "da24789d6c305f7661bdf129124291764fc5bb222244ba47aaa6da2fb8dc8ac6",
         "signature": "e4af7af25fd430e5265a3dd78ff7539ec6a38d0c76aa64b4387a739b8d5c591e",
         "affectsGlobalScope": false
       },
@@ -2577,7 +2577,7 @@
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "9c7b5ce19989435e89871cab45de105771bf7be9a635842e230fc028d9a0fcf1",
+        "version": "920e4fe8ac03975c8b87faa7188dbe59f85b80bbac57dacf7b870dad865ba595",
         "signature": "eebd8e30e75ca14a0c7c22096602bd0d8db9b27c74917d01300385184c58d8ef",
         "affectsGlobalScope": false
       },

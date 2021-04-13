@@ -27,7 +27,7 @@ export interface ITransport extends OnModuleDestroy {
     registerEffect<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         callback: EventCallback<EventBase>,
-        ...events: string[]
+        ...events: Array<{ name: string; module: string }>
     ): void
 
     removeEffect(name: string): void
