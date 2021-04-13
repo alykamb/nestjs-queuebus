@@ -2432,7 +2432,7 @@
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/rabbitMq.ts": {
-        "version": "8719c441679130e81088401b23784ea0b95a3688166d4f60751006c1d7105cee",
+        "version": "2622f9cd42b680737d17f9138e2dbec533fff0da7b2faf785f1c977ec3bd43c7",
         "signature": "a8e1408d19711ff51fe9f96f73376dd17ca75e90a01663eb7d35d53f8a6d9ebf",
         "affectsGlobalScope": false
       },
@@ -2577,7 +2577,7 @@
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "349e86d3320c33252cab9af2ff18276c733a83294f5dcc304a736c1e3a4f739f",
+        "version": "61aebc740417264f8382cbddbddc328c5c8db7144b0c662ba12ba46eee3806ff",
         "signature": "eebd8e30e75ca14a0c7c22096602bd0d8db9b27c74917d01300385184c58d8ef",
         "affectsGlobalScope": false
       },

@@ -304,7 +304,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                         this.runHooks(hooks.effectAfterExecution, { name, module, bus: this }),
                 )(data)
             },
-            ...effect.events,
+            ...effect.events.map((t) => t.name),
         )
     }
 

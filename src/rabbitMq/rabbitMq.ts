@@ -32,7 +32,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
     private effects = new Map<string, EventCallback>()
     private eventListeners = new Map<string, EventCallback>()
     private queueEffects = new Map<string, string>()
-    private effectsEvents = new WeakMap<EventCallback, string>()
+    private effectsEvents = new Map<string, string>()
     private publisherChannel: Channel
     private eventPublisherChannel: Channel
     private eventListenerChannel: Channel
@@ -129,15 +129,50 @@ export class RabbitMq implements ITransport, OnModuleInit {
                 Array<{
                     replyTo: string
                     correlationId: string
+                    instanceId: string
                 }>
             >()
             let timeout
 
             const sendToEffect = (): void => {
+                const countPerInstance = new Map<string, number>()
+
+                effects.forEach((value) =>
+                    value.forEach((val) => {
+                        countPerInstance.set(val.instanceId, 0)
+                    }),
+                )
+
                 effects.forEach((value) => {
-                    const chosen = Math.floor(Math.random() * value.length)
+                    let chosen = Math.floor(Math.random() * value.length)
+
+                    if (countPerInstance.size) {
+                        const values = Array.from(countPerInstance.values())
+                        const min = Math.min(...values)
+
+                        const instances = Array.from(countPerInstance.entries())
+                            .filter((i) => i[1] === min)
+                            .map((i) => i[0])
+                        const available = value.reduce((acc, value, i) => {
+                            if (instances.includes(value.instanceId)) {
+                                acc.push(i)
+                            }
+                            return acc
+                        }, [])
+
+                        chosen = available[Math.floor(Math.random() * available.length)]
+                    }
 
                     value.forEach((val, i) => {
+                        const sendValue = i === chosen ? event : false
+
+                        if (sendValue) {
+                            countPerInstance.set(
+                                val.instanceId,
+                                (countPerInstance.get(val.instanceId) ?? 0) + 1,
+                            )
+                        }
+
                         publisherChannel.sendToQueue(
                             val.replyTo,
                             Buffer.from(JSON.stringify(i === chosen ? event : false), 'utf-8'),
@@ -164,12 +199,14 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             {
                                 replyTo: message.properties.replyTo,
                                 correlationId: value.id,
+                                instanceId: value.instanceId,
                             },
                         ])
                     } else {
                         effects.get(value.effecName).push({
                             replyTo: message.properties.replyTo,
                             correlationId: value.id,
+                            instanceId: value.instanceId,
                         })
                     }
 
@@ -202,7 +239,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
     ): void {
         this.queueEffects.set(name, queueBusName)
         this.effects.set(name, callback)
-        events.forEach((e) => this.effectsEvents.set(callback, e))
+        events.forEach((e) => this.effectsEvents.set(name, e))
     }
 
     public removeEffect(name: string): void {
@@ -248,67 +285,79 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                 } catch (err) {}
                             }
 
-                            const effecName = Array.from(this.queueEffects.entries()).find(
-                                (name) => name[1] === value.data.queueName,
-                            )?.[0]
+                            const effects = Array.from(this.queueEffects.entries()).filter(
+                                (name) =>
+                                    name[1] === value.data.queueName &&
+                                    this.effectsEvents.get(name[0]) === value.data.name,
+                            )
 
-                            if (!effecName) {
+                            if (!effects?.length) {
                                 return
                             }
+                            effects.forEach(([effecName]) => {
+                                const id = v4()
 
-                            const id = v4()
+                                void Promise.all([
+                                    this.createConsumerChannel('effect_consumer'),
+                                    this.getPublisherChannel(),
+                                ]).then(([consumer, worker]) => {
+                                    void consumer
+                                        .assertQueue('', { exclusive: true })
+                                        .then((queue) => {
+                                            void consumer.consume(
+                                                queue.queue,
+                                                (message) => {
+                                                    if (message?.properties?.correlationId !== id) {
+                                                        void consumer.deleteQueue(queue.queue)
+                                                        return
+                                                    }
 
-                            void Promise.all([
-                                this.createConsumerChannel('effect_consumer'),
-                                this.getPublisherChannel(),
-                            ]).then(([consumer, worker]) => {
-                                void consumer.assertQueue('', { exclusive: true }).then((queue) => {
-                                    void consumer.consume(
-                                        queue.queue,
-                                        (message) => {
-                                            if (message?.properties?.correlationId !== id) {
-                                                void consumer.deleteQueue(queue.queue)
-                                                return
-                                            }
-
-                                            try {
-                                                const value = JSON.parse(
-                                                    message.content.toString('utf-8'),
-                                                )
-
-                                                if (value) {
-                                                    this.addJob$.next()
                                                     try {
-                                                        const res = this.effects.get(effecName)(
-                                                            value,
+                                                        const value = JSON.parse(
+                                                            message.content.toString('utf-8'),
                                                         )
 
-                                                        if (res instanceof Promise) {
-                                                            void res.then(() => {
-                                                                this.removeJob$.next()
-                                                            })
-                                                        } else {
-                                                            this.removeJob$.next()
-                                                        }
-                                                    } catch (err) {
-                                                        this.removeJob$.next()
-                                                    }
-                                                }
-                                            } catch (err) {}
-                                        },
-                                        {
-                                            noAck: true,
-                                        },
-                                    )
+                                                        if (value) {
+                                                            this.addJob$.next()
+                                                            try {
+                                                                const res = this.effects.get(
+                                                                    effecName,
+                                                                )(value)
 
-                                    worker.sendToQueue(
-                                        msg.properties.replyTo,
-                                        Buffer.from(JSON.stringify({ effecName, id }), 'utf-8'),
-                                        {
-                                            correlationId: msg.properties.correlationId,
-                                            replyTo: queue.queue,
-                                        },
-                                    )
+                                                                if (res instanceof Promise) {
+                                                                    void res.then(() => {
+                                                                        this.removeJob$.next()
+                                                                    })
+                                                                } else {
+                                                                    this.removeJob$.next()
+                                                                }
+                                                            } catch (err) {
+                                                                this.removeJob$.next()
+                                                            }
+                                                        }
+                                                    } catch (err) {}
+                                                },
+                                                {
+                                                    noAck: true,
+                                                },
+                                            )
+
+                                            worker.sendToQueue(
+                                                msg.properties.replyTo,
+                                                Buffer.from(
+                                                    JSON.stringify({
+                                                        effecName,
+                                                        id,
+                                                        instanceId: this.queueConfig.id,
+                                                    }),
+                                                    'utf-8',
+                                                ),
+                                                {
+                                                    correlationId: msg.properties.correlationId,
+                                                    replyTo: queue.queue,
+                                                },
+                                            )
+                                        })
                                 })
                             })
                         },
@@ -507,7 +556,6 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             race([
                                 a.pipe(
                                     filter((v2) => v2 <= 0),
-                                    // tap(console.log),
                                     take(1),
                                 ),
                                 interval(10000).pipe(take(1)),
