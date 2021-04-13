@@ -2432,7 +2432,7 @@
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/rabbitMq.ts": {
-        "version": "eeb84aab46a464823cd3fa05772ee2ca35d7cc5b9e3bca5b8a2dd1883fb7c0fd",
+        "version": "61dd5b2551565560c45da0f6f178cffed6feb913546ad2a56ddada5c2e525674",
         "signature": "89889284f0ae09e7c56de1f9711324ce70441a27fa0e8ba801a75016fc4aecbd",
         "affectsGlobalScope": false
       },

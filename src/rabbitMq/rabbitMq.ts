@@ -287,7 +287,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             const effects = Array.from(this.effectsEvents.entries()).filter(
                                 (name) =>
                                     name[1].module === value.data.module &&
-                                    this.effectsEvents.get(name[0]) === value.data.name,
+                                    this.effectsEvents.get(name[0])?.name === value.data.name,
                             )
 
                             if (!effects?.length) {
