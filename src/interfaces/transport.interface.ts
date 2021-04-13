@@ -25,7 +25,6 @@ export interface ITransport extends OnModuleDestroy {
     // ): void
 
     registerEffect<EventBase extends IPubEvent = IPubEvent>(
-        queueBusName: string,
         name: string,
         callback: EventCallback<EventBase>,
         ...events: string[]

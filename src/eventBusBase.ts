@@ -287,7 +287,6 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         const name = `${effect.name}_${effect.key}_${effect.events.map((t) => t.name).join()}`
 
         this.transport.registerEffect(
-            this.queueBus.name,
             name,
             (data: IPubEvent): any | Promise<any> => {
                 const hooks = this.getHooks()

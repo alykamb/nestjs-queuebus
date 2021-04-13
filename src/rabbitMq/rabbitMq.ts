@@ -31,7 +31,6 @@ export class RabbitMq implements ITransport, OnModuleInit {
     private workers = new Map<string, Channel>()
     private effects = new Map<string, EventCallback>()
     private eventListeners = new Map<string, EventCallback>()
-    private queueEffects = new Map<string, string>()
     private effectsEvents = new Map<string, string>()
     private publisherChannel: Channel
     private eventPublisherChannel: Channel
@@ -232,12 +231,10 @@ export class RabbitMq implements ITransport, OnModuleInit {
     }
 
     public registerEffect<EventBase extends IPubEvent = IPubEvent>(
-        queueBusName: string,
         name: string,
         callback: EventCallback<EventBase>,
         ...events: string[]
     ): void {
-        this.queueEffects.set(name, queueBusName)
         this.effects.set(name, callback)
         events.forEach((e) => this.effectsEvents.set(name, e))
     }
@@ -285,16 +282,14 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                 } catch (err) {}
                             }
 
-                            const effects = Array.from(this.queueEffects.entries()).filter(
-                                (name) =>
-                                    name[1] === value.data.queueName &&
-                                    this.effectsEvents.get(name[0]) === value.data.name,
+                            const effects = Array.from(this.effects.keys()).filter(
+                                (name) => this.effectsEvents.get(name) === value.data.name,
                             )
 
                             if (!effects?.length) {
                                 return
                             }
-                            effects.forEach(([effecName]) => {
+                            effects.forEach((effecName) => {
                                 const id = v4()
 
                                 void Promise.all([

@@ -1812,8 +1812,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/transport.interface.ts": {
-        "version": "47bc2a5658c0d81e7d4a5f483876c20ab93c9be26e28173d218119379c0667e6",
-        "signature": "b1ed80410e6e56ad0d2057fcfc30877061af052c22f9e7d64ffc1bf9f2fbf4c2",
+        "version": "b7512019c5689ec42b29009293e2d491893bd4612a79c5e5894e21edb2391229",
+        "signature": "c63f3f86944e77d7a6ec6f35b7226b5efde86df8d353b04807c802f0082f5e94",
         "affectsGlobalScope": false
       },
       "./src/queueBusBase.ts": {
@@ -2432,8 +2432,8 @@
         "affectsGlobalScope": false
       },
       "./src/rabbitMq/rabbitMq.ts": {
-        "version": "2622f9cd42b680737d17f9138e2dbec533fff0da7b2faf785f1c977ec3bd43c7",
-        "signature": "a8e1408d19711ff51fe9f96f73376dd17ca75e90a01663eb7d35d53f8a6d9ebf",
+        "version": "a2654197fae5073db224345c19e78d5a9e495de048abc3aaa910001ffc6d745b",
+        "signature": "5cc46a3dd2a044bf20a7f48f86e63594cbd15d6c5d4894c54f239f3f79bc42a7",
         "affectsGlobalScope": false
       },
       "./src/queue.module.ts": {
@@ -2577,7 +2577,7 @@
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "10a5e182a3a0a2f198670fc611453d3a96be6de5862f72e7e0e12ae73c18774a",
+        "version": "9c7b5ce19989435e89871cab45de105771bf7be9a635842e230fc028d9a0fcf1",
         "signature": "eebd8e30e75ca14a0c7c22096602bd0d8db9b27c74917d01300385184c58d8ef",
         "affectsGlobalScope": false
       },
