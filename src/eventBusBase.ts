@@ -8,13 +8,10 @@ import {
     EFFECT_AFTER_EXECUTION_METADATA,
     EFFECT_BEFORE_EXECUTION_METADATA,
     EFFECT_METADATA,
-    EFFECT_ON_RECEIVE_METADATA,
-    EVENT_AFTER_EXECUTION_METADATA,
     EVENT_AFTER_PUBLISH_METADATA,
-    EVENT_BEFORE_EXECUTION_METADATA,
     EVENT_BEFORE_PUBLISH_METADATA,
+    EVENT_ON_RECEIVE_METADATA,
     EVENTBUS_QUEUEBUS_METADATA,
-    EVENTS_HANDLER_METADATA,
     EVENTS_METADATA,
 } from './decorators/constants'
 import { InvalidEffectException } from './exceptions'
@@ -39,10 +36,6 @@ export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<EventHand
 @Injectable()
 export class EventBusBase<EventBase extends IEvent = IEvent>
     implements IEventBus<EventBase>, OnModuleDestroy {
-    /**
-     * Guarda referência de todos os handlers registrados
-     */
-    protected handlers = new Map<string, EventHandler>()
     /**
      * Mantem referência de todas subscrições para desativá-las.
      */
@@ -111,35 +104,6 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             timestamp,
             module,
         })
-
-        const handler = this.handlers.get(name)
-        if (handler) {
-            try {
-                const res = compose(
-                    hooks.eventBeforeExecution &&
-                        this.runHooks(hooks.eventBeforeExecution, { name, module, bus: this }),
-                    (data) => this.parseHook(handler.handle(data)),
-                    hooks.eventAfterExecution &&
-                        this.runHooks(hooks.eventAfterPublish, { name, module, bus: this }),
-                )(event)
-
-                if (res instanceof Promise) {
-                    res.catch(() => {
-                        //
-                    })
-                }
-            } catch (err) {}
-        }
-    }
-
-    /**
-     * Registra o evento handler
-     *
-     * @param handler - handler do evento
-     * @param name - nome do evento
-     */
-    protected bind(handler: EventHandler<EventBase>, name: string): void {
-        this.handlers.set(name, handler)
     }
 
     /**
@@ -175,30 +139,6 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         )
     }
 
-    /**
-     * Registra os handlers encontrados
-     *
-     * @param handlers
-     */
-    public register(handlers: Array<EventHandlerType<EventBase>> = []): void {
-        handlers.forEach((handler) => this.registerHandler(handler))
-    }
-
-    /**
-     * Busca o nome de cada handler e o registra.
-     *
-     * @param handler
-     */
-    protected registerHandler(handler: EventHandlerType<EventBase>): void {
-        const instance = this.moduleRef.get(handler, { strict: false })
-        if (!instance) {
-            return
-        }
-        const eventsNames = this.reflectEventsNames(handler)
-
-        eventsNames.data.map((event) => this.bind(instance as EventHandler<EventBase>, event.name))
-    }
-
     protected getHooks(): IEventExecutionInterceptors {
         const sort = (
             p1: { key: string; order: number },
@@ -210,17 +150,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             const map = (property: { key: string; order: number }): any =>
                 this.queueConfig[property.key]
             this.hooks = {
-                eventBeforeExecution: (
-                    Reflect.getMetadata(EVENT_BEFORE_EXECUTION_METADATA, constructor) || []
-                )
-                    .sort(sort)
-                    .map(map),
-                eventAfterExecution: (
-                    Reflect.getMetadata(EVENT_AFTER_EXECUTION_METADATA, constructor) || []
-                )
-                    .sort(sort)
-                    .map(map),
-                eventOnReceive: (Reflect.getMetadata(EFFECT_ON_RECEIVE_METADATA, constructor) || [])
+                eventOnReceive: (Reflect.getMetadata(EVENT_ON_RECEIVE_METADATA, constructor) || [])
                     .sort(sort)
                     .map(map),
                 eventBeforePublish: (
@@ -317,15 +247,5 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     protected getEventName(event: EventBase): string {
         const { constructor } = Object.getPrototypeOf(event)
         return constructor.name as string
-    }
-
-    /**
-     * Retorna o valor do metadado, que é a implementação do evento
-     * @param handler
-     */
-    protected reflectEventsNames(
-        handler: EventHandlerType<EventBase>,
-    ): { data: FunctionConstructor[]; bus: Type<EventBusBase> } {
-        return Reflect.getMetadata(EVENTS_HANDLER_METADATA, handler)
     }
 }

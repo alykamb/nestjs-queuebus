@@ -1752,8 +1752,8 @@
         "affectsGlobalScope": false
       },
       "./src/decorators/constants.ts": {
-        "version": "da763ed8d7caccf01fdc64931824271b86ebe426d7c7777544ec10e13ab1497b",
-        "signature": "eb36cc3284cb0b233ff333935e7feeb0c6b7727f5fc72626b0e5db9bfcb89d3e",
+        "version": "f6c0083b8b056707ef53d4725bedecfb9e733ad929c12c014f5628831d33cca6",
+        "signature": "9de52953c505c6844c8e9c0afaa0c4161da2e519abb8dd0fef6a6ed6fa2d2490",
         "affectsGlobalScope": false
       },
       "./src/helpers/compose.ts": {
@@ -1832,7 +1832,7 @@
         "affectsGlobalScope": false
       },
       "./src/services/explorer.service.ts": {
-        "version": "2a2698267789480a3382277a32003c931a74676212b60028055dbeaa69a34b03",
+        "version": "47bba1b22ce1c79d4c069e5306e3ad743bc57943a47b2ba66007c6268edd506b",
         "signature": "2beb17f4dc6c6d970360640d0ea6804ce6660bf5414d890f32d960ebc959af73",
         "affectsGlobalScope": false
       },
@@ -2417,8 +2417,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/index.ts": {
-        "version": "d59ba4ee30080c248846b873d355489005bb1495d5d039ca967c9425aa5d6c27",
-        "signature": "ca01672aa02468e85ebdcc2e337d8b36392ebfcc2eb563130ceaccf752e34272",
+        "version": "975ec93eea500d5d6e6f7651b4ddfe02e75487f8719e28a280660b3a34160a35",
+        "signature": "e835ab8372869fba1fb3891966412bf54ff5d5ee66ff0e115e63c5325999169a",
         "affectsGlobalScope": false
       },
       "./src/interfaces/index.ts": {
@@ -2432,7 +2432,7 @@
         "affectsGlobalScope": false
       },
       "./src/queue.module.ts": {
-        "version": "3d2442d5e6a0a85e003546c42030a03cc77df15ad88e8692df74c67ebd1b278d",
+        "version": "1614b38b2f6338eee974fdd278d61b5c3c3349883051db7164a616e9a1320ba3",
         "signature": "bb6d24ae8d8c6d94a4cffc3099182a9664621f02f7fb813c6d0e53634e66df76",
         "affectsGlobalScope": false
       },
@@ -2446,11 +2446,6 @@
         "signature": "c4510011205384a9610942c095d98639e9d5bae69fcac9ddb07563efe128fa87",
         "affectsGlobalScope": false
       },
-      "./src/decorators/eventsHandler.decorator.ts": {
-        "version": "826cf3236a0885878a0451047dc827db053946d09b8acaa4599dc76c3da46859",
-        "signature": "bf28172889627fcbb21b3f6aa7c56cbf8ae75b818e9af659a229f3ae0ea031e1",
-        "affectsGlobalScope": false
-      },
       "./src/types/effectDecorator.type.ts": {
         "version": "a7dd2bdb74230d7c672d68581f1d67aa151ea2eea571d65273ea722fd78553a8",
         "signature": "d710561b0eca71087b942836f5f1b0b0ca0b82d98cf9ba8ca0c3b45a4500f355",
@@ -2461,14 +2456,9 @@
         "signature": "21cae74a345fa92228667039bcd30a3e54c4c653e18d0fb2fc6699ab8100a79c",
         "affectsGlobalScope": false
       },
-      "./src/types/eventHandlerDecorator.type.ts": {
-        "version": "31a88847a805fd455c73d53c40e9b38bc7e1bcce4b2838c2e6d395e60890147c",
-        "signature": "800044c9852788b9796d2a57b8a173c937740990ce7656676a17024a57cc248f",
-        "affectsGlobalScope": false
-      },
       "./src/decorators/decorators.factory.ts": {
-        "version": "7377d11d1a0799aa2c6a501697e7db492c796e190b936922f2c7cd754d241033",
-        "signature": "f9240458ffcf59dc16bc802a457dde571475106b20450bc2cbebb6a560947ea4",
+        "version": "7e0a3adc71d71c20a2a1b1cf2b981941ef38dd584a2116b083240909df9414a0",
+        "signature": "910f518601f86c01249f9cc21d11793a89765472dab074cd4a8e273ef7e1c50b",
         "affectsGlobalScope": false
       },
       "./src/decorators/useQueueBus.decorator.ts": {
@@ -2493,62 +2483,52 @@
       },
       "./src/decorators/hooks/jobAfterExecution.decorator.ts": {
         "version": "8455200639540309b497519aa30add4c17c2b5a4829bbddaf6fcbedb8683284f",
-        "signature": "cc3de946f0216f3ec25ccada6af7f72a6e74c767c53fd10f54bfe5de3850f197",
+        "signature": "733f2a93062221613a5fd87022c7fe05181732cb5b009cca980f460b5d3344a7",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/jobBeforeExecution.decorator.ts": {
         "version": "74b5f3fc1e01a85cbe35a91a9704ba299fee0a409fa10c1aa3cd8a21234118c2",
-        "signature": "f7d1b59350b1e1205380a10c8279d67bedf792fee35b54968a338c52d21f5cc8",
+        "signature": "d3285dd8b14710a8244b56f626beb0e812cb1c58258925e0dd37e5bba0ed33c1",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/jobOnExecute.decorator.ts": {
         "version": "d06eda01ea4a7d4ecf7162c88527966bcb33511ac645555da6dda1b0d7a0aafc",
-        "signature": "d5e1f8b3f4ecfd5552f8e39d4727ecaf2bc48d61c70eca8b2e2011cbbd9cb775",
+        "signature": "e006173da1825593d3032c07784314befc1a70317a4cb199ff6cb38ba6e926b1",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventBeforePublish.decorator.ts": {
         "version": "e0ffc7bc6d0bf73a4b55004e629df3eb39c27be405f7f2994f87aa841afd40bf",
-        "signature": "2972db5c1aa8a6f698760eb5972b4693b6985006e42e263bab28b27c9099e965",
+        "signature": "edac44d4977dff1510be9282011ceded88bf13ef5b3ed84dc2da263837ee223a",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventAfterPublish.decorator.ts": {
         "version": "fea717da47d1ae9edc00d2724a57e3ed5a525e2d6afdb5c66e829a579c003a93",
-        "signature": "cf9d8f064e98a44188360e6eeb06dc66116a163533b63d75ba38cc463487d3c0",
-        "affectsGlobalScope": false
-      },
-      "./src/decorators/hooks/eventBeforeExecution.decorator.ts": {
-        "version": "f4ca493aa2dabfe402aba279e303438f473e6b6e666559d6510f73859cb7e263",
-        "signature": "beda39effcedb99b8586c71d4c14ceca1c73f2c5cb565fec34f24a492267cb81",
-        "affectsGlobalScope": false
-      },
-      "./src/decorators/hooks/eventAfterExecution.decorator.ts": {
-        "version": "bc4d1c7654e341ff25da276d6ffba4004f468584c3d1d5c3bba80e66617b81c3",
-        "signature": "146066865f6f07d2da28dc16e57cc99bc6dffeaae5cc7c3e16f1f46ab81fa9a8",
+        "signature": "18bcbb598ceb1fbf7f1a24733e756604cf8404d5514ef4d0e0c3327ac4c72b7e",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/eventOnReceive.decorator.ts": {
-        "version": "fa3b489d99ae56a9ae5ea1c556784f1920a51c927fc85bd41bd27aeb646b724c",
-        "signature": "e03f814a38de6fddd1dc707d4007c534f586dff6e7bcd0ec251b0946c514bd1f",
+        "version": "efc7766235234c9583340b374f18341b353d59c888a308f7ed4a15f8198de956",
+        "signature": "946b6f8fc610c4dd4ed41c87dbbe396dce2ee60da9ec80d6abc57458cd26ba8c",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/effectBeforeExecution.decorator.ts": {
         "version": "92e7ffe4348e8a5c4450fb4ac54ae363118ba0a2d8405fc19004a5fc59ed06ef",
-        "signature": "92e8fa337f3150efd2d2df868beeb0539df91b4e305ba7b5a7a543ca9d62e5af",
+        "signature": "be91d1fe6afc507df26d097a3eb8b85e53270e5a9285229b056aed2183feb6bd",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/effectAfterExecution.decorator.ts": {
         "version": "02b51ad49bd8887741fad867b244ea2586bb4da4fc5da735b0bd5fb67321f0bd",
-        "signature": "0aaceff494541fa975bf789bec6b29761f84a092f281623f774a958d9d8cd083",
+        "signature": "75cbd89e8c65c62c15eaa3405ccf1b599478371b4f741509fa34123204b883ad",
         "affectsGlobalScope": false
       },
       "./src/decorators/hooks/index.ts": {
-        "version": "7e197761c348e3c5aef727c669e11e444eca6ff6aa5c164a7fbedc8f05451659",
-        "signature": "b8b5216253f3f7f8e0a6ae7295c341deff095b706ea1661d7d68b5dcf4628f08",
+        "version": "688dc4c1029251f3e76973beb0150f87d0c9b224a5a732850af17b1676c4af03",
+        "signature": "d0a0a888685d99eb5b810da3b0d0d7f9f0d88c8de8e19042e6358ee25deef0fe",
         "affectsGlobalScope": false
       },
       "./src/decorators/index.ts": {
-        "version": "c7d22e5fa3889a1359f7b9be88e5a395ae47ac8651f4d14d4d35bb46f54246c7",
-        "signature": "1f2f0fc42b10b41fd9bc47636d1dbf45719ba1300f358bc79297b312ec4968ed",
+        "version": "f0a51d9914283217f0f2b16f089c26e0e052e7d5a2335e18694bf2fe7933f68a",
+        "signature": "960ba5808c61749a883a8b3ece458b85e9cf83f55adb5b1d44d0bbdf87c92c9d",
         "affectsGlobalScope": false
       },
       "./src/index.ts": {
@@ -2562,8 +2542,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/eventExecutionInterceptors.interface.ts": {
-        "version": "6608fac1e5df78072c767726c55306de25802b321478268ac1924bf75a5d2b9a",
-        "signature": "2c67ef58f6e86acb34335f1948cf963a5b38eb0a89b9193815b75440942ff225",
+        "version": "bbbc349accf8aa65f3dc8659f6337f4c0c3eae7a553883b0718817907dbe08a1",
+        "signature": "dee202f9d60d99c353ea43e5c53a0f1e047c22b7e25a707a8e25ce66a59b255c",
         "affectsGlobalScope": false
       },
       "./src/types/effectData.type.ts": {
@@ -2572,8 +2552,8 @@
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "920e4fe8ac03975c8b87faa7188dbe59f85b80bbac57dacf7b870dad865ba595",
-        "signature": "eebd8e30e75ca14a0c7c22096602bd0d8db9b27c74917d01300385184c58d8ef",
+        "version": "3f0721c53bd858414859cbe99cd8771b90c1dd3501d05b64244abc30d825d814",
+        "signature": "05ccb202b7d0bbc37d73973116f962444a27b7227950e3f1c950ae8694b4b50f",
         "affectsGlobalScope": false
       },
       "./src/decorators/memoize.decorator.ts": {
@@ -4468,12 +4448,10 @@
       ],
       "./src/decorators/decorators.factory.ts": [
         "./src/decorators/effect.decorator.ts",
-        "./src/decorators/eventsHandler.decorator.ts",
         "./src/decorators/queueHandler.decorator.ts",
         "./src/eventBusBase.ts",
         "./src/queueBusBase.ts",
         "./src/types/effectDecorator.type.ts",
-        "./src/types/eventHandlerDecorator.type.ts",
         "./src/types/queueHandlerDecorator.type.ts"
       ],
       "./src/decorators/effect.decorator.ts": [
@@ -4485,10 +4463,6 @@
       "./src/decorators/event.decorator.ts": [
         "./src/decorators/constants.ts"
       ],
-      "./src/decorators/eventsHandler.decorator.ts": [
-        "./src/decorators/constants.ts",
-        "./src/index.ts"
-      ],
       "./src/decorators/hooks/effectAfterExecution.decorator.ts": [
         "./src/decorators/constants.ts",
         "./src/decorators/hooks/execution.decorator.ts"
@@ -4497,15 +4471,7 @@
         "./src/decorators/constants.ts",
         "./src/decorators/hooks/execution.decorator.ts"
       ],
-      "./src/decorators/hooks/eventAfterExecution.decorator.ts": [
-        "./src/decorators/constants.ts",
-        "./src/decorators/hooks/execution.decorator.ts"
-      ],
       "./src/decorators/hooks/eventAfterPublish.decorator.ts": [
-        "./src/decorators/constants.ts",
-        "./src/decorators/hooks/execution.decorator.ts"
-      ],
-      "./src/decorators/hooks/eventBeforeExecution.decorator.ts": [
         "./src/decorators/constants.ts",
         "./src/decorators/hooks/execution.decorator.ts"
       ],
@@ -4524,9 +4490,7 @@
       "./src/decorators/hooks/index.ts": [
         "./src/decorators/hooks/effectAfterExecution.decorator.ts",
         "./src/decorators/hooks/effectBeforeExecution.decorator.ts",
-        "./src/decorators/hooks/eventAfterExecution.decorator.ts",
         "./src/decorators/hooks/eventAfterPublish.decorator.ts",
-        "./src/decorators/hooks/eventBeforeExecution.decorator.ts",
         "./src/decorators/hooks/eventBeforePublish.decorator.ts",
         "./src/decorators/hooks/eventOnReceive.decorator.ts",
         "./src/decorators/hooks/jobAfterExecution.decorator.ts",
@@ -4549,7 +4513,6 @@
         "./src/decorators/decorators.factory.ts",
         "./src/decorators/effect.decorator.ts",
         "./src/decorators/event.decorator.ts",
-        "./src/decorators/eventsHandler.decorator.ts",
         "./src/decorators/hooks/index.ts",
         "./src/decorators/nameQueue.decorator.ts",
         "./src/decorators/queueHandler.decorator.ts",
@@ -4727,9 +4690,6 @@
         "./src/interfaces/index.ts"
       ],
       "./src/types/effectDecorator.type.ts": [
-        "./src/interfaces/index.ts"
-      ],
-      "./src/types/eventHandlerDecorator.type.ts": [
         "./src/interfaces/index.ts"
       ],
       "./src/types/hooks.type.ts": [
@@ -6532,15 +6492,11 @@
         "./src/eventBusBase.ts",
         "./src/queueBusBase.ts",
         "./src/types/effectDecorator.type.ts",
-        "./src/types/eventHandlerDecorator.type.ts",
         "./src/types/queueHandlerDecorator.type.ts"
       ],
       "./src/decorators/effect.decorator.ts": [
         "./src/eventBusBase.ts",
         "./src/types/effectDecorator.type.ts"
-      ],
-      "./src/decorators/eventsHandler.decorator.ts": [
-        "./src/index.ts"
       ],
       "./src/decorators/hooks/effectAfterExecution.decorator.ts": [
         "./src/index.ts"
@@ -6548,13 +6504,7 @@
       "./src/decorators/hooks/effectBeforeExecution.decorator.ts": [
         "./src/index.ts"
       ],
-      "./src/decorators/hooks/eventAfterExecution.decorator.ts": [
-        "./src/index.ts"
-      ],
       "./src/decorators/hooks/eventAfterPublish.decorator.ts": [
-        "./src/index.ts"
-      ],
-      "./src/decorators/hooks/eventBeforeExecution.decorator.ts": [
         "./src/index.ts"
       ],
       "./src/decorators/hooks/eventBeforePublish.decorator.ts": [
@@ -6570,9 +6520,7 @@
       "./src/decorators/hooks/index.ts": [
         "./src/decorators/hooks/effectAfterExecution.decorator.ts",
         "./src/decorators/hooks/effectBeforeExecution.decorator.ts",
-        "./src/decorators/hooks/eventAfterExecution.decorator.ts",
         "./src/decorators/hooks/eventAfterPublish.decorator.ts",
-        "./src/decorators/hooks/eventBeforeExecution.decorator.ts",
         "./src/decorators/hooks/eventBeforePublish.decorator.ts",
         "./src/decorators/hooks/eventOnReceive.decorator.ts",
         "./src/decorators/hooks/jobAfterExecution.decorator.ts",
@@ -6592,7 +6540,6 @@
         "./src/decorators/decorators.factory.ts",
         "./src/decorators/effect.decorator.ts",
         "./src/decorators/event.decorator.ts",
-        "./src/decorators/eventsHandler.decorator.ts",
         "./src/decorators/hooks/index.ts",
         "./src/decorators/nameQueue.decorator.ts",
         "./src/decorators/queueHandler.decorator.ts",
@@ -6674,7 +6621,6 @@
         "./src/interfaces/queues/queueBus.interface.ts",
         "./src/interfaces/queues/queueHandler.interface.ts",
         "./src/interfaces/queues/queueImpl.interface.ts",
-        "./src/interfaces/queues/queueJob.interface.ts",
         "./src/interfaces/queues/queueOptions.interface.ts"
       ],
       "./src/interfaces/queues/queueBus.interface.ts": [
@@ -6743,9 +6689,6 @@
         "./src/interfaces/index.ts"
       ],
       "./src/types/effectDecorator.type.ts": [
-        "./src/interfaces/index.ts"
-      ],
-      "./src/types/eventHandlerDecorator.type.ts": [
         "./src/interfaces/index.ts"
       ],
       "./src/types/hooks.type.ts": [
@@ -7231,12 +7174,9 @@
       "./src/decorators/decorators.factory.ts",
       "./src/decorators/effect.decorator.ts",
       "./src/decorators/event.decorator.ts",
-      "./src/decorators/eventsHandler.decorator.ts",
       "./src/decorators/hooks/effectAfterExecution.decorator.ts",
       "./src/decorators/hooks/effectBeforeExecution.decorator.ts",
-      "./src/decorators/hooks/eventAfterExecution.decorator.ts",
       "./src/decorators/hooks/eventAfterPublish.decorator.ts",
-      "./src/decorators/hooks/eventBeforeExecution.decorator.ts",
       "./src/decorators/hooks/eventBeforePublish.decorator.ts",
       "./src/decorators/hooks/eventOnReceive.decorator.ts",
       "./src/decorators/hooks/execution.decorator.ts",
@@ -7270,19 +7210,7 @@
       "./src/interfaces/index.ts",
       "./src/interfaces/jobExecutionInterceptors.interface copy.ts",
       "./src/interfaces/queueConfigService.interface.ts",
-      [
-        "./src/interfaces/queues/index.ts",
-        [
-          {
-            "file": "./src/interfaces/queues/index.ts",
-            "start": 164,
-            "length": 22,
-            "messageText": "Cannot find module './queueJob.interface' or its corresponding type declarations.",
-            "category": 1,
-            "code": 2307
-          }
-        ]
-      ],
+      "./src/interfaces/queues/index.ts",
       "./src/interfaces/queues/queue.interface.ts",
       "./src/interfaces/queues/queueBus.interface.ts",
       "./src/interfaces/queues/queueHandler.interface.ts",
@@ -7300,7 +7228,6 @@
       "./src/types/callback.ts",
       "./src/types/effectData.type.ts",
       "./src/types/effectDecorator.type.ts",
-      "./src/types/eventHandlerDecorator.type.ts",
       "./src/types/hooks.type.ts",
       "./src/types/queueHandlerDecorator.type.ts",
       "./src/types/queueResult.type.ts"

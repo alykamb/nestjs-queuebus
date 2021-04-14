@@ -1,5 +1,4 @@
 export * from './queueHandler.decorator'
-export * from './eventsHandler.decorator'
 export * from './effect.decorator'
 export * from './decorators.factory'
 export * from './useQueueBus.decorator'
