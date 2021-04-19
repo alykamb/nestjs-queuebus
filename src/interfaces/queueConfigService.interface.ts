@@ -7,6 +7,8 @@ export interface IQueueConfigService {
 
     host?: string
     port: number
+    username?: string
+    password?: string
 
     getQueues: () => {
         queues: Array<typeof QueueBusBase>

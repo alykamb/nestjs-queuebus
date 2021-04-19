@@ -53,18 +53,26 @@ export class RabbitMq implements ITransport, OnModuleInit {
 
     public async getPublisher(): Promise<Connection> {
         if (!this.publisher) {
-            this.publisher = await connect(
-                `amqp://${this.queueConfig.host}:${this.queueConfig.port}`,
-            )
+            this.publisher = await connect(this.connectionUrl)
         }
         return this.publisher
     }
 
+    protected get connectionUrl(): string {
+        let userinfo = ''
+        if (this.queueConfig.username) {
+            userinfo = this.queueConfig.username
+            if (this.queueConfig.password) {
+                userinfo += `:${this.queueConfig.password}`
+            }
+        }
+
+        return `amqp://${userinfo}${this.queueConfig.host}:${this.queueConfig.port}`
+    }
+
     public async getConsumer(): Promise<Connection> {
         if (!this.consumer) {
-            this.consumer = await connect(
-                `amqp://${this.queueConfig.host}:${this.queueConfig.port}`,
-            )
+            this.consumer = await connect(this.connectionUrl)
         }
         return this.consumer
     }
@@ -573,6 +581,8 @@ export class RabbitMq implements ITransport, OnModuleInit {
                 await worker[1].close()
             }),
         )
+
+        this.numberOfActiveJobsSub?.unsubscribe?.()
 
         if (this.eventListenerChannel) {
             await this.eventListenerChannel.close()
