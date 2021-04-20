@@ -65,6 +65,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
             if (this.queueConfig.password) {
                 userinfo += `:${this.queueConfig.password}`
             }
+            userinfo += '@'
         }
 
         return `amqp://${userinfo}${this.queueConfig.host}:${this.queueConfig.port}`
