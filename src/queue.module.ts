@@ -11,7 +11,7 @@ import {
 import { ModuleRef } from '@nestjs/core'
 
 import { QueueBusBase } from '.'
-import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME } from './constants'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME, Transport } from './constants'
 import { EventBusBase } from './eventBusBase'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { ITransport } from './interfaces/transport.interface'
@@ -63,17 +63,30 @@ export class QueueModule implements OnApplicationBootstrap {
         return {
             provide: MESSAGE_BROOKER,
             useFactory: async (queueConfig: IQueueConfigService): Promise<ITransport> => {
-                //* rabbitmq is the only supported transport for now.
-                // if (queueConfig.messageBrooker === Transport.rabbitMQ) {
-                if (!require('amqplib')) {
-                    throw new Error(
-                        'amqplib node package is missing. use: npm install --save amqplib',
-                    )
-                }
+                if (queueConfig.messageBrooker === Transport.rabbitMQ) {
+                    if (!require('amqplib')) {
+                        throw new Error(
+                            'amqplib node package is missing. use: npm install --save amqplib',
+                        )
+                    }
 
-                const { RabbitMq } = await import('./rabbitMq/rabbitMq')
-                return new RabbitMq(queueConfig)
-                // }
+                    const { RabbitMq } = await import('./transports/rabbitMq/rabbitMq')
+                    return new RabbitMq(queueConfig)
+                } else if (queueConfig.messageBrooker === Transport.bullMQ) {
+                    if (!require('bullmq')) {
+                        throw new Error(
+                            'bullmq node package is missing. use: npm install --save bullmq',
+                        )
+                    }
+                    if (!require('redis')) {
+                        throw new Error(
+                            'redis node package is missing. use: npm install --save redis',
+                        )
+                    }
+
+                    const { BullMq } = await import('./transports/bullmq/bullMq')
+                    return new BullMq(queueConfig)
+                }
             },
             inject: [QUEUE_CONFIG_SERVICE],
         }

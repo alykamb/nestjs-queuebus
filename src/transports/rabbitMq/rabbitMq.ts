@@ -4,14 +4,14 @@ import { BehaviorSubject, forkJoin, interval, merge, of, race, Subject, Subscrip
 import { filter, map, mapTo, mergeMap, scan, take } from 'rxjs/operators'
 import { v4 } from 'uuid'
 
-import { QUEUE_CONFIG_SERVICE, TIMEOUT } from '../constants'
-import { JobException } from '../exceptions'
-import { TimeoutException } from '../exceptions/timeout.exception'
-import { IQueueConfigService } from '../interfaces'
-import { IPubEvent } from '../interfaces/events/jobEvent.interface'
-import { IExecutionOptions } from '../interfaces/executionOptions.interface'
-import { EventCallback, ITransport } from '../interfaces/transport.interface'
-import { Callback } from '../types/callback'
+import { QUEUE_CONFIG_SERVICE, TIMEOUT } from '../../constants'
+import { JobException } from '../../exceptions'
+import { TimeoutException } from '../../exceptions/timeout.exception'
+import { IQueueConfigService } from '../../interfaces'
+import { IPubEvent } from '../../interfaces/events/jobEvent.interface'
+import { IExecutionOptions } from '../../interfaces/executionOptions.interface'
+import { EventCallback, ITransport } from '../../interfaces/transport.interface'
+import { Callback } from '../../types/callback'
 
 enum WORKERS_EVENTS {
     CHANNEL = 'WORKERS',
@@ -294,9 +294,9 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             }
 
                             const effects = Array.from(this.effectsEvents.entries()).filter(
-                                (name) =>
-                                    name[1].module === value.data.module &&
-                                    this.effectsEvents.get(name[0])?.name === value.data.name,
+                                (effect) =>
+                                    effect[1].module === value.data.module &&
+                                    this.effectsEvents.get(effect[0])?.name === value.data.name,
                             )
 
                             if (!effects?.length) {

@@ -15,4 +15,5 @@ export enum JobEventType {
 
 export enum Transport {
     rabbitMQ = 'rabbitMQ',
+    bullMQ = 'bullMQ',
 }

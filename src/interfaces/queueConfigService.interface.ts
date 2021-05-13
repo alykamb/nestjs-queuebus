@@ -1,5 +1,5 @@
 import { EventBusBase, QueueBusBase } from '..'
-// import { Transport } from '../constants'
+import { Transport } from '../constants'
 
 export interface IQueueConfigService {
     name: string
@@ -9,6 +9,8 @@ export interface IQueueConfigService {
     port: number
     username?: string
     password?: string
+
+    messageBrooker: Transport
 
     getQueues: () => {
         queues: Array<typeof QueueBusBase>

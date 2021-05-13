@@ -162,8 +162,8 @@
         "affectsGlobalScope": false
       },
       "./src/constants.ts": {
-        "version": "e04cafab9c30c0e50dcc3e818225d86e9b31df7ce7b6661ae2634894600017ee",
-        "signature": "8e89ff29204f0ae03999fbf39f4554fcad5a59dfa62d1857fe8b82ec49a44fb0",
+        "version": "a55bfda9a704ac56e303a6652de5c6990277b260c21d5d79bc1e3afc8af575e0",
+        "signature": "ef907fd123ce820023c0f5aa26de4144c2a845e61448d4b6e993c2e7e26bf246",
         "affectsGlobalScope": false
       },
       "./node_modules/reflect-metadata/index.d.ts": {
@@ -1622,8 +1622,8 @@
         "affectsGlobalScope": false
       },
       "./node_modules/@types/ioredis/index.d.ts": {
-        "version": "f202825a9634a9cb26f2aea4feb0452f0270334d5e19952dfef8909156c79740",
-        "signature": "f202825a9634a9cb26f2aea4feb0452f0270334d5e19952dfef8909156c79740",
+        "version": "7bc7049b1ca5bc3add20777efc795e02d79adda7d61e076b60453446d9404bbc",
+        "signature": "7bc7049b1ca5bc3add20777efc795e02d79adda7d61e076b60453446d9404bbc",
         "affectsGlobalScope": false
       },
       "./node_modules/bullmq/dist/interfaces/redis-options.d.ts": {
@@ -1697,8 +1697,8 @@
         "affectsGlobalScope": false
       },
       "./node_modules/bullmq/dist/classes/queue.d.ts": {
-        "version": "e675e4d9a505e8b320225a536ba49e6af8e97fed7d4c2a7aefa5264ca69177da",
-        "signature": "e675e4d9a505e8b320225a536ba49e6af8e97fed7d4c2a7aefa5264ca69177da",
+        "version": "ad24c09142cd5d5909723a26ac4dc7f4890759b6699e2ee6348ca913c24908b8",
+        "signature": "ad24c09142cd5d5909723a26ac4dc7f4890759b6699e2ee6348ca913c24908b8",
         "affectsGlobalScope": false
       },
       "./node_modules/bullmq/dist/classes/repeat.d.ts": {
@@ -1707,8 +1707,8 @@
         "affectsGlobalScope": false
       },
       "./node_modules/bullmq/dist/classes/scripts.d.ts": {
-        "version": "81da5b0f46685acf2ac883311bffa79d9869c0ab898d50b66dc759a9d6c989fb",
-        "signature": "81da5b0f46685acf2ac883311bffa79d9869c0ab898d50b66dc759a9d6c989fb",
+        "version": "3ca7129afbd2d674e2e0e9b3d8b079494a7e56a40528d11b5be620331e1c2bc8",
+        "signature": "3ca7129afbd2d674e2e0e9b3d8b079494a7e56a40528d11b5be620331e1c2bc8",
         "affectsGlobalScope": false
       },
       "./node_modules/bullmq/dist/classes/worker.d.ts": {
@@ -1777,8 +1777,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/queueConfigService.interface.ts": {
-        "version": "521246b09fe3625c655275e3359fe7fab6bcb7c4aaf775f8c74feb3ec88153d1",
-        "signature": "415601cd7640ad317d10dd033d2fbcfb5a4b77958b6e6da0af3579bc357b5fc9",
+        "version": "5f7e5d657986b08b062cfe32908665d9485eab36985b783bafe6336c3018d74c",
+        "signature": "30e80895773786b3b3ee990bcf815663049541192bcae9e3cee293a202f31623",
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/queueBus.interface.ts": {
@@ -1812,7 +1812,7 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/transport.interface.ts": {
-        "version": "6db843c911cad7175e4f653b5cefc6069260afef1d7e9ddceb328746ffce67ef",
+        "version": "f1721826c3ab47010ef73d4b4bcc6168842efaacb6a65f3706cd0c66b7ca2828",
         "signature": "583272ef9eae6305e5008322ca5eab052d72c38b94868ed0bfd12dea6a77b671",
         "affectsGlobalScope": false
       },
@@ -2426,13 +2426,23 @@
         "signature": "4982ff8f7ef404e9df0aa51fc4e19b97eab8a1d197783cbc018baac535f621df",
         "affectsGlobalScope": false
       },
-      "./src/rabbitMq/rabbitMq.ts": {
-        "version": "6483363f6f9e08290cc4ac5d52951acd4ddc322c3d575ed308aaac6fe239a693",
-        "signature": "9dcbd161f9f7e94f17f215b891460f52d95e76123fa20fda64439cd2c5ff6f8c",
+      "./src/transports/rabbitMq/rabbitMq.ts": {
+        "version": "8545468176e6597124e151b134c3fa90a10ad5a8bdc563d4cb6f8b59e126c5b1",
+        "signature": "7d54ece79fac9b6bddb5d4b58d44b352f46337e1520b06483fb81760548e44ae",
+        "affectsGlobalScope": false
+      },
+      "./src/transports/rabbitMq/rabbitMq.constants.ts": {
+        "version": "ef909fe558e704e5bba41185241d842ed70cf7056a9a9d9c19c0904cca7a87bb",
+        "signature": "82aee454efe11b48e1649ea037862b6d1ac25f25888cfc65b9240d1216f9f048",
+        "affectsGlobalScope": false
+      },
+      "./src/transports/bullmq/bullMq.ts": {
+        "version": "4fbea196d6f0c4062770d372a94a4575ab5c0af666fc630e912db35dcbfcfafb",
+        "signature": "e91596ae9ab11f31fd95eedf884142798ca424752c1278d64be365322e56e928",
         "affectsGlobalScope": false
       },
       "./src/queue.module.ts": {
-        "version": "1614b38b2f6338eee974fdd278d61b5c3c3349883051db7164a616e9a1320ba3",
+        "version": "c96d23a1e4e0901340cda48464588dfb85303d65d7b9fa441d3eb6a9787a2137",
         "signature": "bb6d24ae8d8c6d94a4cffc3099182a9664621f02f7fb813c6d0e53634e66df76",
         "affectsGlobalScope": false
       },
@@ -2571,22 +2581,17 @@
         "signature": "3418ede3490eaf7c97dc6e7b82cf037d405b9e1f9a81e658424334ab41218d3d",
         "affectsGlobalScope": false
       },
-      "./src/rabbitMq/rabbitMq.constants.ts": {
-        "version": "ef909fe558e704e5bba41185241d842ed70cf7056a9a9d9c19c0904cca7a87bb",
-        "signature": "82aee454efe11b48e1649ea037862b6d1ac25f25888cfc65b9240d1216f9f048",
-        "affectsGlobalScope": false
-      },
-      "./src/rabbitMq/helpers/consumePrivateQueue.ts": {
+      "./src/transports/rabbitMq/helpers/consumePrivateQueue.ts": {
         "version": "38ebcb6e4cd14401a52b34ff10c41d43e0c9688c4d52ecb6a55ee0a6b17694d1",
         "signature": "01997dd7bd1de49b53b7d6cd869e3fed2181ac132baf42234b861cbe91e28dd5",
         "affectsGlobalScope": false
       },
-      "./src/rabbitMq/helpers/noop.ts": {
+      "./src/transports/rabbitMq/helpers/noop.ts": {
         "version": "746a1d552856706a0b0479d158467abc65e5ade9d3d95b602464e1612f0054b0",
         "signature": "eb21ddc3a8136a12e69176531197def71dc28ffaf357b74d4bf83407bd845991",
         "affectsGlobalScope": false
       },
-      "./src/rabbitMq/helpers/parseConsumeMessage.ts": {
+      "./src/transports/rabbitMq/helpers/parseConsumeMessage.ts": {
         "version": "9f2974d74ea149ddedc778a09ad5367e55f2d340b93aa5bcb0514188ee79de3a",
         "signature": "ea6ae8e0140cf4dec8fe714609317d0f608b46939d4b9acae69d0f2ab2c6e2d0",
         "affectsGlobalScope": false
@@ -4600,6 +4605,7 @@
         "./src/types/hooks.type.ts"
       ],
       "./src/interfaces/queueConfigService.interface.ts": [
+        "./src/constants.ts",
         "./src/index.ts"
       ],
       "./src/interfaces/queues/index.ts": [
@@ -4633,8 +4639,9 @@
         "./src/index.ts",
         "./src/interfaces/queueConfigService.interface.ts",
         "./src/interfaces/transport.interface.ts",
-        "./src/rabbitMq/rabbitMq.ts",
-        "./src/services/explorer.service.ts"
+        "./src/services/explorer.service.ts",
+        "./src/transports/bullmq/bullMq.ts",
+        "./src/transports/rabbitMq/rabbitMq.ts"
       ],
       "./src/queueBusBase.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
@@ -4655,13 +4662,38 @@
         "./src/interfaces/transport.interface.ts",
         "./src/types/hooks.type.ts"
       ],
-      "./src/rabbitMq/helpers/consumePrivateQueue.ts": [
+      "./src/services/explorer.service.ts": [
+        "./node_modules/@nestjs/common/index.d.ts",
+        "./node_modules/@nestjs/core/injector/instance-wrapper.d.ts",
+        "./node_modules/@nestjs/core/injector/module.d.ts",
+        "./node_modules/@nestjs/core/injector/modules-container.d.ts",
+        "./src/decorators/constants.ts",
+        "./src/eventBusBase.ts",
+        "./src/interfaces/queues/queueHandler.interface.ts",
+        "./src/interfaces/queues/queueOptions.interface.ts",
+        "./src/queueBusBase.ts"
+      ],
+      "./src/transports/bullmq/bullMq.ts": [
+        "./node_modules/@nestjs/common/index.d.ts",
+        "./node_modules/@types/ioredis/index.d.ts",
+        "./node_modules/bullmq/dist/index.d.ts",
+        "./node_modules/rxjs/index.d.ts",
+        "./node_modules/rxjs/operators/index.d.ts",
+        "./src/constants.ts",
+        "./src/exceptions/job.exception.ts",
+        "./src/interfaces/events/jobEvent.interface.ts",
+        "./src/interfaces/queueConfigService.interface.ts",
+        "./src/interfaces/transport.interface.ts",
+        "./src/transports/rabbitMq/rabbitMq.constants.ts",
+        "./src/types/callback.ts"
+      ],
+      "./src/transports/rabbitMq/helpers/consumePrivateQueue.ts": [
         "./node_modules/@types/amqplib/index.d.ts"
       ],
-      "./src/rabbitMq/helpers/parseConsumeMessage.ts": [
+      "./src/transports/rabbitMq/helpers/parseConsumeMessage.ts": [
         "./node_modules/@types/amqplib/index.d.ts"
       ],
-      "./src/rabbitMq/rabbitMq.ts": [
+      "./src/transports/rabbitMq/rabbitMq.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
         "./node_modules/@types/amqplib/index.d.ts",
         "./node_modules/rxjs/index.d.ts",
@@ -4674,17 +4706,6 @@
         "./src/interfaces/index.ts",
         "./src/interfaces/transport.interface.ts",
         "./src/types/callback.ts"
-      ],
-      "./src/services/explorer.service.ts": [
-        "./node_modules/@nestjs/common/index.d.ts",
-        "./node_modules/@nestjs/core/injector/instance-wrapper.d.ts",
-        "./node_modules/@nestjs/core/injector/module.d.ts",
-        "./node_modules/@nestjs/core/injector/modules-container.d.ts",
-        "./src/decorators/constants.ts",
-        "./src/eventBusBase.ts",
-        "./src/interfaces/queues/queueHandler.interface.ts",
-        "./src/interfaces/queues/queueOptions.interface.ts",
-        "./src/queueBusBase.ts"
       ],
       "./src/types/effectData.type.ts": [
         "./src/interfaces/index.ts"
@@ -6614,6 +6635,7 @@
         "./src/types/hooks.type.ts"
       ],
       "./src/interfaces/queueConfigService.interface.ts": [
+        "./src/constants.ts",
         "./src/index.ts"
       ],
       "./src/interfaces/queues/index.ts": [
@@ -6661,21 +6683,6 @@
         "./src/interfaces/transport.interface.ts",
         "./src/types/hooks.type.ts"
       ],
-      "./src/rabbitMq/helpers/consumePrivateQueue.ts": [
-        "./node_modules/@types/amqplib/index.d.ts"
-      ],
-      "./src/rabbitMq/helpers/parseConsumeMessage.ts": [
-        "./node_modules/@types/amqplib/index.d.ts"
-      ],
-      "./src/rabbitMq/rabbitMq.ts": [
-        "./node_modules/@nestjs/common/index.d.ts",
-        "./node_modules/@types/amqplib/index.d.ts",
-        "./src/interfaces/events/jobEvent.interface.ts",
-        "./src/interfaces/executionOptions.interface.ts",
-        "./src/interfaces/index.ts",
-        "./src/interfaces/transport.interface.ts",
-        "./src/types/callback.ts"
-      ],
       "./src/services/explorer.service.ts": [
         "./node_modules/@nestjs/common/index.d.ts",
         "./node_modules/@nestjs/core/injector/instance-wrapper.d.ts",
@@ -6684,6 +6691,29 @@
         "./src/eventBusBase.ts",
         "./src/interfaces/queues/queueOptions.interface.ts",
         "./src/queueBusBase.ts"
+      ],
+      "./src/transports/bullmq/bullMq.ts": [
+        "./node_modules/@nestjs/common/index.d.ts",
+        "./node_modules/bullmq/dist/index.d.ts",
+        "./src/interfaces/events/jobEvent.interface.ts",
+        "./src/interfaces/queueConfigService.interface.ts",
+        "./src/interfaces/transport.interface.ts",
+        "./src/types/callback.ts"
+      ],
+      "./src/transports/rabbitMq/helpers/consumePrivateQueue.ts": [
+        "./node_modules/@types/amqplib/index.d.ts"
+      ],
+      "./src/transports/rabbitMq/helpers/parseConsumeMessage.ts": [
+        "./node_modules/@types/amqplib/index.d.ts"
+      ],
+      "./src/transports/rabbitMq/rabbitMq.ts": [
+        "./node_modules/@nestjs/common/index.d.ts",
+        "./node_modules/@types/amqplib/index.d.ts",
+        "./src/interfaces/events/jobEvent.interface.ts",
+        "./src/interfaces/executionOptions.interface.ts",
+        "./src/interfaces/index.ts",
+        "./src/interfaces/transport.interface.ts",
+        "./src/types/callback.ts"
       ],
       "./src/types/effectData.type.ts": [
         "./src/interfaces/index.ts"
@@ -7219,12 +7249,13 @@
       "./src/interfaces/transport.interface.ts",
       "./src/queue.module.ts",
       "./src/queueBusBase.ts",
-      "./src/rabbitMq/helpers/consumePrivateQueue.ts",
-      "./src/rabbitMq/helpers/noop.ts",
-      "./src/rabbitMq/helpers/parseConsumeMessage.ts",
-      "./src/rabbitMq/rabbitMq.constants.ts",
-      "./src/rabbitMq/rabbitMq.ts",
       "./src/services/explorer.service.ts",
+      "./src/transports/bullmq/bullMq.ts",
+      "./src/transports/rabbitMq/helpers/consumePrivateQueue.ts",
+      "./src/transports/rabbitMq/helpers/noop.ts",
+      "./src/transports/rabbitMq/helpers/parseConsumeMessage.ts",
+      "./src/transports/rabbitMq/rabbitMq.constants.ts",
+      "./src/transports/rabbitMq/rabbitMq.ts",
       "./src/types/callback.ts",
       "./src/types/effectData.type.ts",
       "./src/types/effectDecorator.type.ts",
