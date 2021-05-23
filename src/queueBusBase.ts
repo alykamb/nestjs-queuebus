@@ -52,9 +52,6 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         )
     }
 
-    protected get fullname(): string {
-        return this.queueConfig.name + this.name
-    }
     /**
      * Executa o handler registrado para a implementação de
      * acordo com o nome da classe
@@ -89,6 +86,7 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
             if (module === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
                 return this.executeHandler(name, d)
             }
+
             return new Promise((resolve, reject) => {
                 this.messageBrooker.addJob(
                     module + this.name,

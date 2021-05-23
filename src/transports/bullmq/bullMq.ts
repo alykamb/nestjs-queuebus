@@ -78,6 +78,7 @@ export class BullMq implements ITransport, OnModuleInit {
     private get from(): IPubEvent['from'] {
         return {
             name: this.queueConfig.name,
+            environment: this.queueConfig.environment || '',
             id: this.queueConfig.id,
         }
     }
@@ -102,12 +103,10 @@ export class BullMq implements ITransport, OnModuleInit {
                     } catch (err) {}
                 }
 
-                console.log('received: %o', value)
-
                 const effects = Array.from(this.effectsEvents.entries()).filter(
                     (effect) =>
                         effect[1].module === value.data.module &&
-                        this.effectsEvents.get(effect[0])?.name === value.data.name,
+                        effect[1]?.name === value.data.name,
                 )
 
                 if (!effects?.length) {
@@ -115,7 +114,7 @@ export class BullMq implements ITransport, OnModuleInit {
                 }
 
                 effects.forEach(([effectName]) => {
-                    const keyName = `${effectName}_${value.data.name}_${value.from.id}_${value.data.timestamp}`
+                    const keyName = `${effectName}_${value.data.name}_${value.from.id}_${value.data.timestamp}_${this.from.environment}`
                     const id = v4()
                     const removeKey = (): void => {
                         //holds the key for one more second, just to be safe in case a late effect gets triggered
@@ -172,13 +171,14 @@ export class BullMq implements ITransport, OnModuleInit {
         if (this.closing) {
             throw new Error('This BullMq instance is closing')
         }
+        const queueName = module + this.from.environment
         //cria queue se ela ainda não existe
-        if (!this.queueEvents.has(module)) {
-            this.createQueue(module)
+        if (!this.queueEvents.has(queueName)) {
+            this.createQueue(queueName)
         }
 
         void this.queues
-            .get(module)
+            .get(queueName)
             .add(name, data, options)
             .then((job) => {
                 this.addJob$.next()
@@ -230,6 +230,7 @@ export class BullMq implements ITransport, OnModuleInit {
      * @param module
      */
     private createQueue(module: string): void {
+        const queueName = module // + this.from.environment
         const queueOptions: QueueOptions = {
             connection: this.redis,
             defaultJobOptions: {
@@ -238,16 +239,16 @@ export class BullMq implements ITransport, OnModuleInit {
             },
         }
         //cria a queue
-        this.queues.set(module, new Queue(module, queueOptions))
+        this.queues.set(queueName, new Queue(queueName, queueOptions))
 
-        this.queueEvents.set(module, new QueueEvents(module, { connection: this.redis }))
+        this.queueEvents.set(queueName, new QueueEvents(queueName, { connection: this.redis }))
 
         //ouve os eventos e popula os streams com os resultados
-        this.queueEvents.get(module).on('completed', (job) => {
+        this.queueEvents.get(queueName).on('completed', (job) => {
             this.endJob(job, JobEventType.completed)
-            // this.completedJobs.get(module).next({ ...job, event: JobEventType.completed })
+            // this.completedJobs.get(queueName).next({ ...job, event: JobEventType.completed })
         })
-        this.queueEvents.get(module).on('failed', (job) => {
+        this.queueEvents.get(queueName).on('failed', (job) => {
             this.endJob(job, JobEventType.failed)
         })
     }
@@ -258,19 +259,21 @@ export class BullMq implements ITransport, OnModuleInit {
      * @param module
      * @param callback
      */
+
     public async createWorker(module: string, callback: (job: Job) => Promise<any>): Promise<void> {
+        const queueName = module + this.from.environment
         const workerOptions: WorkerOptions = {
             connection: this.redis,
         }
 
-        if (!this.queueEvents.has(module)) {
-            this.createQueue(module)
+        if (!this.queueEvents.has(queueName)) {
+            this.createQueue(queueName)
         }
 
         this.workers.set(
-            module,
+            queueName,
             new Worker(
-                module,
+                queueName,
                 (job: Job) => {
                     return callback(job).catch((err) => {
                         const entries = Object.entries(err)
@@ -296,25 +299,32 @@ export class BullMq implements ITransport, OnModuleInit {
         callback: EventCallback<EventBase>,
         ...events: Array<{ name: string; module: string }>
     ): void {
-        this.effects.set(name, callback)
+        const effectName = name + this.from.environment
+        this.effects.set(effectName, callback)
         events.forEach((e) => {
-            this.effectsEvents.set(name, e)
+            this.effectsEvents.set(effectName, {
+                name: e.name,
+                module: e.module + this.from.environment,
+            })
         })
     }
 
     public removeEffect(name: string): void {
-        this.effects.delete(name)
+        const effectName = name + this.from.environment
+        this.effects.delete(effectName)
     }
 
     public registerEventListener<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         cb: EventCallback<EventBase>,
     ): void {
-        this.eventListeners.set(name, cb)
+        const eventListenerName = name + this.from.environment
+        this.eventListeners.set(eventListenerName, cb)
     }
 
     public removeEventListener(name: string): void {
-        this.eventListeners.delete(name)
+        const eventListenerName = name + this.from.environment
+        this.eventListeners.delete(eventListenerName)
     }
 
     public async onModuleDestroy(): Promise<boolean> {

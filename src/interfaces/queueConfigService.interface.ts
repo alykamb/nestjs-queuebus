@@ -10,6 +10,8 @@ export interface IQueueConfigService {
     username?: string
     password?: string
 
+    environment?: string
+
     messageBrooker: Transport
 
     getQueues: () => {

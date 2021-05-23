@@ -16,6 +16,7 @@ export interface IPubEvent<T extends IEvent = IEvent> {
     from?: {
         name: string
         id: string
+        environment?: string
     }
     event: T
     timestamp?: number
