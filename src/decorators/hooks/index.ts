@@ -9,3 +9,4 @@ export * from './eventOnReceive.decorator'
 
 export * from './effectBeforeExecution.decorator'
 export * from './effectAfterExecution.decorator'
+export * from './effectOnExecute.decorator'

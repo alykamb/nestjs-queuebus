@@ -1,13 +1,13 @@
 import { Inject, Injectable, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { Job } from 'bullmq'
-import { Observable } from 'rxjs'
 
+import { BusBase } from './busBase'
 import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME, TIMEOUT } from './constants'
 import {
     JOB_AFTER_EXECUTION_METADATA,
     JOB_BEFORE_EXECUTION_METADATA,
-    JOB_INTERSECTION_EXECUTION_METADATA,
+    JOB_INTERSEPTION_EXECUTION_METADATA,
     NAME_QUEUE_METADATA,
     QUEUE_HANDLER_METADATA,
 } from './decorators/constants'
@@ -15,13 +15,12 @@ import { EventBusBase } from './eventBusBase'
 import { compose } from './helpers/compose'
 import { InvalidQueueHandlerException } from './index'
 import { IExecutionOptions } from './interfaces/executionOptions.interface'
-import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface copy'
+import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { IQueueBus } from './interfaces/queues/queueBus.interface'
 import { IQueueHandler } from './interfaces/queues/queueHandler.interface'
 import { IImpl } from './interfaces/queues/queueImpl.interface'
 import { ITransport } from './interfaces/transport.interface'
-import { Hook, HookContext } from './types/hooks.type'
 
 export type HandlerType = Type<IQueueHandler<IImpl>>
 
@@ -29,13 +28,13 @@ export type HandlerType = Type<IQueueHandler<IImpl>>
  * CqrsBus registra handlers para implementações e os executa quando chamado
  */
 @Injectable()
-export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
+export class QueueBusBase<ImplBase = any>
+    extends BusBase<IJobExecutionInterceptors>
+    implements IQueueBus<ImplBase> {
     protected handlers = new Map<string, IQueueHandler<ImplBase>>()
     protected metadataName = QUEUE_HANDLER_METADATA
     protected timeout = TIMEOUT
     public readonly name = ''
-
-    protected hooks: IJobExecutionInterceptors
 
     constructor(
         protected readonly moduleRef: ModuleRef,
@@ -43,6 +42,8 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
         @Inject(QUEUE_DEFAULT_NAME) name = '',
     ) {
+        super(queueConfig)
+
         this.name =
             Reflect.getMetadata(NAME_QUEUE_METADATA, Object.getPrototypeOf(this).constructor) ||
             name
@@ -104,15 +105,15 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         }
 
         const hooks = this.getHooks()
+        const context = { name, module, bus: this }
 
         return compose(
-            hooks.before && this.runHooks(hooks.before, { name, module, bus: this }),
+            hooks.before && this.runHooks(hooks.before, context),
             hooks.interceptor.length
-                ? this.runHooks(hooks.interceptor, { name, module, data, bus: this }, (d) =>
-                      run(name, d),
-                  )
-                : (data): Promise<any> => run(name, data),
-            hooks.after && this.runHooks(hooks.after, { name, module, bus: this }),
+                ? this.runHooks(hooks.interceptor, { ...context, data }, (d) => run(name, d))
+                : // if no interceptor hooks exist, we just run the command
+                  (data): Promise<any> => run(name, data),
+            hooks.after && this.runHooks(hooks.after, context),
         )(data)
     }
 
@@ -169,55 +170,12 @@ export class QueueBusBase<ImplBase = any> implements IQueueBus<ImplBase> {
         }
     }
 
-    protected runHooks(
-        hooks: Hook[],
-        context: HookContext,
-        cb?: (d: any) => Promise<any>,
-    ): (data: any) => Promise<any> {
-        return (data: any): Promise<any> =>
-            hooks.reduce(
-                async (value, func) => func({ ...context, data: await this.parseHook(value) }, cb),
-                data,
-            )
-    }
-
-    protected parseHook(value: any | Promise<any> | Observable<any>): Promise<any> | any {
-        if (value && typeof value.subscribe === 'function') {
-            return value.toPromise()
-        }
-        return value
-    }
-
     protected getHooks(): IJobExecutionInterceptors {
-        if (!this.hooks) {
-            const constructor = Reflect.getPrototypeOf(this).constructor
-            const map = (property: { key: string; order: number }): any =>
-                this.queueConfig[property.key]
-            this.hooks = {
-                before: (Reflect.getMetadata(JOB_BEFORE_EXECUTION_METADATA, constructor) || [])
-                    .sort(
-                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
-                            p1.order - p2.order,
-                    )
-                    .map(map),
-                after: (Reflect.getMetadata(JOB_AFTER_EXECUTION_METADATA, constructor) || [])
-                    .sort(
-                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
-                            p1.order - p2.order,
-                    )
-                    .map(map),
-                interceptor: (
-                    Reflect.getMetadata(JOB_INTERSECTION_EXECUTION_METADATA, constructor) || []
-                )
-                    .sort(
-                        (p1: { key: string; order: number }, p2: { key: string; order: number }) =>
-                            p1.order - p2.order,
-                    )
-                    .map(map),
-            }
-        }
-
-        return this.hooks
+        return super.getHooks({
+            before: JOB_BEFORE_EXECUTION_METADATA,
+            after: JOB_AFTER_EXECUTION_METADATA,
+            interceptor: JOB_INTERSEPTION_EXECUTION_METADATA,
+        })
     }
 
     /**

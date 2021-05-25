@@ -6,4 +6,5 @@ export interface IEventExecutionInterceptors {
     eventAfterPublish: Hook[]
     effectBeforeExecution: Hook[]
     effectAfterExecution: Hook[]
+    effectInterceptor: Hook[]
 }
