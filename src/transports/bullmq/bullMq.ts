@@ -278,7 +278,11 @@ export class BullMq implements ITransport, OnModuleInit {
         void this.publisher
             .publish(
                 'nestjs_queuebus_events',
-                JSON.stringify({ event: EVENTS.PUBLISH, from: this.from, data: event }),
+                JSON.stringify({
+                    event: EVENTS.PUBLISH,
+                    from: this.from,
+                    data: { ...event, name: event.name + this.from.environment },
+                }),
             )
             .catch(noop)
     }
