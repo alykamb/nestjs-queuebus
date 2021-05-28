@@ -10,6 +10,8 @@ export interface IQueueConfigService {
     username?: string
     password?: string
 
+    verbose?: boolean
+
     environment?: string
 
     messageBrooker: Transport

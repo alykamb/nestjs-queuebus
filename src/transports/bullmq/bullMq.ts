@@ -97,6 +97,12 @@ export class BullMq implements ITransport, OnModuleInit {
             try {
                 const value: EventBase = JSON.parse(message)
 
+                if (this.queueConfig.verbose) {
+                    console.log(
+                        `nesjs_queubus___: received event - ${value.data.name} from ${value.data.module}`,
+                    )
+                }
+
                 for (const cb of this.eventListeners.values()) {
                     try {
                         cb(value)
@@ -113,6 +119,12 @@ export class BullMq implements ITransport, OnModuleInit {
                     return
                 }
 
+                if (this.queueConfig.verbose) {
+                    console.log(
+                        `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, registered effects: ${effects}`,
+                    )
+                }
+
                 effects.forEach(([effectName]) => {
                     const keyName = `${effectName}_${value.data.name}_${value.from.id}_${value.data.timestamp}_${this.from.environment}`
                     const id = v4()
@@ -123,13 +135,13 @@ export class BullMq implements ITransport, OnModuleInit {
                         }, 1000)
                     }
 
-                    console.log(value)
                     void this.publisher
                         .setnx(keyName, id)
                         .then((hasBeenSet) => {
                             if (!hasBeenSet) {
                                 throw new Error()
                             }
+
                             this.addJob$.next()
                             try {
                                 const res = this.effects.get(effectName)(value.data)
@@ -148,9 +160,21 @@ export class BullMq implements ITransport, OnModuleInit {
                                 removeKey()
                             }
                         })
-                        .catch(noop)
+                        .catch((err) => {
+                            // eslint-disable-next-line no-console
+                            console.error(
+                                `nesjs_queubus___: error running effect: - ${keyName} - ${
+                                    err?.message || err
+                                }`,
+                            )
+                        })
                 })
-            } catch (err) {}
+            } catch (err) {
+                if (this.queueConfig.verbose) {
+                    // eslint-disable-next-line no-console
+                    console.error('nesjs_queubus___: error listening to  events: %o', err)
+                }
+            }
         })
     }
 

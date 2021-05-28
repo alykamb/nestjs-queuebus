@@ -2437,7 +2437,7 @@
         "affectsGlobalScope": false
       },
       "./src/transports/bullmq/bullMq.ts": {
-        "version": "069afb83df14352dcffb14e63c036e6d29b3547e1e97c1e5ea851fc5b41fa653",
+        "version": "4dc1c774170eb65284ef3a1b9d75365513b2ff0fd6f391400b78c68dbb2eb524",
         "signature": "e91596ae9ab11f31fd95eedf884142798ca424752c1278d64be365322e56e928",
         "affectsGlobalScope": false
       },
@@ -2557,8 +2557,8 @@
         "affectsGlobalScope": false
       },
       "./src/interfaces/queueConfigService.interface.ts": {
-        "version": "5ffe58eb3b71799f37a7732c591bfc81174b2aab4776ede7e1580bd1234b85c2",
-        "signature": "5b275064dc0cd8ba5af28d5569d50c337c7ac9ca85bd0713e8ad2a9b1f66fa80",
+        "version": "386ff155c65ffd73f3fb4af30493064e2e37e1fad759d54bfbc3ce10a618aa6e",
+        "signature": "2e060314092adbda6fa5468a015c83bb5fa5c060debf4eb9e29415b2d18a51d6",
         "affectsGlobalScope": false
       },
       "./src/interfaces/queues/index.ts": {
