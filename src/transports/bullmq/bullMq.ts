@@ -122,6 +122,8 @@ export class BullMq implements ITransport, OnModuleInit {
                             this.publisher.del(keyName).catch(noop)
                         }, 1000)
                     }
+
+                    console.log(value)
                     void this.publisher
                         .setnx(keyName, id)
                         .then((hasBeenSet) => {
@@ -130,7 +132,7 @@ export class BullMq implements ITransport, OnModuleInit {
                             }
                             this.addJob$.next()
                             try {
-                                const res = this.effects.get(effectName)(value)
+                                const res = this.effects.get(effectName)(value.data)
 
                                 if (res instanceof Promise) {
                                     void res.then(() => {

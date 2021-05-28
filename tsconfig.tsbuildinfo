@@ -1842,7 +1842,7 @@
         "affectsGlobalScope": false
       },
       "./src/eventBusBase.ts": {
-        "version": "4bd576f0234d3f83e65de1f70576408bd6fe0760cd3e6ca9f66e9981e688d3f8",
+        "version": "21b9566d48691818f9a25c9af2a5927a275c531fbde167691010eca7fdd1f1a3",
         "signature": "989995441c25ac61120e6702387631c2ab96c7a027a2664c9c9905af298805e3",
         "affectsGlobalScope": false
       },
@@ -2437,7 +2437,7 @@
         "affectsGlobalScope": false
       },
       "./src/transports/bullmq/bullMq.ts": {
-        "version": "686625b0ee1ac8c1901b70a2b3eb8aa9c655a338558b2699ca1b7a54b24894ef",
+        "version": "069afb83df14352dcffb14e63c036e6d29b3547e1e97c1e5ea851fc5b41fa653",
         "signature": "e91596ae9ab11f31fd95eedf884142798ca424752c1278d64be365322e56e928",
         "affectsGlobalScope": false
       },
