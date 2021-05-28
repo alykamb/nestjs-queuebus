@@ -121,7 +121,9 @@ export class BullMq implements ITransport, OnModuleInit {
 
                 if (this.queueConfig.verbose) {
                     console.log(
-                        `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, registered effects: ${effects}`,
+                        `nesjs_queubus___: event: - ${value.data.name} from ${
+                            value.data.module
+                        }, registered effects: ${effects.map(([name]) => name)}`,
                     )
                 }
 
@@ -139,23 +141,53 @@ export class BullMq implements ITransport, OnModuleInit {
                         .setnx(keyName, id)
                         .then((hasBeenSet) => {
                             if (!hasBeenSet) {
+                                if (this.queueConfig.verbose) {
+                                    // eslint-disable-next-line no-console
+                                    console.log(
+                                        `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, effect cannot run: ${keyName}`,
+                                    )
+                                }
                                 throw new Error()
                             }
 
+                            if (this.queueConfig.verbose) {
+                                // eslint-disable-next-line no-console
+                                console.log(
+                                    `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, running effect: ${keyName}`,
+                                )
+                            }
                             this.addJob$.next()
                             try {
                                 const res = this.effects.get(effectName)(value.data)
 
                                 if (res instanceof Promise) {
                                     void res.then(() => {
+                                        if (this.queueConfig.verbose) {
+                                            // eslint-disable-next-line no-console
+                                            console.log(
+                                                `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, effect finished running: ${keyName}`,
+                                            )
+                                        }
                                         this.removeJob$.next()
                                         removeKey()
                                     })
                                 } else {
+                                    if (this.queueConfig.verbose) {
+                                        // eslint-disable-next-line no-console
+                                        console.log(
+                                            `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, effect finished running: ${keyName}`,
+                                        )
+                                    }
                                     this.removeJob$.next()
                                     removeKey()
                                 }
                             } catch (err) {
+                                if (this.queueConfig.verbose) {
+                                    // eslint-disable-next-line no-console
+                                    console.log(
+                                        `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, effect execution error: ${keyName}`,
+                                    )
+                                }
                                 this.removeJob$.next()
                                 removeKey()
                             }

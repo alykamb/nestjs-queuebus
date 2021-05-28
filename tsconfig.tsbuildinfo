@@ -2437,7 +2437,7 @@
         "affectsGlobalScope": false
       },
       "./src/transports/bullmq/bullMq.ts": {
-        "version": "4dc1c774170eb65284ef3a1b9d75365513b2ff0fd6f391400b78c68dbb2eb524",
+        "version": "5fa609d1224372971c8403cf005325161bcd783176a2ec411077eb4c0bfd072f",
         "signature": "e91596ae9ab11f31fd95eedf884142798ca424752c1278d64be365322e56e928",
         "affectsGlobalScope": false
       },
