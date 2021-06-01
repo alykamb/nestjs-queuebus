@@ -11,6 +11,7 @@ export interface IQueueConfigService {
     password?: string
 
     verbose?: boolean
+    logger?: (message: string, error?: boolean) => void
 
     environment?: string
 

@@ -43,9 +43,9 @@ export class RabbitMq implements ITransport, OnModuleInit {
     private eventListenerChannel: Channel
 
     private numberOfActiveJobs$ = new BehaviorSubject<number>(0)
-    private addJob$ = new Subject<null>()
+    private addJob$ = new Subject<void>()
     private workersJobs = new Map<string, BehaviorSubject<number>>()
-    private removeJob$ = new Subject<null>()
+    private removeJob$ = new Subject<void>()
     private numberOfActiveJobsSub: Subscription
 
     constructor(@Inject(QUEUE_CONFIG_SERVICE) private readonly queueConfig: IQueueConfigService) {
@@ -154,7 +154,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         if (!this.eventListenerChannel) {
             this.eventListenerChannel = await this.publisher.createChannel()
             await this.eventListenerChannel.assertExchange(
-                WORKERS_EVENTS.CHANNEL + (this.from.environment ? '_' + this.from.environment : ''),
+                this.environmentName(WORKERS_EVENTS.CHANNEL),
                 'fanout',
                 {
                     durable: false,
@@ -268,7 +268,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         })
 
         eventPublisher.publish(
-            WORKERS_EVENTS.CHANNEL + (this.from.environment ? '_' + this.from.environment : ''),
+            this.environmentName(WORKERS_EVENTS.CHANNEL),
             '',
             Buffer.from(JSON.stringify({ event: EVENTS.PUBLISH, from: this.from, data: event })),
             { replyTo: queue.queue, correlationId: id },
@@ -307,8 +307,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                 return listener.assertQueue('', { exclusive: true }).then((q) => {
                     void listener.bindQueue(
                         q.queue,
-                        WORKERS_EVENTS.CHANNEL +
-                            (this.from.environment ? '_' + this.from.environment : ''),
+                        this.environmentName(WORKERS_EVENTS.CHANNEL),
                         '',
                     )
 
@@ -404,6 +403,9 @@ export class RabbitMq implements ITransport, OnModuleInit {
             environment: this.queueConfig.environment || '',
         }
     }
+    private environmentName(name: string): string {
+        return this.from.environment?.length ? `${name}_${this.from.environment}` : name
+    }
 
     public addJob<TRet = any, TData = any>(
         module: string,
@@ -412,7 +414,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         onFinish: Callback<TRet>,
         options: IExecutionOptions = {},
     ): void {
-        const queueName = module + (this.from.environment ? '_' + this.from.environment : '')
+        const queueName = this.environmentName(module)
         void Promise.all([this.getConsummerQueue(), this.getPublisherChannel()]).then(
             ([queue, worker]) => {
                 const id = options?.id || v4()
@@ -474,7 +476,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
     }
 
     public async createWorker(name: string, callback: (data: any) => Promise<any>): Promise<void> {
-        const queueName = name + (this.from.environment ? '_' + this.from.environment : '')
+        const queueName = this.environmentName(name)
         const [workerChannel, publisher] = await Promise.all([
             this.getWorkerChannel(queueName),
             this.getPublisherChannel(),

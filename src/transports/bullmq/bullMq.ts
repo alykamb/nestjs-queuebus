@@ -27,6 +27,8 @@ import { EventCallback } from '../../interfaces/transport.interface'
 import { Callback } from '../../types/callback'
 import { EVENTS } from '../rabbitMq/rabbitMq.constants'
 
+const EVENT_CHANNEL_NAME = 'nestjs_queuebus_events'
+
 @Injectable()
 export class BullMq implements ITransport, OnModuleInit {
     /** Mantém a referência do worker para cada queue */
@@ -39,8 +41,8 @@ export class BullMq implements ITransport, OnModuleInit {
     private queueEvents = new Map<string, QueueEvents>()
 
     private numberOfActiveJobs$ = new BehaviorSubject<number>(0)
-    private addJob$ = new Subject<null>()
-    private removeJob$ = new Subject<null>()
+    private addJob$ = new Subject<void>()
+    private removeJob$ = new Subject<void>()
     private numberOfActiveJobsSub: Subscription
 
     private callbacks = new Map<string, Callback>()
@@ -83,25 +85,45 @@ export class BullMq implements ITransport, OnModuleInit {
         }
     }
 
+    private log(message: string, error = false): void {
+        if (this.queueConfig.verbose) {
+            if (this.queueConfig.logger) {
+                try {
+                    this.queueConfig.logger(message, error)
+                } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('error on logging:', err)
+                }
+            }
+            if (error) {
+                // eslint-disable-next-line no-console
+                console.error(`nesjs_queubus___: ${message}`)
+                return
+            }
+            // eslint-disable-next-line no-console
+            console.log(`nesjs_queubus___: ${message}`)
+        }
+    }
+
+    private environmentName(name: string): string {
+        return this.from.environment?.length ? `${name}_${this.from.environment}` : name
+    }
+
     public async onModuleInit(): Promise<void> {
-        await this.subscriber.subscribe('nestjs_queuebus_events')
+        await this.subscriber.subscribe(this.environmentName(EVENT_CHANNEL_NAME))
 
         void this.listenToEvents()
     }
 
     private listenToEvents<EventBase extends IPubEvent = IPubEvent>(): void {
         this.subscriber.on('message', (channel, message) => {
-            if (channel !== 'nestjs_queuebus_events') {
+            if (channel !== this.environmentName(EVENT_CHANNEL_NAME)) {
                 return
             }
             try {
                 const value: EventBase = JSON.parse(message)
 
-                if (this.queueConfig.verbose) {
-                    console.log(
-                        `nesjs_queubus___: received event - ${value.data.name} from ${value.data.module}`,
-                    )
-                }
+                this.log(`received event - ${value.data.name} from ${value.data.module}`)
 
                 for (const cb of this.eventListeners.values()) {
                     try {
@@ -112,20 +134,19 @@ export class BullMq implements ITransport, OnModuleInit {
                 const effects = Array.from(this.effectsEvents.entries()).filter(
                     (effect) =>
                         effect[1].module === value.data.module &&
-                        effect[1]?.name === value.data.name,
+                        effect[1]?.name === value.data.name &&
+                        this.from.environment === value.from.environment,
                 )
 
                 if (!effects?.length) {
                     return
                 }
 
-                if (this.queueConfig.verbose) {
-                    console.log(
-                        `nesjs_queubus___: event: - ${value.data.name} from ${
-                            value.data.module
-                        }, registered effects: ${effects.map(([name]) => name)}`,
-                    )
-                }
+                this.log(
+                    `event: - ${value.data.name} from ${
+                        value.data.module
+                    }, registered effects: ${effects.map(([name]) => name)}`,
+                )
 
                 effects.forEach(([effectName]) => {
                     const keyName = `${effectName}_${value.data.name}_${value.from.id}_${value.data.timestamp}_${this.from.environment}`
@@ -141,71 +162,52 @@ export class BullMq implements ITransport, OnModuleInit {
                         .setnx(keyName, id)
                         .then((hasBeenSet) => {
                             if (!hasBeenSet) {
-                                if (this.queueConfig.verbose) {
-                                    // eslint-disable-next-line no-console
-                                    console.log(
-                                        `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, effect cannot run: ${keyName}`,
-                                    )
-                                }
+                                this.log(
+                                    `event: - ${value.data.name} from ${value.data.module}, effect cannot run: ${keyName}`,
+                                )
                                 throw new Error()
                             }
 
-                            if (this.queueConfig.verbose) {
-                                // eslint-disable-next-line no-console
-                                console.log(
-                                    `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, running effect: ${keyName}`,
-                                )
-                            }
+                            this.log(
+                                `event: - ${value.data.name} from ${value.data.module}, running effect: ${keyName}`,
+                            )
                             this.addJob$.next()
                             try {
                                 const res = this.effects.get(effectName)(value.data)
 
                                 if (res instanceof Promise) {
                                     void res.then(() => {
-                                        if (this.queueConfig.verbose) {
-                                            // eslint-disable-next-line no-console
-                                            console.log(
-                                                `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, effect finished running: ${keyName}`,
-                                            )
-                                        }
+                                        this.log(
+                                            `event: - ${value.data.name} from ${value.data.module}, effect finished running: ${keyName}`,
+                                        )
+
                                         this.removeJob$.next()
                                         removeKey()
                                     })
                                 } else {
-                                    if (this.queueConfig.verbose) {
-                                        // eslint-disable-next-line no-console
-                                        console.log(
-                                            `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, effect finished running: ${keyName}`,
-                                        )
-                                    }
+                                    this.log(
+                                        `event: - ${value.data.name} from ${value.data.module}, effect finished running: ${keyName}`,
+                                    )
+
                                     this.removeJob$.next()
                                     removeKey()
                                 }
                             } catch (err) {
-                                if (this.queueConfig.verbose) {
-                                    // eslint-disable-next-line no-console
-                                    console.log(
-                                        `nesjs_queubus___: event: - ${value.data.name} from ${value.data.module}, effect execution error: ${keyName}`,
-                                    )
-                                }
+                                this.log(
+                                    `event: - ${value.data.name} from ${value.data.module}, effect execution error: ${keyName}`,
+                                )
+
                                 this.removeJob$.next()
                                 removeKey()
                             }
                         })
                         .catch((err) => {
+                            this.log(`error running effect: - ${keyName} - ${err?.message || err}`)
                             // eslint-disable-next-line no-console
-                            console.error(
-                                `nesjs_queubus___: error running effect: - ${keyName} - ${
-                                    err?.message || err
-                                }`,
-                            )
                         })
                 })
             } catch (err) {
-                if (this.queueConfig.verbose) {
-                    // eslint-disable-next-line no-console
-                    console.error('nesjs_queubus___: error listening to  events: %o', err)
-                }
+                this.log(`error listening to  events: ${err?.message || err}`)
             }
         })
     }
@@ -229,7 +231,7 @@ export class BullMq implements ITransport, OnModuleInit {
         if (this.closing) {
             throw new Error('This BullMq instance is closing')
         }
-        const queueName = module + this.from.environment
+        const queueName = this.environmentName(module)
         //cria queue se ela ainda não existe
         if (!this.queueEvents.has(queueName)) {
             this.createQueue(queueName)
@@ -277,11 +279,11 @@ export class BullMq implements ITransport, OnModuleInit {
     ): Promise<void> {
         void this.publisher
             .publish(
-                'nestjs_queuebus_events',
+                this.environmentName(EVENT_CHANNEL_NAME),
                 JSON.stringify({
                     event: EVENTS.PUBLISH,
                     from: this.from,
-                    data: { ...event, name: event.name + this.from.environment },
+                    data: event,
                 }),
             )
             .catch(noop)
@@ -292,7 +294,7 @@ export class BullMq implements ITransport, OnModuleInit {
      * @param module
      */
     private createQueue(module: string): void {
-        const queueName = module // + this.from.environment
+        const queueName = module
         const queueOptions: QueueOptions = {
             connection: this.redis,
             defaultJobOptions: {
@@ -308,7 +310,6 @@ export class BullMq implements ITransport, OnModuleInit {
         //ouve os eventos e popula os streams com os resultados
         this.queueEvents.get(queueName).on('completed', (job) => {
             this.endJob(job, JobEventType.completed)
-            // this.completedJobs.get(queueName).next({ ...job, event: JobEventType.completed })
         })
         this.queueEvents.get(queueName).on('failed', (job) => {
             this.endJob(job, JobEventType.failed)
@@ -323,7 +324,7 @@ export class BullMq implements ITransport, OnModuleInit {
      */
 
     public async createWorker(module: string, callback: (job: Job) => Promise<any>): Promise<void> {
-        const queueName = module + this.from.environment
+        const queueName = this.environmentName(module)
         const workerOptions: WorkerOptions = {
             connection: this.redis,
         }
@@ -361,31 +362,30 @@ export class BullMq implements ITransport, OnModuleInit {
         callback: EventCallback<EventBase>,
         ...events: Array<{ name: string; module: string }>
     ): void {
-        const effectName = name + this.from.environment
+        const effectName = name
         this.effects.set(effectName, callback)
         events.forEach((e) => {
             this.effectsEvents.set(effectName, {
                 name: e.name,
-                module: e.module + this.from.environment,
+                module: e.module,
             })
         })
     }
 
     public removeEffect(name: string): void {
-        const effectName = name + this.from.environment
-        this.effects.delete(effectName)
+        this.effects.delete(name)
     }
 
     public registerEventListener<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         cb: EventCallback<EventBase>,
     ): void {
-        const eventListenerName = name + this.from.environment
+        const eventListenerName = this.environmentName(name)
         this.eventListeners.set(eventListenerName, cb)
     }
 
     public removeEventListener(name: string): void {
-        const eventListenerName = name + this.from.environment
+        const eventListenerName = this.environmentName(name)
         this.eventListeners.delete(eventListenerName)
     }
 
