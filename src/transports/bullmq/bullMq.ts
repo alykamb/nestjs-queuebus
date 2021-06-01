@@ -69,8 +69,20 @@ export class BullMq implements ITransport, OnModuleInit {
         this.subscriber = new Redis(this.redis.port, this.redis.host)
 
         this.numberOfActiveJobsSub = merge(
-            this.addJob$.pipe(map(() => (s: number): number => s + 1)),
-            this.removeJob$.pipe(map(() => (s: number): number => s - 1)),
+            this.addJob$.pipe(
+                map(
+                    () =>
+                        (s: number): number =>
+                            s + 1,
+                ),
+            ),
+            this.removeJob$.pipe(
+                map(
+                    () =>
+                        (s: number): number =>
+                            s - 1,
+                ),
+            ),
         )
             .pipe(scan((state, f) => f(state), 0))
             .subscribe((n) => {
@@ -243,6 +255,12 @@ export class BullMq implements ITransport, OnModuleInit {
             .then((job) => {
                 this.addJob$.next()
                 this.callbacks.set(job.id, onFinish)
+            })
+            .catch((err) => {
+                console.log(
+                    `nesjs_queubus___: error on add job (${name}) to queue (${queueName}): ${err.message}`,
+                )
+                throw err
             })
     }
 
