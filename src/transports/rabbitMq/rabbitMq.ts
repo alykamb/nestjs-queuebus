@@ -48,10 +48,24 @@ export class RabbitMq implements ITransport, OnModuleInit {
     private removeJob$ = new Subject<void>()
     private numberOfActiveJobsSub: Subscription
 
+    private init = false
+
     constructor(@Inject(QUEUE_CONFIG_SERVICE) private readonly queueConfig: IQueueConfigService) {
         this.numberOfActiveJobsSub = merge(
-            this.addJob$.pipe(map(() => (s: number): number => s + 1)),
-            this.removeJob$.pipe(map(() => (s: number): number => s - 1)),
+            this.addJob$.pipe(
+                map(
+                    () =>
+                        (s: number): number =>
+                            s + 1,
+                ),
+            ),
+            this.removeJob$.pipe(
+                map(
+                    () =>
+                        (s: number): number =>
+                            s - 1,
+                ),
+            ),
         )
             .pipe(scan((s, f) => f(s), 0))
             .subscribe((n) => this.numberOfActiveJobs$.next(n))
@@ -553,8 +567,11 @@ export class RabbitMq implements ITransport, OnModuleInit {
     }
 
     public onModuleInit(): void {
-        this.listenToEvents()
-        this.listenResponseMessages()
+        if (!this.init) {
+            this.init = true
+            this.listenToEvents()
+            this.listenResponseMessages()
+        }
     }
 
     public async onModuleDestroy(): Promise<boolean> {
