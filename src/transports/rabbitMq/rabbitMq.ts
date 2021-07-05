@@ -499,6 +499,10 @@ export class RabbitMq implements ITransport, OnModuleInit {
         void workerChannel.consume(
             queueName,
             (message) => {
+                if (!message) {
+                    return
+                }
+
                 let value = null
                 let result: Buffer | Promise<Buffer>
                 try {
