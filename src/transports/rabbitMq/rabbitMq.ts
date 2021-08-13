@@ -26,15 +26,19 @@ type ConsumerCallback = (error: Error, v: any, message: Message) => void
 type ConsumerCallbackOptions =
     | ConsumerCallback
     | { callback: ConsumerCallback; removeOnCall: boolean }
+
 @Injectable()
 export class RabbitMq implements ITransport, OnModuleInit {
     private closing = false
     private publisher: Connection
     private consumer: Connection
     private workers = new Map<string, Channel>()
-    private effects = new Map<string, EventCallback>()
+    private effects = new Map<string, { callback: EventCallback; parallel?: boolean }>()
     private eventListeners = new Map<string, EventCallback>()
-    private effectsEvents = new Map<string, { name: string; module: string }>()
+    private effectsEvents = new Map<
+        string,
+        { name: string; projectName: string; eventBusName: string }
+    >()
     private publisherChannel: Channel
     private consumerChannel: Channel
     private consumerCallbacks = new Map<string, ConsumerCallbackOptions>()
@@ -179,6 +183,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
     }
 
     public async publishEvent<EventBase extends IPubEvent = IPubEvent>(
+        eventBusName: string,
         event: EventBase,
     ): Promise<void> {
         const eventPublisher = await this.getEventPublisherChannel()
@@ -196,6 +201,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
             Array<{
                 replyTo: string
                 correlationId: string
+                parallel: boolean
                 instanceId: string
             }>
         >()
@@ -232,7 +238,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                 }
 
                 value.forEach((val, i) => {
-                    const sendValue = i === chosen ? event : false
+                    const sendValue = val.parallel || i === chosen ? event : false
 
                     if (sendValue) {
                         countPerInstance.set(
@@ -243,7 +249,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
 
                     publisherChannel.sendToQueue(
                         val.replyTo,
-                        Buffer.from(JSON.stringify(i === chosen ? event : false), 'utf-8'),
+                        Buffer.from(JSON.stringify(sendValue), 'utf-8'),
                         {
                             correlationId: val.correlationId,
                         },
@@ -259,6 +265,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                         {
                             replyTo: message.properties.replyTo,
                             correlationId: value.id,
+                            parallel: value.parallel,
                             instanceId: value.instanceId,
                         },
                     ])
@@ -266,6 +273,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                     effects.get(value.effecName).push({
                         replyTo: message.properties.replyTo,
                         correlationId: value.id,
+                        parallel: value.parallel,
                         instanceId: value.instanceId,
                     })
                 }
@@ -284,7 +292,14 @@ export class RabbitMq implements ITransport, OnModuleInit {
         eventPublisher.publish(
             this.environmentName(WORKERS_EVENTS.CHANNEL),
             '',
-            Buffer.from(JSON.stringify({ event: EVENTS.PUBLISH, from: this.from, data: event })),
+            Buffer.from(
+                JSON.stringify({
+                    event: EVENTS.PUBLISH,
+                    from: this.from,
+                    data: event,
+                    eventBusName,
+                }),
+            ),
             { replyTo: queue.queue, correlationId: id },
         )
     }
@@ -292,9 +307,10 @@ export class RabbitMq implements ITransport, OnModuleInit {
     public registerEffect<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         callback: EventCallback<EventBase>,
-        ...events: Array<{ name: string; module: string }>
+        parallel: boolean,
+        ...events: Array<{ name: string; projectName: string; eventBusName: string }>
     ): void {
-        this.effects.set(name, callback)
+        this.effects.set(name, { callback, parallel })
         events.forEach((e) => {
             this.effectsEvents.set(name, e)
         })
@@ -337,19 +353,22 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             }
 
                             const value: IPubEvent = JSON.parse(msg.content.toString())
-                            if (value.from.id === this.from.id && !value?.data?.module) {
+                            if (value.from.id === this.from.id && !value?.data?.projectName) {
                                 return
                             }
 
-                            for (const cb of this.eventListeners.values()) {
+                            for (const [name, cb] of this.eventListeners.entries()) {
                                 try {
-                                    cb(value)
+                                    if (name === value.eventBusName) {
+                                        cb(value.data)
+                                    }
                                 } catch (err) {}
                             }
 
                             const effects = Array.from(this.effectsEvents.entries()).filter(
                                 (effect) =>
-                                    effect[1].module === value.data.module &&
+                                    effect[1].eventBusName === value.eventBusName &&
+                                    effect[1].projectName === value.data.projectName &&
                                     this.effectsEvents.get(effect[0])?.name === value.data.name,
                             )
 
@@ -358,6 +377,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             }
                             effects.forEach(([effecName]) => {
                                 const id = v4()
+                                const { callback, parallel } = this.effects.get(effecName)
 
                                 void Promise.all([
                                     this.getConsummerQueue(),
@@ -369,7 +389,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                         }
                                         this.addJob$.next()
                                         try {
-                                            const res = this.effects.get(effecName)(value)
+                                            const res = callback(value)
 
                                             if (res instanceof Promise) {
                                                 void res.then(() => {
@@ -388,6 +408,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                                         Buffer.from(
                                             JSON.stringify({
                                                 effecName,
+                                                parallel,
                                                 id,
                                                 instanceId: this.queueConfig.id,
                                             }),
@@ -422,13 +443,13 @@ export class RabbitMq implements ITransport, OnModuleInit {
     }
 
     public addJob<TRet = any, TData = any>(
-        module: string,
+        projectName: string,
         name: string,
         data: TData,
         onFinish: Callback<TRet>,
         options: IExecutionOptions = {},
     ): void {
-        const queueName = this.environmentName(module)
+        const queueName = this.environmentName(projectName)
         void Promise.all([this.getConsummerQueue(), this.getPublisherChannel()]).then(
             ([queue, worker]) => {
                 const id = options?.id || v4()
@@ -617,6 +638,10 @@ export class RabbitMq implements ITransport, OnModuleInit {
         if (this.consumerChannel) {
             await this.consumerChannel.close()
         }
+
+        await this.consumer.close()
+        await this.publisher.close()
+
         return true
     }
 }

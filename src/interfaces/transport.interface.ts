@@ -9,20 +9,24 @@ export type EventCallback<EventBase extends IPubEvent = IPubEvent> = (
 
 export interface ITransport extends OnModuleDestroy {
     addJob<TRet = any, TData = any>(
-        module: string,
+        projectName: string,
         name: string,
         data: TData,
         onFinish: Callback<TRet>,
         options?: any,
     ): void
-    createWorker(module: string, callback: (data: any) => Promise<any>): Promise<void>
+    createWorker(projectName: string, callback: (data: any) => Promise<any>): Promise<void>
 
-    publishEvent<EventBase extends IPubEvent = IPubEvent>(event: EventBase): Promise<void>
+    publishEvent<EventBase extends IPubEvent = IPubEvent>(
+        busName: string,
+        event: EventBase,
+    ): Promise<void>
 
     registerEffect<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         callback: EventCallback<EventBase>,
-        ...events: Array<{ name: string; module: string }>
+        parallel: boolean,
+        ...events: Array<{ name: string; projectName: string; eventBusName: string }>
     ): void
 
     removeEffect(name: string): void

@@ -2,7 +2,7 @@ import { EventBusBase } from '../eventBusBase'
 import { QueueBusBase } from '../queueBusBase'
 import { EffectDecorator } from '../types/effectDecorator.type'
 import { QueueHandlerDecorator } from '../types/queueHandlerDecorator.type'
-import { Effect } from './effect.decorator'
+import { Effect, ParallelEffect } from './effect.decorator'
 import { QueueHandler } from './queueHandler.decorator'
 
 /**
@@ -19,8 +19,10 @@ export function createQueueBusDecorator(queueBus: typeof QueueBusBase): QueueHan
  * @param eventBus - EventBus para qual o decorador será criado
  * @returns um decorador de Effect
  */
-export function createEventEffectDecorator(eventBus: typeof EventBusBase): EffectDecorator {
-    return Effect(eventBus)
+export function createEventEffectDecorator(
+    eventBus: typeof EventBusBase,
+): [EffectDecorator, EffectDecorator] {
+    return [Effect(eventBus), ParallelEffect(eventBus)]
 }
 
 /**
@@ -33,7 +35,7 @@ export function createDecorators(buses: {
     events?: Array<typeof EventBusBase>
 }): {
     queues: QueueHandlerDecorator[]
-    events: EffectDecorator[]
+    events: Array<[EffectDecorator, EffectDecorator]>
 } {
     return {
         queues: !buses.queues ? [] : buses.queues.map(createQueueBusDecorator),

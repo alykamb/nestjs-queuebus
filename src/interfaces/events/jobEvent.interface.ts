@@ -20,7 +20,8 @@ export interface IPubEvent<T extends IEvent = IEvent> {
     }
     event: T
     timestamp?: number
-    module?: string
+    projectName?: string
     queueName: string
     data?: any
+    eventBusName: string
 }

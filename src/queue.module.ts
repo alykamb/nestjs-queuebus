@@ -54,7 +54,7 @@ export class QueueModule implements OnApplicationBootstrap {
                     useValue: '',
                 },
             ],
-            exports: [...queues, ...(moduleOptions?.exports || [])],
+            exports: [...queues, ...(moduleOptions?.exports || []), queueConfigService],
             imports: [...(moduleOptions?.imports || [])],
         }
     }
@@ -92,10 +92,10 @@ export class QueueModule implements OnApplicationBootstrap {
         }
     }
     public onApplicationBootstrap(): void {
-        const queuesBuses = this.queueConfigService.getQueues()
+        const { queuesBuses, eventsBuses } = this.explorerService.getBuses()
 
-        const queueBusesProviders = queuesBuses.queues.map((q) => this.moduleRef.get(q))
-        const eventBusesProviders = queuesBuses.events.map((q) => this.moduleRef.get(q))
+        const queueBusesProviders = queuesBuses
+        const eventBusesProviders = eventsBuses
 
         const { effects, queues } = this.explorerService.explore(
             queueBusesProviders,
@@ -105,6 +105,7 @@ export class QueueModule implements OnApplicationBootstrap {
         queueBusesProviders.forEach((q, i) => {
             q.register(queues[i])
         })
+
         eventBusesProviders.forEach((e, i) => {
             e.registerEffects(effects[i])
         })

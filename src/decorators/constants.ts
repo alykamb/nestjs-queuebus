@@ -1,7 +1,6 @@
 export const QUEUE_HANDLER_METADATA = Symbol()
 export const EVENTS_METADATA = Symbol()
 export const EFFECT_METADATA = Symbol()
-export const EVENTBUS_QUEUEBUS_METADATA = Symbol()
 export const NAME_QUEUE_METADATA = Symbol()
 
 //job execution

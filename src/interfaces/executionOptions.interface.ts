@@ -1,6 +1,6 @@
 export interface IExecutionOptions {
     moveToQueue?: boolean
-    module?: string
+    projectName?: string
     logErrors?: boolean
     id?: string
     timeout?: number

@@ -7,7 +7,7 @@ export type HookContext<T = any> = {
     data?: T
     name: string
     bus: QueueBusBase | EventBusBase
-    module?: any
+    projectName?: any
 }
 export type Hook<T = any> = (
     context: HookContext<T>,
