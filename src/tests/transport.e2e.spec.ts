@@ -481,6 +481,8 @@ describe('transports', () => {
                             expect(app1.queueBus1.execute(data)).resolves.toBe(20),
                         ])
                     })
+
+                    test.todo('should be able to create observable to listen to events')
                 })
                 describe('effects', () => {
                     let appEffects$: Observable<{ effect: string; test: string; provider: any }>
@@ -493,7 +495,7 @@ describe('transports', () => {
                         )
                     })
 
-                    it('it should run the effect only once per event', async () => {
+                    it('should run the effect only once per event', async () => {
                         const t = v4()
                         const data = new Command1(10, t)
 
@@ -560,6 +562,12 @@ describe('transports', () => {
                 describe('event hooks', () => {
                     test.todo('effect hooks')
                 })
+            })
+
+            describe('streams', () => {
+                test.todo('should send itens from observable until completion')
+                test.todo('should catch and send error from rxjs stream through the message')
+                test.todo('should be able to await execute, even if it returns an obsersavable')
             })
         })
     }

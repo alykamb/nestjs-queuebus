@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
-import { noop, Subscription } from 'rxjs'
+import { filter, map, noop, Observable, Subject, Subscription } from 'rxjs'
 
 import { BusBase } from './busBase'
 import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME } from './constants'
@@ -43,6 +43,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     protected readonly subscriptions: Subscription[] = []
     protected readonly effects = new WeakMap<Type, WeakMap<IEffect<IEvent>, Set<string>>>()
     public name = ''
+    protected readonly events$ = new Subject<IPubEvent>()
 
     constructor(
         protected readonly moduleRef: ModuleRef,
@@ -68,6 +69,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                     bus: this,
                 })(event).catch(noop)
             }
+            this.events$.next(event)
         })
     }
 
@@ -174,6 +176,19 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         return `${this.getEffectName(effect)}_${effect.events.map((t) => t.name).join()}_${
             effect.parallel ? 'parallel' : 'unique'
         }`
+    }
+
+    public fromEvent(...events: IEvent[]): Observable<IEvent> {
+        return this.events$.pipe(
+            filter((pubEvent: IPubEvent) =>
+                events.find(
+                    (e) =>
+                        pubEvent.projectName === Reflect.getMetadata(EVENTS_METADATA, e) &&
+                        Object.getPrototypeOf(e).name === pubEvent.name,
+                ),
+            ),
+            map((pubEvent) => pubEvent.data.event),
+        )
     }
 
     /**
