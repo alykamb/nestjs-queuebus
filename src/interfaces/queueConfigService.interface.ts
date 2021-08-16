@@ -1,4 +1,3 @@
-import { EventBusBase, QueueBusBase } from '..'
 import { Transport } from '../constants'
 
 export interface IQueueConfigService {
@@ -16,9 +15,4 @@ export interface IQueueConfigService {
     environment?: string
 
     messageBrooker: Transport
-
-    getQueues: () => {
-        queues: Array<typeof QueueBusBase>
-        events: Array<typeof EventBusBase>
-    }
 }

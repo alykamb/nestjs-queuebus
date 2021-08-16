@@ -30,11 +30,12 @@ export type HandlerType = Type<IQueueHandler<IImpl>>
 @Injectable()
 export class QueueBusBase<ImplBase = any>
     extends BusBase<IJobExecutionInterceptors>
-    implements IQueueBus<ImplBase> {
+    implements IQueueBus<ImplBase>
+{
     protected handlers = new Map<string, IQueueHandler<ImplBase>>()
     protected metadataName = QUEUE_HANDLER_METADATA
     protected timeout = TIMEOUT
-    public readonly name = ''
+    public name = ''
 
     constructor(
         protected readonly moduleRef: ModuleRef,
@@ -81,16 +82,16 @@ export class QueueBusBase<ImplBase = any>
         data: T,
         options: IExecutionOptions = {},
     ): Promise<Ret> {
-        const { moveToQueue = false, module = this.queueConfig.name, ...o } = options
+        const { moveToQueue = false, projectName = this.queueConfig.name, ...o } = options
 
         const run = (name: string, d: T): Promise<Ret> => {
-            if (module === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
+            if (projectName === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
                 return this.executeHandler(name, d)
             }
 
             return new Promise((resolve, reject) => {
                 this.messageBrooker.addJob(
-                    module + this.name,
+                    projectName + this.name,
                     name,
                     d,
                     (err, data) => {
@@ -105,7 +106,7 @@ export class QueueBusBase<ImplBase = any>
         }
 
         const hooks = this.getHooks()
-        const context = { name, module, bus: this }
+        const context = { name, projectName, bus: this }
 
         return compose(
             hooks.before && this.runHooks(hooks.before, context),

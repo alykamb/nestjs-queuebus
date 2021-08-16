@@ -10,8 +10,8 @@ import {
     WorkerOptions,
 } from 'bullmq'
 import Redis from 'ioredis'
-import { BehaviorSubject, merge, noop, Subject, Subscription } from 'rxjs'
-import { map, scan } from 'rxjs/operators'
+import { BehaviorSubject, firstValueFrom, merge, noop, Subject, Subscription } from 'rxjs'
+import { filter, map, scan } from 'rxjs/operators'
 import { v4 } from 'uuid'
 
 import { EXTRA_SEPARATOR, JobEventType, QUEUE_CONFIG_SERVICE } from '../../constants'
@@ -50,9 +50,9 @@ export class BullMq implements ITransport, OnModuleInit {
     private publisher: Redis.Redis
     private subscriber: Redis.Redis
 
-    private effects = new Map<string, EventCallback>()
+    private effects = new Map<string, { callback: EventCallback; parallel: boolean }>()
     private eventListeners = new Map<string, EventCallback>()
-    private effectsEvents = new Map<string, { name: string; module: string }>()
+    private effectsEvents = new Map<string, { name: string; projectName: string }>()
 
     /** conexão com redis */
     private redis: ConnectionOptions
@@ -106,6 +106,7 @@ export class BullMq implements ITransport, OnModuleInit {
                     // eslint-disable-next-line no-console
                     console.error('error on logging:', err)
                 }
+                return
             }
             if (error) {
                 // eslint-disable-next-line no-console
@@ -135,7 +136,7 @@ export class BullMq implements ITransport, OnModuleInit {
             try {
                 const value: EventBase = JSON.parse(message)
 
-                this.log(`received event - ${value.data.name} from ${value.data.module}`)
+                this.log(`received event - ${value.data.name} from ${value.data.projectName}`)
 
                 for (const cb of this.eventListeners.values()) {
                     try {
@@ -145,7 +146,7 @@ export class BullMq implements ITransport, OnModuleInit {
 
                 const effects = Array.from(this.effectsEvents.entries()).filter(
                     (effect) =>
-                        effect[1].module === value.data.module &&
+                        effect[1].projectName === value.data.projectName &&
                         effect[1]?.name === value.data.name &&
                         this.from.environment === value.from.environment,
                 )
@@ -156,7 +157,7 @@ export class BullMq implements ITransport, OnModuleInit {
 
                 this.log(
                     `event: - ${value.data.name} from ${
-                        value.data.module
+                        value.data.projectName
                     }, registered effects: ${effects.map(([name]) => name)}`,
                 )
 
@@ -170,47 +171,73 @@ export class BullMq implements ITransport, OnModuleInit {
                         }, 1000)
                     }
 
+                    const { callback, parallel } = this.effects.get(effectName)
+
+                    const runningEffect = (): void => {
+                        this.addJob$.next()
+                        this.log(
+                            `event: - ${value.data.name} from ${value.data.projectName}, running effect: ${keyName}`,
+                        )
+                    }
+
+                    const effectFinished = (): void => {
+                        this.log(
+                            `event: - ${value.data.name} from ${value.data.projectName}, effect finished running: ${keyName}`,
+                        )
+                        this.removeJob$.next()
+                    }
+
+                    const effectError = (): void => {
+                        this.log(
+                            `event: - ${value.data.name} from ${value.data.projectName}, effect execution error: ${keyName}`,
+                        )
+
+                        this.removeJob$.next()
+                    }
+
+                    if (parallel) {
+                        runningEffect()
+                        try {
+                            const res = callback(value.data)
+
+                            if (res instanceof Promise) {
+                                void res.then(() => {
+                                    effectFinished()
+                                })
+                            } else {
+                                effectFinished()
+                            }
+                        } catch (err) {
+                            effectError()
+                        }
+                        return
+                    }
+
                     void this.publisher
                         .setnx(keyName, id)
                         .then((hasBeenSet) => {
                             if (!hasBeenSet) {
                                 this.log(
-                                    `event: - ${value.data.name} from ${value.data.module}, effect cannot run: ${keyName}`,
+                                    `event: - ${value.data.name} from ${value.data.projectName}, effect cannot run: ${keyName}`,
                                 )
                                 throw new Error()
                             }
 
-                            this.log(
-                                `event: - ${value.data.name} from ${value.data.module}, running effect: ${keyName}`,
-                            )
-                            this.addJob$.next()
+                            runningEffect()
                             try {
-                                const res = this.effects.get(effectName)(value.data)
+                                const res = callback(value.data)
 
                                 if (res instanceof Promise) {
                                     void res.then(() => {
-                                        this.log(
-                                            `event: - ${value.data.name} from ${value.data.module}, effect finished running: ${keyName}`,
-                                        )
-
-                                        this.removeJob$.next()
+                                        effectFinished()
                                         removeKey()
                                     })
                                 } else {
-                                    this.log(
-                                        `event: - ${value.data.name} from ${value.data.module}, effect finished running: ${keyName}`,
-                                    )
-
-                                    this.removeJob$.next()
+                                    effectFinished()
                                     removeKey()
                                 }
                             } catch (err) {
-                                this.log(
-                                    `event: - ${value.data.name} from ${value.data.module}, effect execution error: ${keyName}`,
-                                )
-
-                                this.removeJob$.next()
-                                removeKey()
+                                effectError()
                             }
                         })
                         .catch((err) => {
@@ -228,13 +255,13 @@ export class BullMq implements ITransport, OnModuleInit {
      * Adiciona um trabalho, criando uma referência da queue se el
      * ainda não existe
      *
-     * @param module - nome da módulo para criar a queue
+     * @param projectName - nome da módulo para criar a queue
      * @param name - nome do trabalho
      * @param data - dados que serão enviados
      * @param options - opções de Jobs do bulljs
      */
     public addJob<TRet = any, TData = any>(
-        module: string,
+        projectName: string,
         name: string,
         data: TData,
         onFinish: Callback<TRet>,
@@ -243,7 +270,7 @@ export class BullMq implements ITransport, OnModuleInit {
         if (this.closing) {
             throw new Error('This BullMq instance is closing')
         }
-        const queueName = this.environmentName(module)
+        const queueName = this.environmentName(projectName)
         //cria queue se ela ainda não existe
         if (!this.queueEvents.has(queueName)) {
             this.createQueue(queueName)
@@ -293,6 +320,7 @@ export class BullMq implements ITransport, OnModuleInit {
     }
 
     public async publishEvent<EventBase extends IPubEvent = IPubEvent>(
+        name: string,
         event: EventBase,
     ): Promise<void> {
         void this.publisher
@@ -302,6 +330,7 @@ export class BullMq implements ITransport, OnModuleInit {
                     event: EVENTS.PUBLISH,
                     from: this.from,
                     data: event,
+                    name,
                 }),
             )
             .catch(noop)
@@ -309,10 +338,10 @@ export class BullMq implements ITransport, OnModuleInit {
 
     /**
      * Cria a queue e todas as referências necessárias
-     * @param module
+     * @param projectName
      */
-    private createQueue(module: string): void {
-        const queueName = module
+    private createQueue(projectName: string): void {
+        const queueName = projectName
         const queueOptions: QueueOptions = {
             connection: this.redis,
             defaultJobOptions: {
@@ -337,12 +366,15 @@ export class BullMq implements ITransport, OnModuleInit {
     /**
      * Cria o Worker responsável por processar Jobs da queue
      *
-     * @param module
+     * @param projectName
      * @param callback
      */
 
-    public async createWorker(module: string, callback: (job: Job) => Promise<any>): Promise<void> {
-        const queueName = this.environmentName(module)
+    public async createWorker(
+        projectName: string,
+        callback: (job: Job) => Promise<any>,
+    ): Promise<void> {
+        const queueName = this.environmentName(projectName)
         const workerOptions: WorkerOptions = {
             connection: this.redis,
         }
@@ -378,14 +410,15 @@ export class BullMq implements ITransport, OnModuleInit {
     public registerEffect<EventBase extends IPubEvent = IPubEvent>(
         name: string,
         callback: EventCallback<EventBase>,
-        ...events: Array<{ name: string; module: string }>
+        parallel: boolean,
+        ...events: Array<{ name: string; projectName: string }>
     ): void {
         const effectName = name
-        this.effects.set(effectName, callback)
+        this.effects.set(effectName, { callback, parallel })
         events.forEach((e) => {
             this.effectsEvents.set(effectName, {
                 name: e.name,
-                module: e.module,
+                projectName: e.projectName,
             })
         })
     }
@@ -414,14 +447,7 @@ export class BullMq implements ITransport, OnModuleInit {
         await Promise.all(Array.from(this.workers.values()).map((worker) => worker.close()))
 
         //espera todos os trabalhos em andamento terminarem
-        await new Promise((resolve) => {
-            const sub = this.numberOfActiveJobs$.subscribe((n) => {
-                if (n === 0) {
-                    resolve(null)
-                    sub.unsubscribe()
-                }
-            })
-        })
+        await firstValueFrom(this.numberOfActiveJobs$.pipe(filter((n) => n === 0)))
         this.numberOfActiveJobsSub.unsubscribe()
 
         //remover listeners

@@ -13,11 +13,11 @@ import { QueueBusBase } from '../queueBusBase'
 export class ExplorerService {
     constructor(private readonly modulesContainer: ModulesContainer) {}
 
-    public explore(queuesBuses, eventsBuses?): QueueOptions {
+    public explore(queuesBuses: QueueBusBase[], eventsBuses?: EventBusBase[]): QueueOptions {
         const modules = [...this.modulesContainer.values()]
 
         const queues = queuesBuses.map((queueBus) => {
-            return this.flatMap<IQueueHandler>(modules, (instance) =>
+            return this.flatMap<IQueueHandler, Type<IQueueHandler>>(modules, (instance) =>
                 this.filterProvider(instance, QUEUE_HANDLER_METADATA, queueBus),
             )
         })
@@ -34,14 +34,31 @@ export class ExplorerService {
         return { effects, queues }
     }
 
-    public flatMap<T>(
+    public getBuses(): { queuesBuses: QueueBusBase[]; eventsBuses?: EventBusBase[] } {
+        const modules = [...this.modulesContainer.values()]
+
+        return {
+            queuesBuses: this.flatMap<QueueBusBase, QueueBusBase>(modules, (instance) =>
+                Object.getPrototypeOf(instance?.token) === QueueBusBase
+                    ? (instance.instance as QueueBusBase)
+                    : undefined,
+            ),
+            eventsBuses: this.flatMap<EventBusBase, EventBusBase>(modules, (instance) =>
+                Object.getPrototypeOf(instance?.token) === EventBusBase
+                    ? (instance.instance as EventBusBase)
+                    : undefined,
+            ),
+        }
+    }
+
+    public flatMap<T = any, Q = Type<T> | T | undefined>(
         modules: Module[],
-        callback: (instance: InstanceWrapper) => Type<any> | undefined,
-    ): Array<Type<T>> {
+        callback: (instance: InstanceWrapper) => Q,
+    ): Q[] {
         const items = modules
             .map((module) => [...module.providers.values()].map(callback))
             .reduce((a, b) => a.concat(b), [])
-        return items.filter((element) => !!element) as Array<Type<T>>
+        return items.filter((element) => !!element) as Q[]
     }
 
     public filterProvider(
@@ -55,6 +72,11 @@ export class ExplorerService {
         }
         const metadata = this.extractMetadata(instance, metadataKey)
 
+        if (metadata instanceof Array) {
+            return metadata.find((m) => m.bus === Object.getPrototypeOf(bus).constructor)
+                ? (instance.constructor as Type<any>)
+                : undefined
+        }
         return metadata && metadata.bus === Object.getPrototypeOf(bus).constructor
             ? (instance.constructor as Type<any>)
             : undefined
@@ -63,7 +85,9 @@ export class ExplorerService {
     public extractMetadata(
         instance: Record<string, any>,
         metadataKey: string | symbol,
-    ): { data: Type<any>; bus: QueueBusBase | EventBusBase } {
+    ):
+        | { data: Type<any>; bus: QueueBusBase | EventBusBase }
+        | Array<{ bus: QueueBusBase | EventBusBase; [key: string]: any }> {
         if (!instance.constructor) {
             return undefined
         }

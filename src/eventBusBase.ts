@@ -2,9 +2,8 @@ import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { noop, Subscription } from 'rxjs'
 
-import { QueueBusBase } from '.'
 import { BusBase } from './busBase'
-import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE } from './constants'
+import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME } from './constants'
 import {
     EFFECT_AFTER_EXECUTION_METADATA,
     EFFECT_BEFORE_EXECUTION_METADATA,
@@ -13,11 +12,10 @@ import {
     EVENT_AFTER_PUBLISH_METADATA,
     EVENT_BEFORE_PUBLISH_METADATA,
     EVENT_ON_RECEIVE_METADATA,
-    EVENTBUS_QUEUEBUS_METADATA,
     EVENTS_METADATA,
+    NAME_QUEUE_METADATA,
 } from './decorators/constants'
 import { InvalidEffectException } from './exceptions'
-import { InvalidQueueBusForEventBusException } from './exceptions/invalidQueueBusForEventBus.exception'
 import { compose } from './helpers/compose'
 import { EventHandler, IEffect, IEvent, IEventBus } from './interfaces'
 import { IEventExecutionInterceptors } from './interfaces/eventExecutionInterceptors.interface'
@@ -37,32 +35,36 @@ export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<EventHand
 @Injectable()
 export class EventBusBase<EventBase extends IEvent = IEvent>
     extends BusBase<IEventExecutionInterceptors>
-    implements IEventBus<EventBase>, OnModuleDestroy {
+    implements IEventBus<EventBase>, OnModuleDestroy
+{
     /**
      * Mantem referência de todas subscrições para desativá-las.
      */
     protected readonly subscriptions: Subscription[] = []
-    protected queueBus: QueueBusBase
+    protected readonly effects = new WeakMap<Type, WeakMap<IEffect<IEvent>, Set<string>>>()
+    public name = ''
+
     constructor(
         protected readonly moduleRef: ModuleRef,
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
         @Inject(MESSAGE_BROOKER) protected readonly transport: ITransport,
+        @Inject(QUEUE_DEFAULT_NAME) name = '',
     ) {
         super(queueConfig)
 
         const prototype = Object.getPrototypeOf(this)
-        const queueBus = Reflect.getMetadata(EVENTBUS_QUEUEBUS_METADATA, prototype.constructor)
-        if (!queueBus) {
-            throw new InvalidQueueBusForEventBusException(prototype.name)
-        }
-        this.queueBus = this.moduleRef.get(queueBus)
 
-        this.transport.registerEventListener(prototype.name, (event: IPubEvent) => {
+        const decoratorName =
+            Reflect.getMetadata(NAME_QUEUE_METADATA, prototype.constructor) || name
+
+        this.name = prototype.constructor.name + (decoratorName ? `_${decoratorName}` : '')
+
+        this.transport.registerEventListener(prototype.constructor.name, (event: IPubEvent) => {
             const hooks = this.getHooks()
-            if (hooks.eventOnReceive) {
+            if (hooks.eventOnReceive?.length) {
                 void this.runHooks(hooks.eventOnReceive, {
                     name: event.name,
-                    module: event.module,
+                    projectName: event.projectName,
                     bus: this,
                 })(event).catch(noop)
             }
@@ -88,24 +90,24 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     public publish<T extends EventBase>(event: T): void {
         const name = this.getEventName(event as any)
         const timestamp = +new Date()
-        const module = this.queueConfig.name
+        const projectName = this.queueConfig.name
 
         const hooks = this.getHooks()
 
         void compose(
             hooks.eventBeforePublish &&
-                this.runHooks(hooks.eventBeforePublish, { name, module, bus: this }),
+                this.runHooks(hooks.eventBeforePublish, { name, projectName, bus: this }),
             (data) => {
-                void this.transport.publishEvent(data).catch(noop)
+                void this.transport.publishEvent(this.name, data).catch(noop)
                 return data
             },
             hooks.eventAfterPublish &&
-                this.runHooks(hooks.eventAfterPublish, { name, module, bus: this }),
+                this.runHooks(hooks.eventAfterPublish, { name, projectName, bus: this }),
         )({
             event,
             name,
             timestamp,
-            module,
+            projectName,
         })
     }
 
@@ -117,28 +119,39 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     public registerEffects(types: Array<Type<unknown>> = []): void {
         const effects = types
             .map((target) => {
-                const metadata = Reflect.getMetadata(EFFECT_METADATA, target) || []
-                const instance: { [key: string]: IEffect<IPubEvent> } = this.moduleRef.get(target, {
-                    strict: false,
-                })
+                const metadata: EffectData[] = Reflect.getMetadata(EFFECT_METADATA, target) || []
+                const instance: Type<{ [key: string]: IEffect<IPubEvent> }> = this.moduleRef.get(
+                    target,
+                    {
+                        strict: false,
+                    },
+                )
                 if (!instance) {
                     throw new InvalidEffectException()
                 }
 
-                return metadata.data.map(
-                    (arg: { key: string; events: IEvent[]; name: string }) => ({
+                return metadata
+                    .filter((arg) => arg.bus === Object.getPrototypeOf(this).constructor)
+                    .map((arg) => ({
                         call: instance[arg.key],
                         key: arg.key,
-                        bus: metadata.bus,
+                        bus: arg.bus,
                         name: arg.name,
                         events: arg.events,
-                    }),
-                )
+                        parallel: arg.parallel,
+                        instance,
+                    }))
             })
             .reduce((a, b) => a.concat(b), [])
 
-        effects.forEach((effect: { call: IEffect<IPubEvent>; bus: QueueBusBase } & EffectData) =>
-            this.registerEffect(effect),
+        effects.forEach(
+            (
+                effect: {
+                    call: IEffect<IPubEvent>
+                    instance: Type
+                    parallel: boolean
+                } & EffectData,
+            ) => this.registerEffect(effect),
         )
     }
 
@@ -153,6 +166,16 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         })
     }
 
+    public getEffectName(effect: EffectData): string {
+        return `${effect.name}_${effect.key}`
+    }
+
+    public getEffectNameWithEvents(effect: EffectData): string {
+        return `${this.getEffectName(effect)}_${effect.events.map((t) => t.name).join()}_${
+            effect.parallel ? 'parallel' : 'unique'
+        }`
+    }
+
     /**
      * Registra os effectss
      *
@@ -162,18 +185,32 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
      * @param effect
      */
     protected registerEffect(
-        effect: { call: IEffect<IEvent>; bus: QueueBusBase } & EffectData,
+        effect: { call: IEffect<IEvent>; parallel: boolean; instance: Type } & EffectData,
     ): void {
         if (typeof effect.call !== 'function') {
             throw new InvalidEffectException()
         }
 
+        const fullEffectName = this.getEffectNameWithEvents(effect)
+
+        if (!this.effects.has(effect.instance)) {
+            this.effects.set(effect.instance, new WeakMap())
+        }
+
+        const effectRef = this.effects.get(effect.instance)
+
+        effect.events.forEach((t) => {
+            if (!effectRef.get(effect.call)) {
+                effectRef.set(effect.call, new Set())
+            }
+            effectRef.get(effect.call).add(t.name)
+        })
+
         //cria o nome com a combinação de events
-        const name = `${effect.name}_${effect.key}_${effect.events.map((t) => t.name).join()}`
-        const context = { name, module, bus: this }
+        const context = { name: fullEffectName, projectName: this.queueConfig.name, bus: this }
 
         this.transport.registerEffect(
-            name,
+            fullEffectName,
             (data: IPubEvent): any | Promise<any> => {
                 const hooks = this.getHooks()
 
@@ -185,7 +222,7 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                         ? this.runHooks(hooks.effectInterceptor, { ...context, data }, (d) => {
                               return new Promise((resolve, reject) => {
                                   try {
-                                      return this.parseHook(effect.call(d?.event))
+                                      return this.parseHook(effect.call(d.event))
                                           .then(resolve)
                                           .catch(reject)
                                   } catch (err) {
@@ -194,15 +231,17 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
                               })
                           })
                         : // if no interceptor hooks exist, we just run the effect
-                          (data): Promise<any> => this.parseHook(effect.call(data?.event)),
+                          (data): Promise<any> => this.parseHook(effect.call(data.event)),
 
                     hooks.effectAfterExecution &&
                         this.runHooks(hooks.effectAfterExecution, context),
                 )(data).catch(noop)
             },
+            effect.parallel,
             ...effect.events.map((t) => ({
                 name: t.name,
-                module: Reflect.getMetadata(EVENTS_METADATA, t),
+                projectName: Reflect.getMetadata(EVENTS_METADATA, t),
+                eventBusName: this.name,
             })),
         )
     }
