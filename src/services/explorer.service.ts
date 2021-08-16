@@ -37,17 +37,18 @@ export class ExplorerService {
     public getBuses(): { queuesBuses: QueueBusBase[]; eventsBuses?: EventBusBase[] } {
         const modules = [...this.modulesContainer.values()]
 
+        const map = <T = any>(arg: Type<T>): T[] =>
+            this.flatMap<T, T>(modules, (instance) =>
+                instance?.token &&
+                typeof instance.token === 'function' &&
+                Object.getPrototypeOf(instance.token) === arg
+                    ? (instance.instance as T)
+                    : undefined,
+            )
+
         return {
-            queuesBuses: this.flatMap<QueueBusBase, QueueBusBase>(modules, (instance) =>
-                Object.getPrototypeOf(instance?.token) === QueueBusBase
-                    ? (instance.instance as QueueBusBase)
-                    : undefined,
-            ),
-            eventsBuses: this.flatMap<EventBusBase, EventBusBase>(modules, (instance) =>
-                Object.getPrototypeOf(instance?.token) === EventBusBase
-                    ? (instance.instance as EventBusBase)
-                    : undefined,
-            ),
+            queuesBuses: map(QueueBusBase),
+            eventsBuses: map(EventBusBase),
         }
     }
 
