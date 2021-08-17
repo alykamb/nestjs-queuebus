@@ -38,13 +38,13 @@ export class ExplorerService {
         const modules = [...this.modulesContainer.values()]
 
         const map = <T = any>(arg: Type<T>): T[] =>
-            this.flatMap<T, T>(modules, (instance) =>
-                instance?.token &&
-                typeof instance.token === 'function' &&
-                Object.getPrototypeOf(instance.token) === arg
+            this.flatMap<T, T>(modules, (instance) => {
+                return instance?.instance &&
+                    typeof instance.instance === 'object' &&
+                    instance.instance instanceof arg
                     ? (instance.instance as T)
-                    : undefined,
-            )
+                    : undefined
+            })
 
         return {
             queuesBuses: map(QueueBusBase),
