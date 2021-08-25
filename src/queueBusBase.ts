@@ -1,38 +1,46 @@
 import { Inject, Injectable, Type } from '@nestjs/common'
+import { isFunction } from '@nestjs/common/utils/shared.utils'
 import { ModuleRef } from '@nestjs/core'
 import { Job } from 'bullmq'
+import { Observable } from 'rxjs'
 
-import { BusBase } from './busBase'
-import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME, TIMEOUT } from './constants'
+import {
+    MESSAGE_BROOKER,
+    QUEUE_CONFIG_SERVICE,
+    QUEUE_DEFAULT_NAME,
+    ResultType,
+    TIMEOUT,
+} from './constants'
 import {
     JOB_AFTER_EXECUTION_METADATA,
+    JOB_AFTER_TRANSMISSION_METADATA,
     JOB_BEFORE_EXECUTION_METADATA,
-    JOB_INTERSEPTION_EXECUTION_METADATA,
+    JOB_BEFORE_TRANSMISSION_METADATA,
+    JOB_EXECUTION_INTERSEPTOR_METADATA,
+    JOB_TRANSMISSION_INTERSEPTOR_METADATA,
     NAME_QUEUE_METADATA,
     QUEUE_HANDLER_METADATA,
 } from './decorators/constants'
 import { EventBusBase } from './eventBusBase'
-import { compose } from './helpers/compose'
 import { InvalidQueueHandlerException } from './index'
 import { IExecutionOptions } from './interfaces/executionOptions.interface'
 import { IJobExecutionInterceptors } from './interfaces/jobExecutionInterceptors.interface'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { IQueueBus } from './interfaces/queues/queueBus.interface'
 import { IQueueHandler } from './interfaces/queues/queueHandler.interface'
-import { IImpl } from './interfaces/queues/queueImpl.interface'
 import { ITransport } from './interfaces/transport.interface'
+import { CommandType, StreamCommand } from './models/command'
+// import { composeAsync } from './helpers/compose'
+import { HooksService } from './services/hooks.service'
 
-export type HandlerType = Type<IQueueHandler<IImpl>>
+export type HandlerType = Type<IQueueHandler>
 
 /**
  * CqrsBus registra handlers para implementações e os executa quando chamado
  */
 @Injectable()
-export class QueueBusBase<ImplBase = any>
-    extends BusBase<IJobExecutionInterceptors>
-    implements IQueueBus<ImplBase>
-{
-    protected handlers = new Map<string, IQueueHandler<ImplBase>>()
+export class QueueBusBase implements IQueueBus {
+    protected handlers = new Map<string, IQueueHandler>()
     protected metadataName = QUEUE_HANDLER_METADATA
     protected timeout = TIMEOUT
     public name = ''
@@ -42,9 +50,8 @@ export class QueueBusBase<ImplBase = any>
         @Inject(MESSAGE_BROOKER) protected readonly messageBrooker: ITransport,
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
         @Inject(QUEUE_DEFAULT_NAME) name = '',
+        protected readonly hooksService: HooksService<IJobExecutionInterceptors>,
     ) {
-        super(queueConfig)
-
         this.name =
             Reflect.getMetadata(NAME_QUEUE_METADATA, Object.getPrototypeOf(this).constructor) ||
             name
@@ -55,165 +62,235 @@ export class QueueBusBase<ImplBase = any>
     }
 
     /**
-     * Executa o handler registrado para a implementação de
-     * acordo com o nome da classe
+     * Executes the command
      *
-     * @param impl - implementação
-     * @param [options] - opções para criação do command
+     * If @param options.projectName is different from the current projectName,
+     * the command will be called remotely
+     *
+     * if @param options.projectName is absent or equal to the current projectName,
+     * the command will run locally
+     *
+     * if @param options.moveToQueue is true, the command will always run remotely
      */
-    public execute<Ret = any, T extends ImplBase = ImplBase>(
-        impl: T,
+    public execute<T extends CommandType = CommandType>(
+        command: T,
         options: IExecutionOptions = {},
-    ): Promise<Ret> {
-        const implName = this.getConstructorName(impl as any)
-        return this.executeByName(implName, impl, options)
+    ): T[ResultType] {
+        const constructor = this.getConstructor(command as any)
+        return this.executeByName<T>(
+            constructor.name,
+            command,
+            options,
+            command instanceof StreamCommand,
+        )
     }
 
     /**
-     * Executa o handler registrado para a implementação de
-     * acordo com o nome
-     *
-     * @param name - nome do comando
-     * @param data - dados que serão passados ao execute do handler
-     * @param [options] - opções para criação do command
+     * Executes the registered handler for the command name
      */
-    protected executeByName<Ret, T extends ImplBase = ImplBase>(
-        name: string,
+    protected executeByName<T extends CommandType = CommandType>(
+        jobName: string,
         data: T,
+        remoteCommandOptions: IExecutionOptions = {},
+        isStream = false,
+    ): T[ResultType] {
+        const {
+            moveToQueue = false,
+            projectName = this.queueConfig.name,
+            ...o
+        } = remoteCommandOptions
+
+        const queueName = projectName + this.name
+
+        const finalOptions = {
+            timeout: this.timeout,
+            ...(o || {}),
+        }
+
+        // if it is the current project, and does not need to move to the queue, runs locally
+        if (projectName === this.queueConfig.name && this.handlers.has(jobName) && !moveToQueue) {
+            return this.executeHandler<T>(jobName, data)
+        }
+
+        if (isStream) {
+            return this.runStream(queueName, jobName, data, finalOptions)
+        }
+        return this.run(queueName, jobName, data, finalOptions)
+    }
+
+    /**
+     * Runs a remote command which will return data once
+     */
+    protected run<T extends CommandType = CommandType>(
+        queueName: string,
+        jobname: string,
+        data: any,
+        remoteCommandOptions: IExecutionOptions = {},
+    ): T[ResultType] {
+        // const hooks = this.getHooks()
+        // const context = { name: jobname, projectName: options.projectName, bus: this }
+
+        // const run = (name: string, d: T): T[ResultType] => {
+
+        return new Promise((resolve, reject) => {
+            this.messageBrooker.addJob(
+                queueName,
+                jobname,
+                data,
+                (err, data) => {
+                    if (err) {
+                        reject(err)
+                        return
+                    }
+                    resolve(data)
+                },
+                remoteCommandOptions,
+            )
+        })
+        // }
+
+        // return composeAsync(
+        //     hooks.beforeExecution && this.runHooks(hooks.beforeExecution, context),
+        //     hooks.exectionInterceptor.length
+        //         ? this.runHooks(hooks.exectionInterceptor, { ...context, data }, (d) =>
+        //               run(jobname, d),
+        //           )
+        //         : // if no interceptor hooks exist, we just run the command
+        //           (data): Promise<any> => run(jobname, data),
+        //     hooks.afterExecution && this.runHooks(hooks.afterExecution, context),
+        // )(data)
+    }
+
+    /**
+     * Runs a remote command which will return an stream of data, which may or may not be completed
+     * on the future
+     */
+    protected runStream<T extends StreamCommand<any> = StreamCommand<any>>(
+        queueName: string,
+        jobName: string,
+        data: any,
         options: IExecutionOptions = {},
-    ): Promise<Ret> {
-        const { moveToQueue = false, projectName = this.queueConfig.name, ...o } = options
+    ): T[ResultType] {
+        // const hooks = this.getHooks()
+        // const context = { name: jobname, projectName: options.projectName, bus: this }
 
-        const run = (name: string, d: T): Promise<Ret> => {
-            if (projectName === this.queueConfig.name && this.handlers.has(name) && !moveToQueue) {
-                return this.executeHandler(name, d)
-            }
+        // const run = (name: string, d: T): T[ResultType] => {
 
-            return new Promise((resolve, reject) => {
-                this.messageBrooker.addJob(
-                    projectName + this.name,
-                    name,
-                    d,
-                    (err, data) => {
-                        if (err) {
-                            return reject(err)
-                        }
-                        return resolve(data)
-                    },
-                    { timeout: this.timeout, ...(o || {}) },
-                )
-            })
-        }
-
-        const hooks = this.getHooks()
-        const context = { name, projectName, bus: this }
-
-        return compose(
-            hooks.before && this.runHooks(hooks.before, context),
-            hooks.interceptor.length
-                ? this.runHooks(hooks.interceptor, { ...context, data }, (d) => run(name, d))
-                : // if no interceptor hooks exist, we just run the command
-                  (data): Promise<any> => run(name, data),
-            hooks.after && this.runHooks(hooks.after, context),
-        )(data)
-    }
-
-    /**
-     * Usa a instância do handler com o nome do command salvá-lo como referência,
-     * criar a queue do BullMq e criar o worker que vai executar o handler caso
-     * o command venha pelo redis no BullMq (provavelmente de outro serviço na rede)
-     *
-     * @param handler - handler que vai executar o command
-     * @param name - nome do command
-     */
-    protected bind<T extends ImplBase>(handler: IQueueHandler<T>, name: string): void {
-        this.handlers.set(name, handler)
-    }
-
-    /**
-     * Registra todos os handlers criados com o @decorator CommandHandler
-     *
-     * @param handlers - Lista de handlers
-     */
-    public register(handlers: HandlerType[] = []): void {
-        handlers.forEach((handler) => this.registerHandler(handler))
-    }
-
-    /**
-     * Faz a execução do trabalho com o handler registrado
-     *
-     * @param job - trabalho do bullMq
-     */
-    public handleJob(job: Job): Promise<any> {
-        return this.executeHandler(job.name, job.data)
-    }
-
-    protected executeHandler(name: string, data: any): Promise<any> {
-        if (!this.handlers.has(name)) {
-            throw new InvalidQueueHandlerException(name)
-        }
-
-        const handler: IQueueHandler<ImplBase, any> & {
-            eventBus?: EventBusBase
-        } = this.handlers.get(name)
-
-        try {
-            const result = handler.execute(data)
-            if (result?.toPromise) {
-                return result.toPromise()
-            }
-            if (!(result instanceof Promise)) {
-                return Promise.resolve(result)
-            }
-            return result
-        } catch (err) {
-            return Promise.reject(err)
-        }
-    }
-
-    protected getHooks(): IJobExecutionInterceptors {
-        return super.getHooks({
-            before: JOB_BEFORE_EXECUTION_METADATA,
-            after: JOB_AFTER_EXECUTION_METADATA,
-            interceptor: JOB_INTERSEPTION_EXECUTION_METADATA,
+        return new Observable((observer) => {
+            this.messageBrooker.addJob(
+                queueName,
+                jobName,
+                data,
+                (err, data, completed) => {
+                    if (err) {
+                        observer.error(data)
+                        observer.complete()
+                        return
+                    }
+                    observer.next(data)
+                    if (completed) {
+                        observer.complete()
+                    }
+                },
+                options,
+            )
         })
     }
 
     /**
-     * Registra o handler
-     *
-     * Pega a instância da classe através do ModuleRef do nest,
-     * depois o nome do command através do metadado criado pelo @decorator CommandHandler
-     * e passa os dois para o @function bind
-     *
-     * @param handler - handler decorado com CommandHandler
+     * Uses the Handler class instance, keeping a referenc to call later it's execute function
      */
-    protected registerHandler(handler: HandlerType): void {
-        const instancia = this.moduleRef.get(handler, { strict: false })
-        if (!instancia) {
-            return
+    protected bind<T extends CommandType = CommandType>(
+        handlerInstance: IQueueHandler<T>,
+        commandName: string,
+    ): void {
+        this.handlers.set(commandName, handlerInstance)
+    }
+
+    /**
+     * Registers all the handlers decorated with the CommandHandler @decorator for this queueBus
+     *
+     * @param handlersClasses - list de handlers classes
+     */
+    public register(handlersClasses: HandlerType[] = []): void {
+        handlersClasses.forEach((handlerClass) => this.registerHandler(handlerClass))
+    }
+
+    /**
+     * Handles a job that came from the worker
+     */
+    public handleJob(job: Job): CommandType[ResultType] {
+        return this.executeHandler(job.name, job.data)
+    }
+
+    /**
+     * @param name name of the command
+     * @param data data to pass to the execute function
+     * @returns the resulting promise or observable
+     */
+    protected executeHandler<T extends CommandType = CommandType>(
+        name: string,
+        data: any,
+    ): T[ResultType] {
+        if (!this.handlers.has(name)) {
+            throw new InvalidQueueHandlerException(name)
         }
-        const target = this.reflectMetadataName(handler)
+
+        const handler: IQueueHandler & {
+            eventBus?: EventBusBase
+        } = this.handlers.get(name)
+
+        const result = handler.execute(data)
+        if (isFunction((result as Observable<any>)?.subscribe)) {
+            return result
+        }
+
+        return result as Promise<any>
+    }
+
+    /**
+     * Gets the registered hooks
+     */
+    protected getHooks(): IJobExecutionInterceptors {
+        return this.hooksService.getHooks(
+            {
+                afterExecution: JOB_AFTER_EXECUTION_METADATA,
+                afterTransmission: JOB_AFTER_TRANSMISSION_METADATA,
+                beforeExecution: JOB_BEFORE_EXECUTION_METADATA,
+                beforeTransmission: JOB_BEFORE_TRANSMISSION_METADATA,
+                exectionInterceptor: JOB_EXECUTION_INTERSEPTOR_METADATA,
+                transmissionInterceptor: JOB_TRANSMISSION_INTERSEPTOR_METADATA,
+            },
+            this,
+        )
+    }
+
+    /**
+     * Registers the handler so it's intance execute function can
+     * be called later by the bus
+     */
+    protected registerHandler(handlerClass: HandlerType): void {
+        const instance = this.moduleRef.get(handlerClass, { strict: false })
+        if (!instance) {
+            throw new InvalidQueueHandlerException(handlerClass?.name)
+        }
+        const target = this.reflectMetadataName(handlerClass)
         if (!target) {
-            throw new InvalidQueueHandlerException()
+            throw new InvalidQueueHandlerException(handlerClass?.name)
         }
-        this.bind(instancia as IQueueHandler<ImplBase>, target.data.name)
+        this.bind(instance as IQueueHandler, target.data.name)
     }
 
     /**
-     * Pega o nome da classe (que é uma função) através do construtor no prototype
-     *
-     * @param func
+     * @returns the constructor of an object
      */
-    public getConstructorName<T = any>(func: T): string {
-        const { constructor } = Object.getPrototypeOf(func)
-        return constructor.name
+    public getConstructor<T = any>(obj: T): any {
+        const { constructor } = Object.getPrototypeOf(obj)
+        return constructor
     }
 
     /**
-     * Retorna o nome registrado pelo metadata. ex: classe de impl de Command ou Query
-     *
-     * @param handler - instancia da classe handler
+     * @returns the metadata of the queuebus of the handler
      */
     protected reflectMetadataName<T = any>(
         handler: T,

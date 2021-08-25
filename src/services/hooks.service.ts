@@ -1,21 +1,25 @@
+import { Inject, Injectable, Scope } from '@nestjs/common'
 import { Observable } from 'rxjs'
 
-import { IQueueConfigService } from './interfaces'
-import { Hook, HookContext } from './types/hooks.type'
+import { QUEUE_CONFIG_SERVICE } from '../constants'
+import { IQueueConfigService } from '../interfaces'
+import { Hook, HookContext } from '../types/hooks.type'
 
-export class BusBase<T> {
+@Injectable({ scope: Scope.TRANSIENT })
+export class HooksService<T> {
     protected hooks: T
+    constructor(
+        @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
+    ) {}
 
-    constructor(protected readonly queueConfig: IQueueConfigService) {}
-
-    protected getHooks(options: Record<keyof T, symbol>): T {
+    public getHooks(options: Record<keyof T, symbol>, instance: any): T {
         const sort = (
             p1: { key: string; order: number },
             p2: { key: string; order: number },
         ): number => p1.order - p2.order
 
         if (!this.hooks) {
-            const constructor = Reflect.getPrototypeOf(this).constructor
+            const constructor = Reflect.getPrototypeOf(instance).constructor
             const map = (property: { key: string; order: number }): any =>
                 this.queueConfig[property.key]
 
@@ -31,7 +35,7 @@ export class BusBase<T> {
         return this.hooks
     }
 
-    protected runHooks(
+    public runHooks(
         hooks: Hook[],
         context: HookContext,
         cb?: (d: any) => Promise<any>,
@@ -43,7 +47,7 @@ export class BusBase<T> {
             }, data)
     }
 
-    protected parseHook(value: any | Promise<any> | Observable<any>): Promise<any> | any {
+    public parseHook(value: any | Promise<any> | Observable<any>): Promise<any> | any {
         if (value && typeof value.subscribe === 'function') {
             return value.toPromise()
         }

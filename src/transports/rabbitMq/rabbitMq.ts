@@ -22,7 +22,14 @@ enum EVENTS {
     PUBLISH = 'PUBLISH',
 }
 
-type ConsumerCallback = (error: Error, v: any, message: Message) => void
+type ErrorWithExtras = { error: string; extra?: string }
+
+type ConsumerCallback = (
+    error: boolean | ErrorWithExtras,
+    v: any | Error,
+    completed: boolean,
+    message: Message,
+) => void
 type ConsumerCallbackOptions =
     | ConsumerCallback
     | { callback: ConsumerCallback; removeOnCall: boolean }
@@ -139,7 +146,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                     if (cb) {
                         try {
                             const value = JSON.parse(message.content.toString('utf8'))
-                            cb(null, value, message)
+                            cb(null, value, true, message)
                             if (
                                 (options as { callback: ConsumerCallback; removeOnCall: boolean })
                                     ?.removeOnCall === false
@@ -148,7 +155,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                             }
                             this.consumerCallbacks.delete(message.properties.correlationId)
                         } catch (err) {
-                            cb(err, null, message)
+                            cb(err, null, true, message)
                         }
                     }
                 },
@@ -259,7 +266,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         }
 
         this.consumerCallbacks.set(id, {
-            callback: (err, value, message) => {
+            callback: (_err, value, completed, message) => {
                 if (!effects.has(value.effecName)) {
                     effects.set(value.effecName, [
                         {
@@ -446,7 +453,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         projectName: string,
         name: string,
         data: TData,
-        onFinish: Callback<TRet>,
+        onNext: Callback<TRet>,
         options: IExecutionOptions = {},
     ): void {
         const queueName = this.environmentName(projectName)
@@ -454,43 +461,43 @@ export class RabbitMq implements ITransport, OnModuleInit {
             ([queue, worker]) => {
                 const id = options?.id || v4()
 
-                return Promise.race([
-                    new Promise((resolve) => {
-                        this.consumerCallbacks.set(id, (error, value) => {
-                            this.removeJob$.next()
-                            if (error || value.error) {
-                                return resolve({
-                                    error: error || new JobException(value.error, value.extra),
-                                })
-                            }
-                            return resolve({ result: value.data })
-                        })
+                const timeout = setTimeout(() => {
+                    onNext(
+                        true,
+                        new TimeoutException(queueName, name, data, options.timeout || TIMEOUT),
+                        true,
+                    )
+                }, options.timeout || TIMEOUT)
 
-                        worker.sendToQueue(
-                            queueName,
-                            Buffer.from(JSON.stringify({ name, data }), 'utf-8'),
-                            {
-                                correlationId: id,
-                                replyTo: queue.queue,
-                            },
+                this.consumerCallbacks.set(id, (error, value, completed) => {
+                    clearTimeout(timeout)
+                    this.removeJob$.next()
+
+                    const hasError = !!error
+                    let data = value
+                    if (hasError) {
+                        data = new JobException(
+                            (error as ErrorWithExtras)?.error,
+                            (error as ErrorWithExtras)?.extra,
                         )
-                        this.addJob$.next()
-                    }),
-                    new Promise((resolve) =>
-                        setTimeout(
-                            () =>
-                                resolve({
-                                    error: new TimeoutException(
-                                        queueName,
-                                        name,
-                                        data,
-                                        options.timeout || TIMEOUT,
-                                    ),
-                                }),
-                            options.timeout || TIMEOUT,
-                        ),
-                    ),
-                ]).then(({ error, result }) => onFinish(error, result))
+                    }
+                    onNext(hasError, data, completed)
+
+                    //cleanup
+                    if (completed || hasError) {
+                        this.consumerCallbacks.delete(id)
+                    }
+                })
+
+                worker.sendToQueue(
+                    queueName,
+                    Buffer.from(JSON.stringify({ name, data }), 'utf-8'),
+                    {
+                        correlationId: id,
+                        replyTo: queue.queue,
+                    },
+                )
+                this.addJob$.next()
             },
         )
     }

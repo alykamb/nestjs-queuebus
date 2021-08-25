@@ -9,6 +9,8 @@ import {
     merge,
     Observable,
     take,
+    takeUntil,
+    timer,
 } from 'rxjs'
 import { setTimeout } from 'timers/promises'
 import { v4 } from 'uuid'
@@ -20,8 +22,10 @@ import { EventBusBase } from '../eventBusBase'
 import { InvalidQueueHandlerException, JobException } from '../exceptions'
 import { IEffect, IQueueHandler } from '../interfaces'
 import { IPubEvent } from '../interfaces/events/jobEvent.interface'
+import { Command } from '../models/command'
 import { QueueModule } from '../queue.module'
 import { QueueBusBase } from '../queueBusBase'
+import { HooksService } from '../services/hooks.service'
 
 interface ICounterService {
     commands$: BehaviorSubject<{ data: number; test: string }>
@@ -71,8 +75,10 @@ describe('transports', () => {
     } = createDecorators(queues)
 
     // commands
-    class Command1 {
-        constructor(public data: number, public test: string) {}
+    class Command1 extends Command<number> {
+        constructor(public data: number, public test: string) {
+            super()
+        }
     }
 
     @Event('app1')
@@ -80,8 +86,10 @@ describe('transports', () => {
         constructor(public data: number, public test: string) {}
     }
 
-    class Command2 {
-        constructor(public data: number, public test: string) {}
+    class Command2 extends Command<number> {
+        constructor(public data: number, public test: string) {
+            super()
+        }
     }
 
     @Event('app2')
@@ -236,7 +244,7 @@ describe('transports', () => {
 
     // configs factories
     const rabbitConfig = createConfig(5672, Transport.rabbitMQ)
-    const bullConfig = createConfig(6379, Transport.bullMQ)
+    // const bullConfig = createConfig(6379, Transport.bullMQ)
 
     let app1: QueueModuleRef
     let app1a: QueueModuleRef
@@ -254,6 +262,7 @@ describe('transports', () => {
                     EffectProvider2,
                     EffectProvider1,
                     CounterService,
+                    HooksService,
                 ],
             },
         )
@@ -406,8 +415,10 @@ describe('transports', () => {
                     })
 
                     it('should throw if command handler does not exists', async () => {
-                        class NonExistingCommand {
-                            constructor(public data: number) {}
+                        class NonExistingCommand extends Command<number> {
+                            constructor(public data: number) {
+                                super()
+                            }
                         }
                         await Promise.all([
                             expect(
@@ -482,7 +493,20 @@ describe('transports', () => {
                         ])
                     })
 
-                    test.todo('should be able to create observable to listen to events')
+                    it('should be able to create observable to listen to events', (done) => {
+                        const events$ = app1.eventBus1.fromEvent(app1.events[0])
+
+                        const t = v4()
+                        const data = new Command1(87, t)
+                        events$.pipe(takeUntil(timer(3000))).subscribe({
+                            next: (value) => {
+                                console.log(value)
+                            },
+                            complete: done,
+                        })
+
+                        void expect(app1.queueBus1.execute(data)).resolves.toBe(87 * 2)
+                    })
                 })
                 describe('effects', () => {
                     let appEffects$: Observable<{ effect: string; test: string; provider: any }>
@@ -573,5 +597,5 @@ describe('transports', () => {
     }
 
     testsWrapper('rabbitMq', rabbitConfig)
-    testsWrapper('bullMq', bullConfig)
+    // testsWrapper('bullMq', bullConfig)
 })

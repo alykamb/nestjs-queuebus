@@ -72,20 +72,6 @@ export class QueueModule implements OnApplicationBootstrap {
 
                     const { RabbitMq } = await import('./transports/rabbitMq/rabbitMq')
                     return new RabbitMq(queueConfig)
-                } else if (queueConfig.messageBrooker === Transport.bullMQ) {
-                    if (!require('bullmq')) {
-                        throw new Error(
-                            'bullmq node package is missing. use: npm install --save bullmq',
-                        )
-                    }
-                    if (!require('redis')) {
-                        throw new Error(
-                            'redis node package is missing. use: npm install --save redis',
-                        )
-                    }
-
-                    const { BullMq } = await import('./transports/bullmq/bullMq')
-                    return new BullMq(queueConfig)
                 }
             },
             inject: [QUEUE_CONFIG_SERVICE],

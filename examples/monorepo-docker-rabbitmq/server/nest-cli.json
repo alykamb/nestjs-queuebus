@@ -1,0 +1,39 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/heroes/src",
+  "monorepo": true,
+  "root": "apps/heroes",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/heroes/tsconfig.app.json"
+  },
+  "projects": {
+    "heroes": {
+      "type": "application",
+      "root": "apps/heroes",
+      "entryFile": "main",
+      "sourceRoot": "apps/heroes/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/heroes/tsconfig.app.json"
+      }
+    },
+    "monsters": {
+      "type": "application",
+      "root": "apps/monsters",
+      "entryFile": "main",
+      "sourceRoot": "apps/monsters/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/monsters/tsconfig.app.json"
+      }
+    },
+    "auth": {
+      "type": "application",
+      "root": "apps/auth",
+      "entryFile": "main",
+      "sourceRoot": "apps/auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/auth/tsconfig.app.json"
+      }
+    }
+  }
+}

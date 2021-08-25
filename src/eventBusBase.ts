@@ -2,7 +2,6 @@ import { Inject, Injectable, OnModuleDestroy, Type } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
 import { filter, map, noop, Observable, Subject, Subscription } from 'rxjs'
 
-import { BusBase } from './busBase'
 import { MESSAGE_BROOKER, QUEUE_CONFIG_SERVICE, QUEUE_DEFAULT_NAME } from './constants'
 import {
     EFFECT_AFTER_EXECUTION_METADATA,
@@ -16,12 +15,13 @@ import {
     NAME_QUEUE_METADATA,
 } from './decorators/constants'
 import { InvalidEffectException } from './exceptions'
-import { compose } from './helpers/compose'
+import { composeAsync } from './helpers/compose'
 import { EventHandler, IEffect, IEvent, IEventBus } from './interfaces'
 import { IEventExecutionInterceptors } from './interfaces/eventExecutionInterceptors.interface'
 import { IPubEvent } from './interfaces/events/jobEvent.interface'
 import { IQueueConfigService } from './interfaces/queueConfigService.interface'
 import { ITransport } from './interfaces/transport.interface'
+import { HooksService } from './services/hooks.service'
 import { EffectData } from './types/effectData.type'
 
 export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<EventHandler<EventBase>>
@@ -34,7 +34,6 @@ export type EventHandlerType<EventBase extends IEvent = IEvent> = Type<EventHand
  */
 @Injectable()
 export class EventBusBase<EventBase extends IEvent = IEvent>
-    extends BusBase<IEventExecutionInterceptors>
     implements IEventBus<EventBase>, OnModuleDestroy
 {
     /**
@@ -50,9 +49,8 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         @Inject(QUEUE_CONFIG_SERVICE) protected readonly queueConfig: IQueueConfigService,
         @Inject(MESSAGE_BROOKER) protected readonly transport: ITransport,
         @Inject(QUEUE_DEFAULT_NAME) name = '',
+        protected hooksService: HooksService<IEventExecutionInterceptors>,
     ) {
-        super(queueConfig)
-
         const prototype = Object.getPrototypeOf(this)
 
         const decoratorName =
@@ -63,11 +61,13 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
         this.transport.registerEventListener(prototype.constructor.name, (event: IPubEvent) => {
             const hooks = this.getHooks()
             if (hooks.eventOnReceive?.length) {
-                void this.runHooks(hooks.eventOnReceive, {
-                    name: event.name,
-                    projectName: event.projectName,
-                    bus: this,
-                })(event).catch(noop)
+                void this.hooksService
+                    .runHooks(hooks.eventOnReceive, {
+                        name: event.name,
+                        projectName: event.projectName,
+                        bus: this,
+                    })(event)
+                    .catch(noop)
             }
             this.events$.next(event)
         })
@@ -96,15 +96,23 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
 
         const hooks = this.getHooks()
 
-        void compose(
+        void composeAsync(
             hooks.eventBeforePublish &&
-                this.runHooks(hooks.eventBeforePublish, { name, projectName, bus: this }),
+                this.hooksService.runHooks(hooks.eventBeforePublish, {
+                    name,
+                    projectName,
+                    bus: this,
+                }),
             (data) => {
                 void this.transport.publishEvent(this.name, data).catch(noop)
                 return data
             },
             hooks.eventAfterPublish &&
-                this.runHooks(hooks.eventAfterPublish, { name, projectName, bus: this }),
+                this.hooksService.runHooks(hooks.eventAfterPublish, {
+                    name,
+                    projectName,
+                    bus: this,
+                }),
         )({
             event,
             name,
@@ -158,14 +166,17 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
     }
 
     protected getHooks(): IEventExecutionInterceptors {
-        return super.getHooks({
-            eventOnReceive: EVENT_ON_RECEIVE_METADATA,
-            eventBeforePublish: EVENT_BEFORE_PUBLISH_METADATA,
-            eventAfterPublish: EVENT_AFTER_PUBLISH_METADATA,
-            effectBeforeExecution: EFFECT_BEFORE_EXECUTION_METADATA,
-            effectAfterExecution: EFFECT_AFTER_EXECUTION_METADATA,
-            effectInterceptor: EFFECT_INTERSEPTION_EXECUTION_METADATA,
-        })
+        return this.hooksService.getHooks(
+            {
+                eventOnReceive: EVENT_ON_RECEIVE_METADATA,
+                eventBeforePublish: EVENT_BEFORE_PUBLISH_METADATA,
+                eventAfterPublish: EVENT_AFTER_PUBLISH_METADATA,
+                effectBeforeExecution: EFFECT_BEFORE_EXECUTION_METADATA,
+                effectAfterExecution: EFFECT_AFTER_EXECUTION_METADATA,
+                effectInterceptor: EFFECT_INTERSEPTION_EXECUTION_METADATA,
+            },
+            this,
+        )
     }
 
     public getEffectName(effect: EffectData): string {
@@ -229,27 +240,33 @@ export class EventBusBase<EventBase extends IEvent = IEvent>
             (data: IPubEvent): any | Promise<any> => {
                 const hooks = this.getHooks()
 
-                return compose(
+                return composeAsync(
                     hooks.effectBeforeExecution &&
-                        this.runHooks(hooks.effectBeforeExecution, context),
+                        this.hooksService.runHooks(hooks.effectBeforeExecution, context),
 
                     hooks.effectInterceptor.length
-                        ? this.runHooks(hooks.effectInterceptor, { ...context, data }, (d) => {
-                              return new Promise((resolve, reject) => {
-                                  try {
-                                      return this.parseHook(effect.call(d.event))
-                                          .then(resolve)
-                                          .catch(reject)
-                                  } catch (err) {
-                                      reject(err)
-                                  }
-                              })
-                          })
+                        ? this.hooksService.runHooks(
+                              hooks.effectInterceptor,
+                              { ...context, data },
+                              (d) => {
+                                  return new Promise((resolve, reject) => {
+                                      try {
+                                          return this.hooksService
+                                              .parseHook(effect.call(d.event))
+                                              .then(resolve)
+                                              .catch(reject)
+                                      } catch (err) {
+                                          reject(err)
+                                      }
+                                  })
+                              },
+                          )
                         : // if no interceptor hooks exist, we just run the effect
-                          (data): Promise<any> => this.parseHook(effect.call(data.event)),
+                          (data): Promise<any> =>
+                              this.hooksService.parseHook(effect.call(data.event)),
 
                     hooks.effectAfterExecution &&
-                        this.runHooks(hooks.effectAfterExecution, context),
+                        this.hooksService.runHooks(hooks.effectAfterExecution, context),
                 )(data).catch(noop)
             },
             effect.parallel,

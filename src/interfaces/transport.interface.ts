@@ -1,5 +1,7 @@
 import { OnModuleDestroy } from '@nestjs/common'
 
+import { ResultType } from '../constants'
+import { CommandType } from '../models/command'
 import { Callback } from '../types/callback'
 import { IPubEvent } from './events/jobEvent.interface'
 
@@ -12,10 +14,14 @@ export interface ITransport extends OnModuleDestroy {
         projectName: string,
         name: string,
         data: TData,
-        onFinish: Callback<TRet>,
+        onNext: Callback<TRet>,
         options?: any,
     ): void
-    createWorker(projectName: string, callback: (data: any) => Promise<any>): Promise<void>
+
+    createWorker(
+        projectName: string,
+        callback: (data: any) => CommandType[ResultType],
+    ): Promise<void>
 
     publishEvent<EventBase extends IPubEvent = IPubEvent>(
         busName: string,

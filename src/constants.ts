@@ -15,5 +15,7 @@ export enum JobEventType {
 
 export enum Transport {
     rabbitMQ = 'rabbitMQ',
-    bullMQ = 'bullMQ',
 }
+
+export const RESULT_TYPE = Symbol()
+export type ResultType = typeof RESULT_TYPE
