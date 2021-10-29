@@ -132,6 +132,9 @@ export class RabbitMq implements ITransport, OnModuleInit {
             return this.consumerChannel.consume(
                 queue.queue,
                 (message) => {
+                    if(!message?.content) {
+                        return
+                    }
                     const options = this.consumerCallbacks.get(message.properties.correlationId)
                     const cb: ConsumerCallback =
                         (options as { callback: ConsumerCallback; removeOnCall: boolean })
@@ -344,7 +347,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                     void listener.consume(
                         q.queue,
                         (msg) => {
-                            if (!msg.content) {
+                            if (!msg?.content) {
                                 return
                             }
 
@@ -520,7 +523,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
         void workerChannel.consume(
             queueName,
             (message) => {
-                if (!message) {
+                if (!message?.content) {
                     return
                 }
 
