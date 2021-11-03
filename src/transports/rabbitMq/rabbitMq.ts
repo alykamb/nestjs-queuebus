@@ -132,7 +132,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
             return this.consumerChannel.consume(
                 queue.queue,
                 (message) => {
-                    if(!message?.content) {
+                    if (!message?.content) {
                         return
                     }
                     const options = this.consumerCallbacks.get(message.properties.correlationId)
