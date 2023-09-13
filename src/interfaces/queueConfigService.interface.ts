@@ -8,6 +8,7 @@ export interface IQueueConfigService {
     port: number
     username?: string
     password?: string
+    heartbeat?: number
 
     verbose?: boolean
     logger?: (message: string, error?: boolean) => void

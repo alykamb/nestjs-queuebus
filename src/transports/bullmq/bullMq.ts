@@ -9,7 +9,7 @@ import {
     Worker,
     WorkerOptions,
 } from 'bullmq'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import { BehaviorSubject, firstValueFrom, merge, noop, Subject, Subscription } from 'rxjs'
 import { filter, map, scan } from 'rxjs/operators'
 import { v4 } from 'uuid'
@@ -47,8 +47,8 @@ export class BullMq implements ITransport, OnModuleInit {
 
     private callbacks = new Map<string, Callback>()
 
-    private publisher: Redis.Redis
-    private subscriber: Redis.Redis
+    private publisher: Redis
+    private subscriber: Redis
 
     private effects = new Map<string, { callback: EventCallback; parallel: boolean }>()
     private eventListeners = new Map<string, EventCallback>()

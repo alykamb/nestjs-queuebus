@@ -1,5 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
-import { Channel, connect, Connection, Message, Replies } from 'amqplib'
+import { Channel, connect, Connection, Message, Options, Replies } from 'amqplib'
 import { BehaviorSubject, forkJoin, interval, merge, of, race, Subject, Subscription } from 'rxjs'
 import { filter, map, mapTo, mergeMap, scan, take } from 'rxjs/operators'
 import { v4 } from 'uuid'
@@ -77,27 +77,24 @@ export class RabbitMq implements ITransport, OnModuleInit {
 
     public async getPublisher(): Promise<Connection> {
         if (!this.publisher) {
-            this.publisher = await connect(this.connectionUrl)
+            this.publisher = await connect(this.connectionObject)
         }
         return this.publisher
     }
 
-    protected get connectionUrl(): string {
-        let userinfo = ''
-        if (this.queueConfig.username) {
-            userinfo = this.queueConfig.username
-            if (this.queueConfig.password) {
-                userinfo += `:${this.queueConfig.password}`
-            }
-            userinfo += '@'
+    protected get connectionObject(): Options.Connect {
+        return {
+            hostname: this.queueConfig.host,
+            port: this.queueConfig.port,
+            username: this.queueConfig.username,
+            password: this.queueConfig.password,
+            heartbeat: this.queueConfig.heartbeat,
         }
-
-        return `amqp://${userinfo}${this.queueConfig.host}:${this.queueConfig.port}`
     }
 
     public async getConsumer(): Promise<Connection> {
         if (!this.consumer) {
-            this.consumer = await connect(this.connectionUrl)
+            this.consumer = await connect(this.connectionObject)
         }
         return this.consumer
     }
