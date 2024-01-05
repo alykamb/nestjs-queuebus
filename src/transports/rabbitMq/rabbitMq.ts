@@ -77,7 +77,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
 
     public async getPublisher(): Promise<Connection> {
         if (!this.publisher) {
-            this.publisher = await connect(this.connectionObject)
+            this.publisher = await connect(this.connectionObject).catch(error => { throw error})
         }
         return this.publisher
     }
@@ -94,7 +94,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
 
     public async getConsumer(): Promise<Connection> {
         if (!this.consumer) {
-            this.consumer = await connect(this.connectionObject)
+            this.consumer = await connect(this.connectionObject).catch(error => { throw error })
         }
         return this.consumer
     }
