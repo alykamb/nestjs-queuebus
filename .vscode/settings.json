@@ -6,13 +6,7 @@
         "source.fixAll.eslint": "explicit"
     },
     "editor.formatOnPaste": false,
-    "eslint.validate": [
-        "javascript",
-        "javascriptreact",
-        "html",
-        "typescriptreact",
-        "vue"
-    ],
+    "eslint.validate": ["javascript", "javascriptreact", "html", "typescriptreact", "vue"],
     "editor.formatOnSave": true,
     "[vue]": {
         "editor.formatOnSave": false
@@ -36,6 +30,7 @@
         "activityBar.background": "#000000",
         "activityBar.foreground": "#cf20e6",
         "activityBar.inactiveForeground": "#5a075a",
-        "activityBar.activeBackground": "#000000",
-    }
+        "activityBar.activeBackground": "#000000"
+    },
+    "typescript.tsdk": "node_modules/typescript/lib"
 }
