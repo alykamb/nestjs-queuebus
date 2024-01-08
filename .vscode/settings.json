@@ -3,7 +3,7 @@
     "workbench.editor.limit.perEditorGroup": true,
     "workbench.editor.limit.value": 7,
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
+        "source.fixAll.eslint": "explicit"
     },
     "editor.formatOnPaste": false,
     "eslint.validate": [
