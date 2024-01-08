@@ -492,7 +492,7 @@ export class RabbitMq implements ITransport, OnModuleInit {
                     ),
                 ]).then(({ error, result }) => onFinish(error, result))
             },
-        )
+        ).catch(error => onFinish(error))
     }
 
     public async getWorkerChannel(name: string): Promise<Channel> {
